@@ -4,7 +4,7 @@ git clone git://g.csail.mit.edu/xv6/labs-2020
 cd xv6-labs-2020
 git checkout util
 make clean && make qemu
-</code></pre><blockquote><p>如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。</blockquote><h2 id=sleep-easy>sleep (easy)</h2><p>在user目录里，创建名为sleep.c的文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
+</code></pre><br><blockquote><p>如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。</blockquote><h2 id=sleep-easy>sleep (easy)</h2><p>在user目录里，创建名为sleep.c的文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
 |-- user/
 |-- |-- sleep.c
 </code></pre><p>调用sleep系统调用来实现这个功能。<pre class=language-C data-lang=C><code class=language-C data-lang=C>#include "kernel/types.h"

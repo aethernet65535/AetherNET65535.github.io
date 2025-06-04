@@ -3,12 +3,14 @@
     <title>anemone</title>
     <link href="https://aethernet65535.github.io/atom.xml" rel="self"/>
     <link href="https:&#x2F;&#x2F;aethernet65535.github.io"/>
-    <updated>2025-06-05T04:08:52+0800</updated>
+    <updated>2025-06-05T04:10:49+0800</updated>
     <id>https:&#x2F;&#x2F;aethernet65535.github.io</id>
 
     
     
     
+    
+        
     
         
         <entry>
@@ -35,8 +37,6 @@
         </entry>
         
     
-        
-    
     
     
         
@@ -58,6 +58,7 @@ cd xv6-labs-2020
 git checkout util
 make clean &amp;amp;amp;&amp;amp;amp; make qemu
 &amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;br&amp;gt;
 &amp;lt;blockquote&amp;gt;
 &amp;lt;p&amp;gt;如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;&amp;#x2F;blockquote&amp;gt;
