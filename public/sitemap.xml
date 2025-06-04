@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    
+    
+        <url>
+            <loc>https://anemone.pages.dev/about/</loc>
+            
+        </url>
+    
+        <url>
+            <loc>https://anemone.pages.dev/journal/</loc>
+            <lastmod>2019-10-05</lastmod>
+        </url>
+    
+    
+    
+        
+        
+            <url>
+                <loc>https://anemone.pages.dev/blog/post-example-with-headings-and-toc/</loc>
+                <lastmod>2024-01-01</lastmod>
+            </url>
+        
+            <url>
+                <loc>https://anemone.pages.dev/blog/very-very-very-long-title-and-very-very-very-short-content/</loc>
+                <lastmod>2024-01-01</lastmod>
+            </url>
+        
+            <url>
+                <loc>https://anemone.pages.dev/blog/language-tests/</loc>
+                <lastmod>2020-07-08</lastmod>
+            </url>
+        
+            <url>
+                <loc>https://anemone.pages.dev/blog/overview-post/</loc>
+                <lastmod>2020-07-07</lastmod>
+            </url>
+        
+    
+</urlset>

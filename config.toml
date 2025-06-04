@@ -1,5 +1,3 @@
-theme = "anemone"
-
 # General
 base_url = "https://anemone.pages.dev"
 compile_sass = false
