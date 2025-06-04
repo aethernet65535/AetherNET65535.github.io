@@ -3,14 +3,12 @@
     <title>anemone</title>
     <link href="https://aethernet65535.github.io/atom.xml" rel="self"/>
     <link href="https:&#x2F;&#x2F;aethernet65535.github.io"/>
-    <updated>2025-06-04T16:25:45+0800</updated>
+    <updated>2025-06-05T02:56:33+0800</updated>
     <id>https:&#x2F;&#x2F;aethernet65535.github.io</id>
 
     
     
     
-    
-        
     
         
         <entry>
@@ -37,6 +35,8 @@
         </entry>
         
     
+        
+    
     
     
         
@@ -58,9 +58,10 @@ cd xv6-labs-2020
 git checkout util
 make clean &amp;amp;amp;&amp;amp;amp; make qemu
 &amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
-&amp;lt;br&amp;gt;
-&amp;gt; 如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。
-&amp;gt; 你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。
+&amp;lt;blockquote&amp;gt;
+&amp;lt;p&amp;gt;如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。
+你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;&amp;#x2F;blockquote&amp;gt;
 &amp;lt;h2 id=&amp;quot;sleep-easy&amp;quot;&amp;gt;sleep (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
 &amp;lt;p&amp;gt;在user目录里，创建名为sleep.c的文件。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;pre data-lang=&amp;quot;tree&amp;quot; class=&amp;quot;language-tree &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-tree&amp;quot; data-lang=&amp;quot;tree&amp;quot;&amp;gt;xv6-labs-2020&amp;amp;#x2F;
