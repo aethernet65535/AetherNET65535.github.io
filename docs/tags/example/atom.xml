@@ -3,12 +3,14 @@
     <title>anemone</title>
     <link href="https://aethernet65535.github.io/atom.xml" rel="self"/>
     <link href="https:&#x2F;&#x2F;aethernet65535.github.io"/>
-    <updated>2025-06-05T02:56:33+0800</updated>
+    <updated>2025-06-05T04:06:47+0800</updated>
     <id>https:&#x2F;&#x2F;aethernet65535.github.io</id>
 
     
     
     
+    
+        
     
         
         <entry>
@@ -35,8 +37,6 @@
         </entry>
         
     
-        
-    
     
     
         
@@ -59,8 +59,7 @@ git checkout util
 make clean &amp;amp;amp;&amp;amp;amp; make qemu
 &amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
 &amp;lt;blockquote&amp;gt;
-&amp;lt;p&amp;gt;如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。
-你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;&amp;#x2F;blockquote&amp;gt;
 &amp;lt;h2 id=&amp;quot;sleep-easy&amp;quot;&amp;gt;sleep (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
 &amp;lt;p&amp;gt;在user目录里，创建名为sleep.c的文件。&amp;lt;&amp;#x2F;p&amp;gt;
@@ -69,30 +68,30 @@ make clean &amp;amp;amp;&amp;amp;amp; make qemu
 |-- |-- sleep.c
 &amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
 &amp;lt;p&amp;gt;调用sleep系统调用来实现这个功能。&amp;lt;&amp;#x2F;p&amp;gt;
-&amp;lt;pre data-lang=&amp;quot;sleep.c&amp;quot; class=&amp;quot;language-sleep.c &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-sleep.c&amp;quot; data-lang=&amp;quot;sleep.c&amp;quot;&amp;gt;#include &amp;amp;quot;kernel&amp;amp;#x2F;types.h&amp;amp;quot;
+&amp;lt;pre data-lang=&amp;quot;C&amp;quot; class=&amp;quot;language-C &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-C&amp;quot; data-lang=&amp;quot;C&amp;quot;&amp;gt;#include &amp;amp;quot;kernel&amp;amp;#x2F;types.h&amp;amp;quot;
 #include &amp;amp;quot;kernel&amp;amp;#x2F;stat.h&amp;amp;quot;
 #include &amp;amp;quot;user&amp;amp;#x2F;user.h&amp;amp;quot;
 
 int main (int argc, char *argv[])
 {
-    &amp;amp;#x2F;&amp;amp;#x2F; is argument 2? (sleep 10)(argument 1, argument 2)
+    &amp;amp;#x2F;&amp;amp;#x2F; 参数是否为2个？例子：sleep 10
     if (argc != 2)
     {
-        fprintf (2, &amp;amp;quot;USAGE: sleep &amp;amp;lt;ticks&amp;amp;gt;\n&amp;amp;quot;);
+        fprintf (2, &amp;amp;quot;usage: sleep &amp;amp;lt;ticks&amp;amp;gt;\n&amp;amp;quot;);
         exit(1);
     }
     
-    &amp;amp;#x2F;&amp;amp;#x2F; change time(char*) to integer
+    &amp;amp;#x2F;&amp;amp;#x2F; 把ASCII转为INT
     int ticks = atoi(argv[1]);
-    &amp;amp;#x2F;&amp;amp;#x2F; int adjusted_ticks = ticks * 10; make tick argument to second 
+    &amp;amp;#x2F;&amp;amp;#x2F; int adjusted_ticks = ticks * 10; 这个别抄，作用是把CPU TICKS换成秒数 
     
-    &amp;amp;#x2F;&amp;amp;#x2F; if the tick argument smaller than 0, then it should be 0. 
+    &amp;amp;#x2F;&amp;amp;#x2F; 如果用户输入的TICKS小于0，那就改为0（毕竟总不可能给你来个时间倒流）
     if (adjusted_ticks &amp;amp;lt; 0)
     {
         adjusted_ticks = 0;
     }
 
-    sleep(adjusted_ticks);
+    sleep(adjusted_ticks); &amp;amp;#x2F;&amp;amp;#x2F; 这里就是调用sleep，xv6已经写好sleep的实现了
 
     exit(0);
 }
@@ -115,8 +114,102 @@ int main (int argc, char *argv[])
 	$U&amp;amp;#x2F;_grind\
 	$U&amp;amp;#x2F;_wc\
 	$U&amp;amp;#x2F;_zombie\
-	$U&amp;amp;#x2F;_sleep\ # add this, just remember, everytime u make a new file in user&amp;amp;#x2F;, add here also.
+	$U&amp;amp;#x2F;_sleep\ # 加上这个
 &amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;h2 id=&amp;quot;pingpong-easy&amp;quot;&amp;gt;pingpong (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
+&amp;lt;p&amp;gt;和上一个一样，先在user目录里创建pingpong.c文件。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;pre data-lang=&amp;quot;tree&amp;quot; class=&amp;quot;language-tree &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-tree&amp;quot; data-lang=&amp;quot;tree&amp;quot;&amp;gt;xv6-labs-2020&amp;amp;#x2F;
+|-- user&amp;amp;#x2F;
+|-- |-- sleep.c
+|-- |-- pingpong.c
+&amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;pre data-lang=&amp;quot;C&amp;quot; class=&amp;quot;language-C &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-C&amp;quot; data-lang=&amp;quot;C&amp;quot;&amp;gt;#include &amp;amp;quot;kernel&amp;amp;#x2F;types.h&amp;amp;quot;
+#include &amp;amp;quot;kernel&amp;amp;#x2F;stat.h&amp;amp;quot;
+#include &amp;amp;quot;user&amp;amp;#x2F;user.h&amp;amp;quot;
+
+&amp;amp;#x2F;&amp;amp;#x2F; 给文件描述符起个更直观的别名	
+#define READ 0
+#define WRITE 1
+
+int main (int argc, char *argv[])
+{
+    if (argc != 1)
+    {
+        fprintf(2, &amp;amp;quot;usage: pingpong\n&amp;amp;quot;);
+        exit(1);
+    }
+
+    int pid, p2c[2], c2p[2];
+    char signal = 0; 
+    
+    pipe(p2c); &amp;amp;#x2F;&amp;amp;#x2F; 创建P2C管道，简称P（PARENT）
+    pipe(c2p); &amp;amp;#x2F;&amp;amp;#x2F; 创建C2P管道，简称C（CHILD）
+
+    if ((pid = fork()) &amp;amp;gt; 0) &amp;amp;#x2F;&amp;amp;#x2F; 父进程
+    {
+		&amp;amp;#x2F;&amp;amp;#x2F; 父进程只需要写P2C，读C2P
+        close(p2c[READ]);  
+        close(c2p[WRITE]); 
+
+		&amp;amp;#x2F;&amp;amp;#x2F; 发球：向子进程发送一个字节（触发子进程的read）
+        write(p2c[WRITE], &amp;amp;amp;signal, 1); 
+		close(p2c[WRITE]); 
+
+		&amp;amp;#x2F;&amp;amp;#x2F; 等待接球：阻塞直到读取子进程的返回信号
+        read(c2p[READ], &amp;amp;amp;signal, 1); 
+		close(c2p[READ]); 
+
+        printf(&amp;amp;quot;%d: Received Pong\n&amp;amp;quot;, getpid());
+        
+        exit(0); &amp;amp;#x2F;&amp;amp;#x2F; 关闭程序
+    }
+    else if (pid == 0) &amp;amp;#x2F;&amp;amp;#x2F; 子进程
+    {
+		&amp;amp;#x2F;&amp;amp;#x2F; 子进程只需要读P2C，写C2P
+        close(c2p[READ]); 
+        close(p2c[WRITE]); 
+
+		&amp;amp;#x2F;&amp;amp;#x2F; 等待接球：阻塞直到读取父进程的信号
+        read(p2c[READ], &amp;amp;amp;signal, 1); 
+        close(p2c[READ]);
+
+        printf(&amp;amp;quot;%d: Received Ping\n&amp;amp;quot;, getpid());
+        
+		&amp;amp;#x2F;&amp;amp;#x2F; 回球：向父进程返回一个字节
+        write(c2p[WRITE], &amp;amp;amp;signal, 1); 
+        close(c2p[WRITE]); 
+
+        exit(0); &amp;amp;#x2F;&amp;amp;#x2F; 关闭子进程
+    }
+    else
+    {
+        fprintf(2, &amp;amp;quot;fork error\n&amp;amp;quot;);
+        exit(1);
+    }
+}
+&amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;p&amp;gt;上面的代码你可能看不懂，让我解释解释。
+&amp;lt;br&amp;gt;
+首先，当我们当前的进程&amp;lt;code&amp;gt;fork&amp;lt;&amp;#x2F;code&amp;gt;出了一个子进程后，这两个进程是并行的，就是他们是同时跑的。
+&amp;lt;br&amp;gt;
+但是我们希望这个代码是有顺序的，所以我们需要让其中一个不能跑。
+&amp;lt;br&amp;gt;
+我们在这里利用的是管道的堵塞机制，即“如果读取不到，就不执行下一个代码”。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;用乒乓球举例（我没打过，也不了解乒乓球）
+&amp;lt;br&amp;gt;
+乒乓球的桌子，上面有两个区域，一个是P区域，一个是C区域。
+&amp;lt;br&amp;gt;
+父亲站在P那里，他只可以把球打过去C那里，或者抓住飞到P区域的球。
+&amp;lt;br&amp;gt;
+一样的，儿子只能站在C那里，他只能把球打去P区域，或者抓住飞到C区域的球。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;当父亲还没有把球打给儿子时，儿子就不能抓住球，因为球没有飞向他。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;h3 id=&amp;quot;chang-jian-yi-wen&amp;quot;&amp;gt;常见疑问&amp;lt;&amp;#x2F;h3&amp;gt;
+&amp;lt;p&amp;gt;Q: 为什么需要两个管道？&amp;lt;br &amp;#x2F;&amp;gt;
+A: 管道是单向的，要实现双向通信必须用两个管道。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;Q: &amp;lt;code&amp;gt;signal&amp;lt;&amp;#x2F;code&amp;gt;的作用是什么？&amp;lt;br &amp;#x2F;&amp;gt;
+A: 实际不需要传输有效数据，只需通过管道的&amp;lt;strong&amp;gt;存在性&amp;lt;&amp;#x2F;strong&amp;gt;触发同步。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;Q: 不关闭未使用的描述符会怎样？&amp;lt;br &amp;#x2F;&amp;gt;
+A: 可能导致——子进程的&amp;lt;code&amp;gt;read&amp;lt;&amp;#x2F;code&amp;gt;无法收到EOF（因为父进程的写入端未关闭）&amp;lt;&amp;#x2F;p&amp;gt;
 </content>
             </entry>
             

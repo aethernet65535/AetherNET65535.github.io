@@ -1,36 +1,36 @@
-<!doctype html><html lang=en><head><meta charset=UTF-8><meta content="width=device-width,initial-scale=1.0" name=viewport><meta content="index, follow" name=robots><link href=https://aethernet65535.github.io/rss.xml rel=alternate title=RSS type=application/rss+xml><title>anemone | XV6-2020 LAB1-UTIL</title><link as=style href=https://aethernet65535.github.io/css/style.css rel=preload><link crossorigin href=https://raw.githack.com/Speyll/suCSS/main/reset-min.css rel=stylesheet><link crossorigin href=https://raw.githack.com/Speyll/suCSS/main/suCSS-min.css rel=stylesheet><link href=https://aethernet65535.github.io/css/style.css rel=stylesheet><link href=https://aethernet65535.github.io/css/custom.css rel=stylesheet><link href=https://aethernet65535.github.io/favicon.ico rel=icon><body><nav id=nav-bar><a href=/> /home/ </a><a href=/about> /about/ </a><a href=/journal> /journal/ </a><a href=/blog> /blog/ </a><div aria-label="Toggle theme" class=theme-toggle data-icon-base=https://aethernet65535.github.io/icons.svg data-icon-dark=#darkMode data-icon-light=#lightMode data-sound-src=https://aethernet65535.github.io/click.ogg id=theme-toggle role=button tabindex=0><svg class=icon><use id=theme-icon></use></svg></div></nav><main><article class=post><header class=post-header><time datetime=2025-06-04>Published on: <span class=accent-data>2025-06-04</span> </time><address rel=author>By <span class=accent-data>aethernet</span></address><h1>XV6-2020 LAB1-UTIL</h1></header><div class=toc-container><h2>Table of content</h2><ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#boot-xv6-easy>boot xv6 (easy)</a><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#sleep-easy>sleep (easy)</a></ul></div><div class=post-content><p>事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。<p>这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。<h2 id=boot-xv6-easy>boot xv6 (easy)</h2><p>首先，先下载git，再clone下来xv6-labs-2020的文件。<pre class=language-sh data-lang=sh><code class=language-sh data-lang=sh>sudo -S pacman git
+<!doctype html><html lang=en><head><meta charset=UTF-8><meta content="width=device-width,initial-scale=1.0" name=viewport><meta content="index, follow" name=robots><link href=https://aethernet65535.github.io/rss.xml rel=alternate title=RSS type=application/rss+xml><title>anemone | XV6-2020 LAB1-UTIL</title><link as=style href=https://aethernet65535.github.io/css/style.css rel=preload><link crossorigin href=https://raw.githack.com/Speyll/suCSS/main/reset-min.css rel=stylesheet><link crossorigin href=https://raw.githack.com/Speyll/suCSS/main/suCSS-min.css rel=stylesheet><link href=https://aethernet65535.github.io/css/style.css rel=stylesheet><link href=https://aethernet65535.github.io/css/custom.css rel=stylesheet><link href=https://aethernet65535.github.io/favicon.ico rel=icon><body><nav id=nav-bar><a href=/> /home/ </a><a href=/about> /about/ </a><a href=/journal> /journal/ </a><a href=/blog> /blog/ </a><div aria-label="Toggle theme" class=theme-toggle data-icon-base=https://aethernet65535.github.io/icons.svg data-icon-dark=#darkMode data-icon-light=#lightMode data-sound-src=https://aethernet65535.github.io/click.ogg id=theme-toggle role=button tabindex=0><svg class=icon><use id=theme-icon></use></svg></div></nav><main><article class=post><header class=post-header><time datetime=2025-06-04>Published on: <span class=accent-data>2025-06-04</span> </time><address rel=author>By <span class=accent-data>aethernet</span></address><h1>XV6-2020 LAB1-UTIL</h1></header><div class=toc-container><h2>Table of content</h2><ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#boot-xv6-easy>boot xv6 (easy)</a><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#sleep-easy>sleep (easy)</a><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#pingpong-easy>pingpong (easy)</a> <ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#chang-jian-yi-wen>常见疑问</a></ul></ul></div><div class=post-content><p>事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。<p>这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。<h2 id=boot-xv6-easy>boot xv6 (easy)</h2><p>首先，先下载git，再clone下来xv6-labs-2020的文件。<pre class=language-sh data-lang=sh><code class=language-sh data-lang=sh>sudo -S pacman git
 
 git clone git://g.csail.mit.edu/xv6/labs-2020
 cd xv6-labs-2020
 git checkout util
 make clean && make qemu
-</code></pre><blockquote><p>如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。 你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。</blockquote><h2 id=sleep-easy>sleep (easy)</h2><p>在user目录里，创建名为sleep.c的文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
+</code></pre><blockquote><p>如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。</blockquote><h2 id=sleep-easy>sleep (easy)</h2><p>在user目录里，创建名为sleep.c的文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
 |-- user/
 |-- |-- sleep.c
-</code></pre><p>调用sleep系统调用来实现这个功能。<pre class=language-sleep.c data-lang=sleep.c><code class=language-sleep.c data-lang=sleep.c>#include "kernel/types.h"
+</code></pre><p>调用sleep系统调用来实现这个功能。<pre class=language-C data-lang=C><code class=language-C data-lang=C>#include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
 
 int main (int argc, char *argv[])
 {
-    // is argument 2? (sleep 10)(argument 1, argument 2)
+    // 参数是否为2个？例子：sleep 10
     if (argc != 2)
     {
-        fprintf (2, "USAGE: sleep &LTticks>\n");
+        fprintf (2, "usage: sleep &LTticks>\n");
         exit(1);
     }
     
-    // change time(char*) to integer
+    // 把ASCII转为INT
     int ticks = atoi(argv[1]);
-    // int adjusted_ticks = ticks * 10; make tick argument to second 
+    // int adjusted_ticks = ticks * 10; 这个别抄，作用是把CPU TICKS换成秒数 
     
-    // if the tick argument smaller than 0, then it should be 0. 
+    // 如果用户输入的TICKS小于0，那就改为0（毕竟总不可能给你来个时间倒流）
     if (adjusted_ticks < 0)
     {
         adjusted_ticks = 0;
     }
 
-    sleep(adjusted_ticks);
+    sleep(adjusted_ticks); // 这里就是调用sleep，xv6已经写好sleep的实现了
 
     exit(0);
 }
@@ -51,5 +51,73 @@ int main (int argc, char *argv[])
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
-	$U/_sleep\ # add this, just remember, everytime u make a new file in user/, add here also.
-</code></pre></div><div class=post-tags><a class=tag href=/tags/xv6>#xv6 </a></div></article></main><footer><hr><div id=footer-container><p>Made using <a rel="noopener noreferrer" href=https://github.com/Speyll/anemone target=_blank>anemone</a> Zola theme</div></footer><script defer src=https://aethernet65535.github.io/js/script.js></script>
+	$U/_sleep\ # 加上这个
+</code></pre><h2 id=pingpong-easy>pingpong (easy)</h2><p>和上一个一样，先在user目录里创建pingpong.c文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
+|-- user/
+|-- |-- sleep.c
+|-- |-- pingpong.c
+</code></pre><pre class=language-C data-lang=C><code class=language-C data-lang=C>#include "kernel/types.h"
+#include "kernel/stat.h"
+#include "user/user.h"
+
+// 给文件描述符起个更直观的别名	
+#define READ 0
+#define WRITE 1
+
+int main (int argc, char *argv[])
+{
+    if (argc != 1)
+    {
+        fprintf(2, "usage: pingpong\n");
+        exit(1);
+    }
+
+    int pid, p2c[2], c2p[2];
+    char signal = 0; 
+    
+    pipe(p2c); // 创建P2C管道，简称P（PARENT）
+    pipe(c2p); // 创建C2P管道，简称C（CHILD）
+
+    if ((pid = fork()) > 0) // 父进程
+    {
+		// 父进程只需要写P2C，读C2P
+        close(p2c[READ]);  
+        close(c2p[WRITE]); 
+
+		// 发球：向子进程发送一个字节（触发子进程的read）
+        write(p2c[WRITE], &signal, 1); 
+		close(p2c[WRITE]); 
+
+		// 等待接球：阻塞直到读取子进程的返回信号
+        read(c2p[READ], &signal, 1); 
+		close(c2p[READ]); 
+
+        printf("%d: Received Pong\n", getpid());
+        
+        exit(0); // 关闭程序
+    }
+    else if (pid == 0) // 子进程
+    {
+		// 子进程只需要读P2C，写C2P
+        close(c2p[READ]); 
+        close(p2c[WRITE]); 
+
+		// 等待接球：阻塞直到读取父进程的信号
+        read(p2c[READ], &signal, 1); 
+        close(p2c[READ]);
+
+        printf("%d: Received Ping\n", getpid());
+        
+		// 回球：向父进程返回一个字节
+        write(c2p[WRITE], &signal, 1); 
+        close(c2p[WRITE]); 
+
+        exit(0); // 关闭子进程
+    }
+    else
+    {
+        fprintf(2, "fork error\n");
+        exit(1);
+    }
+}
+</code></pre><p>上面的代码你可能看不懂，让我解释解释。 <br> 首先，当我们当前的进程<code>fork</code>出了一个子进程后，这两个进程是并行的，就是他们是同时跑的。 <br> 但是我们希望这个代码是有顺序的，所以我们需要让其中一个不能跑。 <br> 我们在这里利用的是管道的堵塞机制，即“如果读取不到，就不执行下一个代码”。<p>用乒乓球举例（我没打过，也不了解乒乓球） <br> 乒乓球的桌子，上面有两个区域，一个是P区域，一个是C区域。 <br> 父亲站在P那里，他只可以把球打过去C那里，或者抓住飞到P区域的球。 <br> 一样的，儿子只能站在C那里，他只能把球打去P区域，或者抓住飞到C区域的球。<p>当父亲还没有把球打给儿子时，儿子就不能抓住球，因为球没有飞向他。<h3 id=chang-jian-yi-wen>常见疑问</h3><p>Q: 为什么需要两个管道？<br> A: 管道是单向的，要实现双向通信必须用两个管道。<p>Q: <code>signal</code>的作用是什么？<br> A: 实际不需要传输有效数据，只需通过管道的<strong>存在性</strong>触发同步。<p>Q: 不关闭未使用的描述符会怎样？<br> A: 可能导致——子进程的<code>read</code>无法收到EOF（因为父进程的写入端未关闭）</div><div class=post-tags><a class=tag href=/tags/xv6>#xv6 </a></div></article></main><footer><hr><div id=footer-container><p>Made using <a rel="noopener noreferrer" href=https://github.com/Speyll/anemone target=_blank>anemone</a> Zola theme</div></footer><script defer src=https://aethernet65535.github.io/js/script.js></script>
