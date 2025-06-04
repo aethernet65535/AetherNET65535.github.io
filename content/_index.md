@@ -2,4 +2,4 @@
 +++
 
 ## README
-- 🧠 [Language Learned](./blog/language-tests)
+- 🧠 [Language Learned](./blog/language-learned)
