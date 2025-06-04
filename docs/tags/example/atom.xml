@@ -3,12 +3,14 @@
     <title>anemone</title>
     <link href="https://anemone.pages.dev/atom.xml" rel="self"/>
     <link href="https:&#x2F;&#x2F;anemone.pages.dev"/>
-    <updated>2025-06-04T15:05:05+0800</updated>
+    <updated>2025-06-04T16:06:59+0800</updated>
     <id>https:&#x2F;&#x2F;anemone.pages.dev</id>
 
     
     
     
+    
+        
     
         
         <entry>
@@ -35,11 +37,89 @@
         </entry>
         
     
-        
-    
     
     
         
+        
+            
+            <entry>
+                <title>XV6-2020 LAB1-UTIL</title>
+                <link href="https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;xv6-2020-lab1-util&#x2F;"/>
+                <updated>2025-06-04T00:00:00+0000</updated>
+                <id>https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;xv6-2020-lab1-util&#x2F;</id>
+                <content type="html">&amp;lt;p&amp;gt;事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;h2 id=&amp;quot;boot-xv6-easy&amp;quot;&amp;gt;boot xv6 (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
+&amp;lt;p&amp;gt;首先，先下载git，再clone下来xv6-labs-2020的文件。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;pre data-lang=&amp;quot;sh&amp;quot; class=&amp;quot;language-sh &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-sh&amp;quot; data-lang=&amp;quot;sh&amp;quot;&amp;gt;sudo -S pacman git
+
+git clone git:&amp;amp;#x2F;&amp;amp;#x2F;g.csail.mit.edu&amp;amp;#x2F;xv6&amp;amp;#x2F;labs-2020
+cd xv6-labs-2020
+git checkout util
+make clean &amp;amp;amp;&amp;amp;amp; make qemu
+&amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;blockquote&amp;gt;
+&amp;lt;p&amp;gt;如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。
+你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;&amp;#x2F;blockquote&amp;gt;
+&amp;lt;h2 id=&amp;quot;sleep-easy&amp;quot;&amp;gt;sleep (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
+&amp;lt;p&amp;gt;在user目录里，创建名为sleep.c的文件。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;pre data-lang=&amp;quot;tree&amp;quot; class=&amp;quot;language-tree &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-tree&amp;quot; data-lang=&amp;quot;tree&amp;quot;&amp;gt;xv6-labs-2020&amp;amp;#x2F;
+|-- user&amp;amp;#x2F;
+|-- |-- sleep.c
+&amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;p&amp;gt;调用sleep系统调用来实现这个功能。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;pre data-lang=&amp;quot;sleep.c&amp;quot; class=&amp;quot;language-sleep.c &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-sleep.c&amp;quot; data-lang=&amp;quot;sleep.c&amp;quot;&amp;gt;#include &amp;amp;quot;kernel&amp;amp;#x2F;types.h&amp;amp;quot;
+#include &amp;amp;quot;kernel&amp;amp;#x2F;stat.h&amp;amp;quot;
+#include &amp;amp;quot;user&amp;amp;#x2F;user.h&amp;amp;quot;
+
+int main (int argc, char *argv[])
+{
+    &amp;amp;#x2F;&amp;amp;#x2F; is argument 2? (sleep 10)(argument 1, argument 2)
+    if (argc != 2)
+    {
+        fprintf (2, &amp;amp;quot;USAGE: sleep &amp;amp;lt;ticks&amp;amp;gt;\n&amp;amp;quot;);
+        exit(1);
+    }
+    
+    &amp;amp;#x2F;&amp;amp;#x2F; change time(char*) to integer
+    int ticks = atoi(argv[1]);
+    &amp;amp;#x2F;&amp;amp;#x2F; int adjusted_ticks = ticks * 10; make tick argument to second 
+    
+    &amp;amp;#x2F;&amp;amp;#x2F; if the tick argument smaller than 0, then it should be 0. 
+    if (adjusted_ticks &amp;amp;lt; 0)
+    {
+        adjusted_ticks = 0;
+    }
+
+    sleep(adjusted_ticks);
+
+    exit(0);
+}
+&amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;p&amp;gt;在Makefile的UPROGS处添加$U&amp;#x2F;_sleep\&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;pre data-lang=&amp;quot;Makefile&amp;quot; class=&amp;quot;language-Makefile &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-Makefile&amp;quot; data-lang=&amp;quot;Makefile&amp;quot;&amp;gt;UPROGS=\
+	$U&amp;amp;#x2F;_cat\
+	$U&amp;amp;#x2F;_echo\
+	$U&amp;amp;#x2F;_forktest\
+	$U&amp;amp;#x2F;_grep\
+	$U&amp;amp;#x2F;_init\
+	$U&amp;amp;#x2F;_kill\
+	$U&amp;amp;#x2F;_ln\
+	$U&amp;amp;#x2F;_ls\
+	$U&amp;amp;#x2F;_mkdir\
+	$U&amp;amp;#x2F;_rm\
+	$U&amp;amp;#x2F;_sh\
+	$U&amp;amp;#x2F;_stressfs\
+	$U&amp;amp;#x2F;_usertests\
+	$U&amp;amp;#x2F;_grind\
+	$U&amp;amp;#x2F;_wc\
+	$U&amp;amp;#x2F;_zombie\
+	$U&amp;amp;#x2F;_sleep\ # add this, just remember, everytime u make a new file in user&amp;amp;#x2F;, add here also.
+&amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+</content>
+            </entry>
+            
         
             
             <entry>

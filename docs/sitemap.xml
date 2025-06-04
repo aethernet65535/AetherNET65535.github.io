@@ -3,18 +3,23 @@
     
     
         <url>
-            <loc>https://anemone.pages.dev/journal/</loc>
-            <lastmod>2019-10-05</lastmod>
+            <loc>https://anemone.pages.dev/about/</loc>
+            
         </url>
     
         <url>
-            <loc>https://anemone.pages.dev/about/</loc>
-            
+            <loc>https://anemone.pages.dev/journal/</loc>
+            <lastmod>2019-10-05</lastmod>
         </url>
     
     
     
         
+        
+            <url>
+                <loc>https://anemone.pages.dev/blog/xv6-2020-lab1-util/</loc>
+                <lastmod>2025-06-04</lastmod>
+            </url>
         
             <url>
                 <loc>https://anemone.pages.dev/blog/post-example-with-headings-and-toc/</loc>
