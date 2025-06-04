@@ -5,7 +5,6 @@ minify_html = true
 generate_feeds = true
 generate_sitemap = true
 
-
 # Taxonomies
 taxonomies = [
     {name = "tags", feed = true, paginate_by = 10},
