@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <title>anemone</title>
-    <link href="https://anemone.pages.dev/atom.xml" rel="self"/>
-    <link href="https:&#x2F;&#x2F;anemone.pages.dev"/>
-    <updated>2025-06-04T16:06:59+0800</updated>
-    <id>https:&#x2F;&#x2F;anemone.pages.dev</id>
+    <link href="https://aethernet65535.github.io/atom.xml" rel="self"/>
+    <link href="https:&#x2F;&#x2F;aethernet65535.github.io"/>
+    <updated>2025-06-04T16:18:22+0800</updated>
+    <id>https:&#x2F;&#x2F;aethernet65535.github.io</id>
 
     
     
     
     
         
-    
-        
         <entry>
             <title>Personal journal</title>
-            <link href="https:&#x2F;&#x2F;anemone.pages.dev&#x2F;journal&#x2F;"/>
+            <link href="https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;journal&#x2F;"/>
             <updated>2019-10-05T00:00:00+0000</updated>
-            <id>https:&#x2F;&#x2F;anemone.pages.dev&#x2F;journal&#x2F;</id>
+            <id>https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;journal&#x2F;</id>
             <content type="html">&amp;lt;h2 id=&amp;quot;2023-06-29-wrench&amp;quot;&amp;gt;2023-06-29 🔧&amp;lt;&amp;#x2F;h2&amp;gt;
 &amp;lt;p&amp;gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean dapibus dignissim nulla et ornare. Vestibulum porta, risus eu ultrices condimentum, quam ante mattis massa, eget laoreet neque nisl ullamcorper nibh.&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;h2 id=&amp;quot;2023-06-28-blush&amp;quot;&amp;gt;2023-06-28 😊&amp;lt;&amp;#x2F;h2&amp;gt;
@@ -37,6 +35,8 @@
         </entry>
         
     
+        
+    
     
     
         
@@ -44,9 +44,9 @@
             
             <entry>
                 <title>XV6-2020 LAB1-UTIL</title>
-                <link href="https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;xv6-2020-lab1-util&#x2F;"/>
+                <link href="https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;xv6-2020-lab1-util&#x2F;"/>
                 <updated>2025-06-04T00:00:00+0000</updated>
-                <id>https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;xv6-2020-lab1-util&#x2F;</id>
+                <id>https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;xv6-2020-lab1-util&#x2F;</id>
                 <content type="html">&amp;lt;p&amp;gt;事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;p&amp;gt;这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;h2 id=&amp;quot;boot-xv6-easy&amp;quot;&amp;gt;boot xv6 (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
@@ -124,16 +124,16 @@ int main (int argc, char *argv[])
             
             <entry>
                 <title>Post Example With Headings And Toc</title>
-                <link href="https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;post-example-with-headings-and-toc&#x2F;"/>
+                <link href="https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;post-example-with-headings-and-toc&#x2F;"/>
                 <updated>2024-01-01T00:00:00+0000</updated>
-                <id>https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;post-example-with-headings-and-toc&#x2F;</id>
+                <id>https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;post-example-with-headings-and-toc&#x2F;</id>
                 <content type="html">&amp;lt;p&amp;gt;Mauris viverra dictum ultricies. Vestibulum quis ipsum euismod, facilisis metus sed, varius ipsum. Donec scelerisque lacus libero, eu dignissim sem venenatis at. Nunc a egestas tortor, sed feugiat leo.&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;p&amp;gt;Mauris viverra dictum ultricies. Vestibulum quis ipsum euismod, facilisis metus sed, varius ipsum. Donec scelerisque lacus libero, eu dignissim sem venenatis at. Nunc a egestas tortor, sed feugiat leo. Vestibulum porta tincidunt tellus, vitae ornare tortor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed nunc neque, tempor in iaculis non, faucibus et metus. Etiam id nisl ut lorem gravida euismod.&amp;lt;&amp;#x2F;p&amp;gt;
-&amp;lt;h2 id=&amp;quot;the-start&amp;quot;&amp;gt;&amp;lt;a href=&amp;quot;https:&amp;#x2F;&amp;#x2F;anemone.pages.dev&amp;#x2F;blog&amp;#x2F;post-example-with-headings-and-toc&amp;#x2F;#the-start&amp;quot;&amp;gt;The start&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;h2&amp;gt;
+&amp;lt;h2 id=&amp;quot;the-start&amp;quot;&amp;gt;&amp;lt;a href=&amp;quot;https:&amp;#x2F;&amp;#x2F;aethernet65535.github.io&amp;#x2F;blog&amp;#x2F;post-example-with-headings-and-toc&amp;#x2F;#the-start&amp;quot;&amp;gt;The start&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;h2&amp;gt;
 &amp;lt;p&amp;gt;Fusce non velit cursus ligula mattis convallis vel at metus. Sed pharetra tellus massa, non elementum eros vulputate non. Suspendisse potenti. Quisque arcu felis, laoreet vel accumsan sit amet, fermentum at nunc. Sed massa quam, auctor in eros quis, porttitor tincidunt orci. Nulla convallis id sapien ornare viverra. Cras nec est lacinia ligula porta tincidunt. Nam a est eget ligula pellentesque posuere. Maecenas quis enim ac risus accumsan scelerisque. Aliquam vitae libero sapien. Etiam convallis, metus nec suscipit condimentum, quam massa congue velit, sit amet sollicitudin nisi tortor a lectus. Cras a arcu enim. Suspendisse hendrerit euismod est ac gravida. Donec vitae elit tristique, suscipit eros at, aliquam augue. In ac faucibus dui. Sed tempor lacus tristique elit sagittis, vitae tempor massa convallis.&amp;lt;&amp;#x2F;p&amp;gt;
-&amp;lt;h2 id=&amp;quot;the-middle&amp;quot;&amp;gt;&amp;lt;a href=&amp;quot;https:&amp;#x2F;&amp;#x2F;anemone.pages.dev&amp;#x2F;blog&amp;#x2F;post-example-with-headings-and-toc&amp;#x2F;#the-middle&amp;quot;&amp;gt;The middle&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;h2&amp;gt;
+&amp;lt;h2 id=&amp;quot;the-middle&amp;quot;&amp;gt;&amp;lt;a href=&amp;quot;https:&amp;#x2F;&amp;#x2F;aethernet65535.github.io&amp;#x2F;blog&amp;#x2F;post-example-with-headings-and-toc&amp;#x2F;#the-middle&amp;quot;&amp;gt;The middle&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;h2&amp;gt;
 &amp;lt;p&amp;gt;Proin quis velit et eros auctor laoreet. Aenean eget nibh odio. Suspendisse mollis enim pretium, fermentum urna vitae, egestas purus. Donec convallis tincidunt purus, scelerisque fermentum eros sagittis vel. Aliquam ac aliquet risus, tempus iaculis est. Fusce molestie mauris non interdum hendrerit. Curabitur ullamcorper, eros vitae interdum volutpat, lacus magna lacinia turpis, at accumsan dui tortor vel lectus. Aenean risus massa, semper non lectus rutrum, facilisis imperdiet mi. Praesent sed quam quis purus auctor ornare et sed augue. Vestibulum non quam quis ligula luctus placerat sed sit amet erat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Fusce auctor, sem eu volutpat dignissim, turpis nibh malesuada arcu, in consequat elit mauris quis sem. Nam tristique sit amet enim vel accumsan. Sed id nibh commodo, dictum sem id, semper quam.&amp;lt;&amp;#x2F;p&amp;gt;
-&amp;lt;h2 id=&amp;quot;the-end&amp;quot;&amp;gt;&amp;lt;a href=&amp;quot;https:&amp;#x2F;&amp;#x2F;anemone.pages.dev&amp;#x2F;blog&amp;#x2F;post-example-with-headings-and-toc&amp;#x2F;#the-end&amp;quot;&amp;gt;The end&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;h2&amp;gt;
+&amp;lt;h2 id=&amp;quot;the-end&amp;quot;&amp;gt;&amp;lt;a href=&amp;quot;https:&amp;#x2F;&amp;#x2F;aethernet65535.github.io&amp;#x2F;blog&amp;#x2F;post-example-with-headings-and-toc&amp;#x2F;#the-end&amp;quot;&amp;gt;The end&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;h2&amp;gt;
 &amp;lt;p&amp;gt;Donec ex lectus, tempus non lacinia quis, pretium non ipsum. Praesent est nunc, rutrum vel tellus eu, tristique laoreet purus. In rutrum orci sit amet ex ornare, sit amet finibus lacus laoreet. Etiam ac facilisis purus, eget porttitor odio. Suspendisse tempus dolor nec risus sodales posuere. Proin dui dui, mollis a consectetur molestie, lobortis vitae tellus. Vivamus at purus sed urna sollicitudin mattis. Mauris lacinia libero in lobortis pulvinar. Nullam sit amet condimentum justo. Donec orci justo, pharetra ut dolor non, interdum finibus orci. Proin vitae ante a dui sodales commodo ac id elit. Nunc vel accumsan nunc, sit amet congue nunc. Aliquam in lacinia velit. Integer lobortis luctus eros, in fermentum metus aliquet a. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.&amp;lt;&amp;#x2F;p&amp;gt;
 </content>
             </entry>
@@ -142,9 +142,9 @@ int main (int argc, char *argv[])
             
             <entry>
                 <title>Very Very Very Long Title And Very Very Very Short Content</title>
-                <link href="https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;very-very-very-long-title-and-very-very-very-short-content&#x2F;"/>
+                <link href="https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;very-very-very-long-title-and-very-very-very-short-content&#x2F;"/>
                 <updated>2024-01-01T00:00:00+0000</updated>
-                <id>https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;very-very-very-long-title-and-very-very-very-short-content&#x2F;</id>
+                <id>https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;very-very-very-long-title-and-very-very-very-short-content&#x2F;</id>
                 <content type="html">&amp;lt;p&amp;gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque vel lacinia neque. Praesent nulla quam, ullamcorper in sollicitudin ac, molestie sed justo. Cras aliquam, sapien id consectetur accumsan, augue magna faucibus ex, ut ultricies turpis tortor vel ante. In at rutrum tellus. Nullam vestibulum metus eu purus malesuada, volutpat mattis leo facilisis.&amp;lt;&amp;#x2F;p&amp;gt;
 </content>
             </entry>
@@ -153,9 +153,9 @@ int main (int argc, char *argv[])
             
             <entry>
                 <title>Language Tests</title>
-                <link href="https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;language-tests&#x2F;"/>
+                <link href="https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;language-tests&#x2F;"/>
                 <updated>2020-07-08T00:00:00+0000</updated>
-                <id>https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;language-tests&#x2F;</id>
+                <id>https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;language-tests&#x2F;</id>
                 <content type="html">&amp;lt;p&amp;gt;Note: I took this test post from &amp;lt;a rel=&amp;quot;noopener&amp;quot; target=&amp;quot;_blank&amp;quot; href=&amp;quot;https:&amp;#x2F;&amp;#x2F;github.com&amp;#x2F;huangyz0918&amp;#x2F;moving&amp;quot;&amp;gt;moving&amp;lt;&amp;#x2F;a&amp;gt;, which is another Jekyll theme which is better that this one so I should not have linked it because now you will decide to use it instead of mine.&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;h3 id=&amp;quot;1-ri-ben-yu-tesuto&amp;quot;&amp;gt;1. 日本語テスト&amp;lt;&amp;#x2F;h3&amp;gt;
 &amp;lt;p&amp;gt;This is a Japanese test post to show you how japanese is displayed.&amp;lt;&amp;#x2F;p&amp;gt;
@@ -192,9 +192,9 @@ int main (int argc, char *argv[])
             
             <entry>
                 <title>Overview Post</title>
-                <link href="https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;overview-post&#x2F;"/>
+                <link href="https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;overview-post&#x2F;"/>
                 <updated>2020-07-07T00:00:00+0000</updated>
-                <id>https:&#x2F;&#x2F;anemone.pages.dev&#x2F;blog&#x2F;overview-post&#x2F;</id>
+                <id>https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;blog&#x2F;overview-post&#x2F;</id>
                 <content type="html">&amp;lt;p&amp;gt;Lorem ipsum&amp;lt;sup class=&amp;quot;footnote-reference&amp;quot;&amp;gt;&amp;lt;a href=&amp;quot;#1&amp;quot;&amp;gt;1&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;sup&amp;gt; dolor sit amet, consectetur adipiscing elit. Pellentesque vel lacinia neque. Praesent nulla quam, ullamcorper in sollicitudin ac, molestie sed justo. Cras aliquam, sapien id consectetur accumsan, augue magna faucibus ex, ut ultricies turpis tortor vel ante. In at rutrum tellus.&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;h1 id=&amp;quot;sample-heading-1&amp;quot;&amp;gt;Sample heading 1&amp;lt;&amp;#x2F;h1&amp;gt;
 &amp;lt;h2 id=&amp;quot;sample-heading-2&amp;quot;&amp;gt;Sample heading 2&amp;lt;&amp;#x2F;h2&amp;gt;
@@ -248,9 +248,9 @@ console.log(ultimateTruth);
 &amp;lt;h2 id=&amp;quot;webrings&amp;quot;&amp;gt;Webrings&amp;lt;&amp;#x2F;h2&amp;gt;
 &amp;lt;ul&amp;gt;
 &amp;lt;li&amp;gt;🈯 &amp;lt;span class=&amp;quot;webring&amp;quot;&amp;gt;
-&amp;lt;a class=&amp;quot;no-style&amp;quot; href=#&amp;gt;&amp;lt;svg class=&amp;quot;icon&amp;quot;&amp;gt;&amp;lt;use href=&amp;quot;https:&amp;#x2F;&amp;#x2F;anemone.pages.dev&amp;#x2F;icons.svg#chevronLeft&amp;quot;&amp;gt;&amp;lt;&amp;#x2F;use&amp;gt;&amp;lt;&amp;#x2F;svg&amp;gt;&amp;lt;&amp;#x2F;a&amp;gt; 
+&amp;lt;a class=&amp;quot;no-style&amp;quot; href=#&amp;gt;&amp;lt;svg class=&amp;quot;icon&amp;quot;&amp;gt;&amp;lt;use href=&amp;quot;https:&amp;#x2F;&amp;#x2F;aethernet65535.github.io&amp;#x2F;icons.svg#chevronLeft&amp;quot;&amp;gt;&amp;lt;&amp;#x2F;use&amp;gt;&amp;lt;&amp;#x2F;svg&amp;gt;&amp;lt;&amp;#x2F;a&amp;gt; 
 &amp;lt;a href=#&amp;gt;Random Webring&amp;lt;&amp;#x2F;a&amp;gt; 
-&amp;lt;a class=&amp;quot;no-style&amp;quot; href=#&amp;gt;&amp;lt;svg class=&amp;quot;icon&amp;quot;&amp;gt;&amp;lt;use href=&amp;quot;https:&amp;#x2F;&amp;#x2F;anemone.pages.dev&amp;#x2F;icons.svg#chevronRight&amp;quot;&amp;gt;&amp;lt;&amp;#x2F;use&amp;gt;&amp;lt;&amp;#x2F;svg&amp;gt;&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;span&amp;gt;
+&amp;lt;a class=&amp;quot;no-style&amp;quot; href=#&amp;gt;&amp;lt;svg class=&amp;quot;icon&amp;quot;&amp;gt;&amp;lt;use href=&amp;quot;https:&amp;#x2F;&amp;#x2F;aethernet65535.github.io&amp;#x2F;icons.svg#chevronRight&amp;quot;&amp;gt;&amp;lt;&amp;#x2F;use&amp;gt;&amp;lt;&amp;#x2F;svg&amp;gt;&amp;lt;&amp;#x2F;a&amp;gt;&amp;lt;&amp;#x2F;span&amp;gt;
 &amp;lt;&amp;#x2F;li&amp;gt;
 &amp;lt;&amp;#x2F;ul&amp;gt;
 &amp;lt;hr &amp;#x2F;&amp;gt;

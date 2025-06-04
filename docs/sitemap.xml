@@ -3,13 +3,13 @@
     
     
         <url>
-            <loc>https://anemone.pages.dev/about/</loc>
-            
+            <loc>https://aethernet65535.github.io/journal/</loc>
+            <lastmod>2019-10-05</lastmod>
         </url>
     
         <url>
-            <loc>https://anemone.pages.dev/journal/</loc>
-            <lastmod>2019-10-05</lastmod>
+            <loc>https://aethernet65535.github.io/about/</loc>
+            
         </url>
     
     
@@ -17,27 +17,27 @@
         
         
             <url>
-                <loc>https://anemone.pages.dev/blog/xv6-2020-lab1-util/</loc>
+                <loc>https://aethernet65535.github.io/blog/xv6-2020-lab1-util/</loc>
                 <lastmod>2025-06-04</lastmod>
             </url>
         
             <url>
-                <loc>https://anemone.pages.dev/blog/post-example-with-headings-and-toc/</loc>
+                <loc>https://aethernet65535.github.io/blog/post-example-with-headings-and-toc/</loc>
                 <lastmod>2024-01-01</lastmod>
             </url>
         
             <url>
-                <loc>https://anemone.pages.dev/blog/very-very-very-long-title-and-very-very-very-short-content/</loc>
+                <loc>https://aethernet65535.github.io/blog/very-very-very-long-title-and-very-very-very-short-content/</loc>
                 <lastmod>2024-01-01</lastmod>
             </url>
         
             <url>
-                <loc>https://anemone.pages.dev/blog/language-tests/</loc>
+                <loc>https://aethernet65535.github.io/blog/language-tests/</loc>
                 <lastmod>2020-07-08</lastmod>
             </url>
         
             <url>
-                <loc>https://anemone.pages.dev/blog/overview-post/</loc>
+                <loc>https://aethernet65535.github.io/blog/overview-post/</loc>
                 <lastmod>2020-07-07</lastmod>
             </url>
         
