@@ -3,14 +3,12 @@
     <title>aethernet-blog</title>
     <link href="https://aethernet65535.github.io/atom.xml" rel="self"/>
     <link href="https:&#x2F;&#x2F;aethernet65535.github.io"/>
-    <updated>2025-06-05T05:37:16+0800</updated>
+    <updated>2025-06-05T05:46:46+0800</updated>
     <id>https:&#x2F;&#x2F;aethernet65535.github.io</id>
 
     
     
     
-    
-        
     
         
         <entry>
@@ -35,6 +33,8 @@
 &amp;lt;p&amp;gt;facilisis sapien, quis faucibus leo urna ut diam. Etiam eu dolor vestibulum, cursus odio at, aliquam nibh. Donec molestie metus non purus facilisis euismod. In interdum luctus libero, in mollis est tincidunt at. Nam congue, nibh nec tempus elementum, nunc sapien placerat felis, id dignissim sapien tellus a libero. Nunc at elementum tortor, eget scelerisque elit. Donec ultricies mi at accumsan semper. Pellentesque vehicula leo sed urna dapibus, quis feugiat arcu auctor.&amp;lt;&amp;#x2F;p&amp;gt;
 </content>
         </entry>
+        
+    
         
     
     
@@ -162,24 +162,24 @@ int main (int argc, char *argv[])
     }
 
     int pid, p2c[2], c2p[2];
-    char signal = 0; 
+    char signal = 0;
     
-    pipe(p2c); &amp;amp;#x2F;&amp;amp;#x2F; 创建P2C管道，简称P（PARENT）
-    pipe(c2p); &amp;amp;#x2F;&amp;amp;#x2F; 创建C2P管道，简称C（CHILD）
+    pipe(p2c); &amp;amp;#x2F;&amp;amp;#x2F; 创建P2C管道，简称P（PARENT
+    pipe(c2p); &amp;amp;#x2F;&amp;amp;#x2F; 创建C2P管道，简称C（CHILD
 
     if ((pid = fork()) &amp;amp;gt; 0) &amp;amp;#x2F;&amp;amp;#x2F; 父进程
     {
 		&amp;amp;#x2F;&amp;amp;#x2F; 父进程只需要写P2C，读C2P
-        close(p2c[READ]);  
+        close(p2c[READ]);
         close(c2p[WRITE]); 
 
-		&amp;amp;#x2F;&amp;amp;#x2F; 发球：向子进程发送一个字节（触发子进程的read）
-        write(p2c[WRITE], &amp;amp;amp;signal, 1); 
-		close(p2c[WRITE]); 
+		&amp;amp;#x2F;&amp;amp;#x2F; 发球：向子进程发送一个字节（触发子进程的read
+        write(p2c[WRITE], &amp;amp;amp;signal, 1);
+		close(p2c[WRITE]);
 
 		&amp;amp;#x2F;&amp;amp;#x2F; 等待接球：阻塞直到读取子进程的返回信号
-        read(c2p[READ], &amp;amp;amp;signal, 1); 
-		close(c2p[READ]); 
+        read(c2p[READ], &amp;amp;amp;signal, 1);
+		close(c2p[READ]);
 
         printf(&amp;amp;quot;%d: Received Pong\n&amp;amp;quot;, getpid());
         
@@ -188,11 +188,11 @@ int main (int argc, char *argv[])
     else if (pid == 0) &amp;amp;#x2F;&amp;amp;#x2F; 子进程
     {
 		&amp;amp;#x2F;&amp;amp;#x2F; 子进程只需要读P2C，写C2P
-        close(c2p[READ]); 
+        close(c2p[READ]);
         close(p2c[WRITE]); 
 
 		&amp;amp;#x2F;&amp;amp;#x2F; 等待接球：阻塞直到读取父进程的信号
-        read(p2c[READ], &amp;amp;amp;signal, 1); 
+        read(p2c[READ], &amp;amp;amp;signal, 1);
         close(p2c[READ]);
 
         printf(&amp;amp;quot;%d: Received Ping\n&amp;amp;quot;, getpid());

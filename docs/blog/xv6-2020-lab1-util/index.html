@@ -73,24 +73,24 @@ int main (int argc, char *argv[])
     }
 
     int pid, p2c[2], c2p[2];
-    char signal = 0; 
+    char signal = 0;
     
-    pipe(p2c); // 创建P2C管道，简称P（PARENT）
-    pipe(c2p); // 创建C2P管道，简称C（CHILD）
+    pipe(p2c); // 创建P2C管道，简称P（PARENT
+    pipe(c2p); // 创建C2P管道，简称C（CHILD
 
     if ((pid = fork()) > 0) // 父进程
     {
 		// 父进程只需要写P2C，读C2P
-        close(p2c[READ]);  
+        close(p2c[READ]);
         close(c2p[WRITE]); 
 
-		// 发球：向子进程发送一个字节（触发子进程的read）
-        write(p2c[WRITE], &signal, 1); 
-		close(p2c[WRITE]); 
+		// 发球：向子进程发送一个字节（触发子进程的read
+        write(p2c[WRITE], &signal, 1);
+		close(p2c[WRITE]);
 
 		// 等待接球：阻塞直到读取子进程的返回信号
-        read(c2p[READ], &signal, 1); 
-		close(c2p[READ]); 
+        read(c2p[READ], &signal, 1);
+		close(c2p[READ]);
 
         printf("%d: Received Pong\n", getpid());
         
@@ -99,11 +99,11 @@ int main (int argc, char *argv[])
     else if (pid == 0) // 子进程
     {
 		// 子进程只需要读P2C，写C2P
-        close(c2p[READ]); 
+        close(c2p[READ]);
         close(p2c[WRITE]); 
 
 		// 等待接球：阻塞直到读取父进程的信号
-        read(p2c[READ], &signal, 1); 
+        read(p2c[READ], &signal, 1);
         close(p2c[READ]);
 
         printf("%d: Received Ping\n", getpid());
