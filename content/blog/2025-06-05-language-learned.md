@@ -1,10 +1,10 @@
 +++
 title = "Language Learned"
 [taxonomies]
-  tags = ["example"]
+  tags = ["readme"]
 [extra]
 display_published = true 
-author = "Speyll"
+author = "aethernet"
 +++
 
 ### Learning
