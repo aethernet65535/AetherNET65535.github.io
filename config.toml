@@ -1,10 +1,12 @@
+theme = "anemone"
+
 # General
 base_url = "https://anemone.pages.dev"
 compile_sass = false
 minify_html = true
 generate_feeds = true
 generate_sitemap = true
-theme = "anemone"
+
 
 # Taxonomies
 taxonomies = [
