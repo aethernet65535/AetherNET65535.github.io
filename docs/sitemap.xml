@@ -17,6 +17,11 @@
         
         
             <url>
+                <loc>https://aethernet65535.github.io/blog/language-learned/</loc>
+                <lastmod>2025-06-05</lastmod>
+            </url>
+        
+            <url>
                 <loc>https://aethernet65535.github.io/blog/xv6-2020-lab1-util/</loc>
                 <lastmod>2025-06-04</lastmod>
             </url>
@@ -29,11 +34,6 @@
             <url>
                 <loc>https://aethernet65535.github.io/blog/very-very-very-long-title-and-very-very-very-short-content/</loc>
                 <lastmod>2024-01-01</lastmod>
-            </url>
-        
-            <url>
-                <loc>https://aethernet65535.github.io/blog/language-tests/</loc>
-                <lastmod>2020-07-08</lastmod>
             </url>
         
             <url>
