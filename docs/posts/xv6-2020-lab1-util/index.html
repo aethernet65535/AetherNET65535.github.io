@@ -6,7 +6,7 @@
               tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']]
               }
-            };</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><link href=https://aethernet65535.github.io/atom.xml rel=alternate title=aethernet-blog type=application/atom+xml><link href=https://aethernet65535.github.io/theme/light.css rel=stylesheet><link href=https://aethernet65535.github.io/theme/dark.css id=darkModeStyle rel=stylesheet><script src=https://aethernet65535.github.io/js/themetoggle.js></script><script>setTheme(getSavedTheme());</script><link href=https://aethernet65535.github.io/main.css media=screen rel=stylesheet><script src="https://aethernet65535.github.io/js/searchElasticlunr.min.js?h=3626c0ef99daa745b31e" defer></script><body><div class=content><header><div class=main><a href=https://aethernet65535.github.io>aethernet-blog</a><div class=socials><a class=social href=https://twitter.com/not_matthias rel=me> <img alt=twitter src=https://aethernet65535.github.io/icons/social/twitter.svg> </a><a class=social href=https://github.com/not-matthias/ rel=me> <img alt=github src=https://aethernet65535.github.io/icons/social/github.svg> </a></div></div><nav><a href=https://aethernet65535.github.io/posts style=margin-left:.25em>/posts</a><a href=https://aethernet65535.github.io/projects style=margin-left:.25em>/projects</a><a href=https://aethernet65535.github.io/about style=margin-left:.25em>/about</a><a href=https://aethernet65535.github.io/tags style=margin-left:.25em>/tags</a><button title="$SHORTCUT to open search" class=search-button id=search-button><img alt=Search class=search-icon src=https://aethernet65535.github.io/icons/search.svg></button><div class="search-modal js" aria-labelledby=modalTitle id=searchModal role=dialog><div id=modal-content><h1 class=page-header id=modalTitle>Search</h1><div id=searchBar><input aria-controls=results-container aria-expanded=false autocomplete=off id=searchInput placeholder=Search... role=combobox spellcheck=false><button title="Clear search" class=clear-button id=clear-search><svg viewbox="0 -960 960 960" xmlns=http://www.w3.org/2000/svg><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button></div><div id=results-container><div id=results-info><span id=zero_results style=display:none>No results</span><span id=one_result style=display:none>1 result</span><span id=many_results style=display:none>$NUMBER results</span></div><div id=results role=listbox></div></div></div></div><a onclick="toggleTheme(); event.preventDefault();" href=# id=dark-mode-toggle> <img alt=Light id=sun-icon src=https://aethernet65535.github.io/icons/sun.svg style=filter:invert()> <img alt=Dark id=moon-icon src=https://aethernet65535.github.io/icons/moon.svg> </a><script>updateItemToggleTheme()</script></nav></header><main><article><div class=title><div class=page-header>XV6-2020 LAB1-UTIL<span class=primary-color style=font-size:1.6em>.</span></div><div class=meta>Posted on <time>2025-06-04</time> :: 950 Words <span class=tags-label>:: Tags:</span><span class=tags> <a class=post-tag href=https://aethernet65535.github.io/tags/xv6/>xv6</a> </span></div></div><div class=toc-container><h1 class=toc-title>Table of Contents</h1><ul class=toc-list><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#boot-xv6-easy>boot xv6 (easy)</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#sleep-easy>sleep (easy)</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#pingpong-easy>pingpong (easy)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#chang-jian-yi-wen>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#primes-moderate-hard>primes(moderate)/(hard)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#chang-jian-yi-wen-1>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#find-moderate>find (moderate)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#chang-jian-yi-wen-2>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#xargs-moderate>xargs (moderate)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#chang-jian-yi-wen-3>常见疑问</a></ul></ul></div><section class=body><p>事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。<p>这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。<h2 id=boot-xv6-easy><a aria-label="Anchor link for: boot-xv6-easy" class=zola-anchor href=#boot-xv6-easy>boot xv6 (easy)</a></h2><p>首先，先下载<code>git</code>，再<code>clone</code>下来<code>xv6-labs-2020</code>的文件。<pre class=language-sh data-lang=sh style=color:#61676c;background-color:#fafafa><code class=language-sh data-lang=sh><span style=color:#f29718>sudo</span><span> pacman</span><span style=color:#ff8f40> -S</span><span> git
+            };</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><link href=https://aethernet65535.github.io/atom.xml rel=alternate title=aethernet-blog type=application/atom+xml><link href=https://aethernet65535.github.io/theme/light.css rel=stylesheet><link href=https://aethernet65535.github.io/theme/dark.css id=darkModeStyle rel=stylesheet><script src=https://aethernet65535.github.io/js/themetoggle.js></script><script>setTheme(getSavedTheme());</script><link href=https://aethernet65535.github.io/main.css media=screen rel=stylesheet><script src="https://aethernet65535.github.io/js/searchElasticlunr.min.js?h=3626c0ef99daa745b31e" defer></script><body><div class=content><header><div class=main><a href=https://aethernet65535.github.io>aethernet-blog</a><div class=socials><a class=social href=https://twitter.com/not_matthias rel=me> <img alt=twitter src=https://aethernet65535.github.io/icons/social/twitter.svg> </a><a class=social href=https://github.com/not-matthias/ rel=me> <img alt=github src=https://aethernet65535.github.io/icons/social/github.svg> </a></div></div><nav><a href=https://aethernet65535.github.io/posts style=margin-left:.25em>/posts</a><a href=https://aethernet65535.github.io/projects style=margin-left:.25em>/projects</a><a href=https://aethernet65535.github.io/about style=margin-left:.25em>/about</a><a href=https://aethernet65535.github.io/tags style=margin-left:.25em>/tags</a><button title="$SHORTCUT to open search" class=search-button id=search-button><img alt=Search class=search-icon src=https://aethernet65535.github.io/icons/search.svg></button><div class="search-modal js" aria-labelledby=modalTitle id=searchModal role=dialog><div id=modal-content><h1 class=page-header id=modalTitle>Search</h1><div id=searchBar><input aria-controls=results-container aria-expanded=false autocomplete=off id=searchInput placeholder=Search... role=combobox spellcheck=false><button title="Clear search" class=clear-button id=clear-search><svg viewbox="0 -960 960 960" xmlns=http://www.w3.org/2000/svg><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button></div><div id=results-container><div id=results-info><span id=zero_results style=display:none>No results</span><span id=one_result style=display:none>1 result</span><span id=many_results style=display:none>$NUMBER results</span></div><div id=results role=listbox></div></div></div></div><a onclick="toggleTheme(); event.preventDefault();" href=# id=dark-mode-toggle> <img alt=Light id=sun-icon src=https://aethernet65535.github.io/icons/sun.svg style=filter:invert()> <img alt=Dark id=moon-icon src=https://aethernet65535.github.io/icons/moon.svg> </a><script>updateItemToggleTheme()</script></nav></header><main><article><div class=title><div class=page-header>XV6-2020 LAB1-UTIL<span class=primary-color style=font-size:1.6em>.</span></div><div class=meta>Posted on <time>2025-06-04</time> :: 982 Words <span class=tags-label>:: Tags:</span><span class=tags> <a class=post-tag href=https://aethernet65535.github.io/tags/xv6/>xv6</a> </span></div></div><div class=toc-container><h1 class=toc-title>Table of Contents</h1><ul class=toc-list><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#boot-xv6-easy>boot xv6 (easy)</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#sleep-easy>sleep (easy)</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#pingpong-easy>pingpong (easy)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#chang-jian-yi-wen>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#primes-moderate-hard>primes(moderate)/(hard)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#chang-jian-yi-wen-1>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#find-moderate>find (moderate)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#chang-jian-yi-wen-2>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#xargs-moderate>xargs (moderate)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab1-util/#chang-jian-yi-wen-3>常见疑问</a></ul></ul></div><section class=body><p>事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。<p>这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。<p>这是我的GitHub链接，如果有关于这个项目的问题，可以试试查看<a href=https://github.com/aethernet65535/DOCKER-XV6_2020>这里</a><h2 id=boot-xv6-easy><a aria-label="Anchor link for: boot-xv6-easy" class=zola-anchor href=#boot-xv6-easy>boot xv6 (easy)</a></h2><p>首先，先下载<code>git</code>，再<code>clone</code>下来<code>xv6-labs-2020</code>的文件。<pre class=language-sh data-lang=sh style=color:#61676c;background-color:#fafafa><code class=language-sh data-lang=sh><span style=color:#f29718>sudo</span><span> pacman</span><span style=color:#ff8f40> -S</span><span> git
 </span><span>
 </span><span style=color:#f29718>git</span><span> clone git://g.csail.mit.edu/xv6/labs-2020
 </span><span style=color:#f07171>cd</span><span> xv6-labs-2020
@@ -21,24 +21,24 @@
 </span><span>
 </span><span style=color:#fa6e32>int </span><span style=color:#f29718>main </span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>argc</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>argv</span><span>[])
 </span><span>{
-</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 参数是否为2个？例子：sleep 10
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// if the argument is not 2 (sleep &LTticks>)
 </span><span>    </span><span style=color:#fa6e32>if </span><span>(argc </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>2</span><span>)
 </span><span>    {
 </span><span>        </span><span style=color:#f07171>fprintf </span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"usage: sleep &LTticks></span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
 </span><span>    
-</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 把ASCII转为INT
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// change ascii to integer
 </span><span>    </span><span style=color:#fa6e32>int</span><span> ticks </span><span style=color:#ed9366>= </span><span style=color:#f07171>atoi</span><span>(argv[</span><span style=color:#ff8f40>1</span><span>])</span><span style=color:#61676ccc>;
-</span><span>    </span><span style=color:#abb0b6;font-style:italic>// int adjusted_ticks = ticks * 10; 这个别抄，作用是把CPU TICKS换成秒数 
-</span><span>    
-</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 如果用户输入的TICKS小于0，那就改为0（毕竟总不可能给你来个时间倒流）
+</span><span>
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// turn back time: disabled
 </span><span>    </span><span style=color:#fa6e32>if </span><span>(ticks </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    {
-</span><span>        ticks </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>fprintf </span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"ticks must be a positive integer</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
 </span><span>
-</span><span>    </span><span style=color:#f29718>sleep</span><span>(ticks)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 这里就是调用sleep，xv6已经写好sleep的实现了
+</span><span>    </span><span style=color:#f29718>sleep</span><span>(ticks)</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>    </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>}
@@ -68,7 +68,6 @@
 </span><span style=color:#fa6e32>#include </span><span style=color:#86b300>"kernel/stat.h"
 </span><span style=color:#fa6e32>#include </span><span style=color:#86b300>"user/user.h"
 </span><span>
-</span><span style=color:#abb0b6;font-style:italic>// 给文件描述符起个更直观的别名	
 </span><span style=color:#fa6e32>#define </span><span style=color:#399ee6>READ </span><span style=color:#ff8f40>0
 </span><span style=color:#fa6e32>#define </span><span style=color:#399ee6>WRITE </span><span style=color:#ff8f40>1
 </span><span>
@@ -80,47 +79,55 @@
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
 </span><span>
-</span><span>    </span><span style=color:#fa6e32>int</span><span> pid</span><span style=color:#61676ccc>,</span><span> p2c[</span><span style=color:#ff8f40>2</span><span>]</span><span style=color:#61676ccc>,</span><span> c2p[</span><span style=color:#ff8f40>2</span><span>]</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>int</span><span> pid</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// one-way pipes for communication
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// p2c: parent to child
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// c2p: child to parent
+</span><span>    </span><span style=color:#fa6e32>int</span><span> p2c[</span><span style=color:#ff8f40>2</span><span>]</span><span style=color:#61676ccc>,</span><span> c2p[</span><span style=color:#ff8f40>2</span><span>]</span><span style=color:#61676ccc>; 
 </span><span>    </span><span style=color:#fa6e32>char</span><span> signal </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
 </span><span>    
-</span><span>    </span><span style=color:#f29718>pipe</span><span>(p2c)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 创建P2C管道，简称P（PARENT）
-</span><span>    </span><span style=color:#f29718>pipe</span><span>(c2p)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 创建C2P管道，简称C（CHILD）
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// create pipes
+</span><span>    </span><span style=color:#f29718>pipe</span><span>(p2c)</span><span style=color:#61676ccc>; 
+</span><span>    </span><span style=color:#f29718>pipe</span><span>(c2p)</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>    </span><span style=color:#fa6e32>if </span><span>((pid </span><span style=color:#ed9366>= </span><span style=color:#f29718>fork</span><span>()) </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#abb0b6;font-style:italic>// 父进程
+</span><span>    pid </span><span style=color:#ed9366>= </span><span style=color:#f29718>fork</span><span>()</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>    </span><span style=color:#fa6e32>if </span><span>(pid </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#abb0b6;font-style:italic>// parent process
 </span><span>    {
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 父进程只需要写P2C，读C2P
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// parent process just needs to write[p2c] and read[c2p]
 </span><span>        </span><span style=color:#f29718>close</span><span>(p2c[READ])</span><span style=color:#61676ccc>;
-</span><span>        </span><span style=color:#f29718>close</span><span>(c2p[WRITE])</span><span style=color:#61676ccc>; 
+</span><span>        </span><span style=color:#f29718>close</span><span>(c2p[WRITE])</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 发球：向子进程发送一个字节（触发子进程的read）
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// tee off: send a byte signal to child
 </span><span>        </span><span style=color:#f29718>write</span><span>(p2c[WRITE]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>signal</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(p2c[WRITE])</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 等待接球：阻塞直到读取子进程的返回信号
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// waiting for catch: blocking until child sends a byte signal
 </span><span>        </span><span style=color:#f29718>read</span><span>(c2p[READ]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>signal</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(c2p[READ])</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>        </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%d</span><span style=color:#86b300>: Received Pong</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>, </span><span style=color:#f29718>getpid</span><span>())</span><span style=color:#61676ccc>;
 </span><span>        
-</span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 关闭程序
+</span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
-</span><span>    </span><span style=color:#fa6e32>else if </span><span>(pid </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#abb0b6;font-style:italic>// 子进程
+</span><span>    </span><span style=color:#fa6e32>else if </span><span>(pid </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#abb0b6;font-style:italic>// child process
 </span><span>    {
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 子进程只需要读P2C，写C2P
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// child process just needs to read[p2c] and write[c2p]
 </span><span>        </span><span style=color:#f29718>close</span><span>(c2p[READ])</span><span style=color:#61676ccc>;
-</span><span>        </span><span style=color:#f29718>close</span><span>(p2c[WRITE])</span><span style=color:#61676ccc>; 
+</span><span>        </span><span style=color:#f29718>close</span><span>(p2c[WRITE])</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 等待接球：阻塞直到读取父进程的信号
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// waiting for catch: blocking until parent sends a byte signal
 </span><span>        </span><span style=color:#f29718>read</span><span>(p2c[READ]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>signal</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(p2c[READ])</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>        </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%d</span><span style=color:#86b300>: Received Ping</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>, </span><span style=color:#f29718>getpid</span><span>())</span><span style=color:#61676ccc>;
 </span><span>        
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 回球：向父进程返回一个字节
-</span><span>        </span><span style=color:#f29718>write</span><span>(c2p[WRITE]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>signal</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>; 
-</span><span>        </span><span style=color:#f29718>close</span><span>(c2p[WRITE])</span><span style=color:#61676ccc>; 
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// tee off: send a byte signal to parent
+</span><span>        </span><span style=color:#f29718>write</span><span>(c2p[WRITE]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>signal</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f29718>close</span><span>(c2p[WRITE])</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 关闭子进程
+</span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
 </span><span>    </span><span style=color:#fa6e32>else
 </span><span>    {
@@ -135,23 +142,24 @@
 </span><span style=color:#fa6e32>#define </span><span style=color:#399ee6>READ </span><span style=color:#ff8f40>0
 </span><span style=color:#fa6e32>#define </span><span style=color:#399ee6>WRITE </span><span style=color:#ff8f40>1
 </span><span>
-</span><span style=color:#fa6e32>__attribute__</span><span>((noreturn)) </span><span style=color:#abb0b6;font-style:italic>// 没报递归警告的话就不用加
+</span><span style=color:#fa6e32>__attribute__</span><span>((noreturn)) </span><span style=color:#abb0b6;font-style:italic>// to avoid warning about not returning
 </span><span style=color:#fa6e32>void </span><span style=color:#f29718>sieve_algo </span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>left</span><span>[</span><span style=color:#ff8f40>2</span><span>]</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>depth</span><span>)
 </span><span>{
 </span><span>    </span><span style=color:#f29718>close</span><span>(left[WRITE])</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>    </span><span style=color:#fa6e32>int</span><span> prime</span><span style=color:#61676ccc>,</span><span> temp</span><span style=color:#61676ccc>,</span><span> pid</span><span style=color:#61676ccc>,</span><span> right[</span><span style=color:#ff8f40>2</span><span>]</span><span style=color:#61676ccc>;
-</span><span>    
-</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 读取第一个数字
+</span><span>
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// read a prime number from the pipe
 </span><span>    </span><span style=color:#fa6e32>if </span><span>(</span><span style=color:#f29718>read</span><span>(left[READ]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>prime</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof</span><span>(</span><span style=color:#fa6e32>int</span><span>)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    {
 </span><span>        </span><span style=color:#f29718>close</span><span>(left[READ])</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
 </span><span>    
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// if the depth is too deep, we have a stack overflow
 </span><span>    </span><span style=color:#fa6e32>if </span><span>(depth </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>15</span><span>)
 </span><span>    {
-</span><span>        </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"error: stackoverflow</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"stackoverflow</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(right[READ])</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(right[WRITE])</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(left[READ])</span><span style=color:#61676ccc>;
@@ -161,11 +169,11 @@
 </span><span>    </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"prime: </span><span style=color:#ff8f40>%d</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> prime)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#f29718>pipe</span><span>(right)</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>    </span><span style=color:#fa6e32>if </span><span>((pid </span><span style=color:#ed9366>= </span><span style=color:#f29718>fork</span><span>()) </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    pid </span><span style=color:#ed9366>= </span><span style=color:#f29718>fork</span><span>()</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>if </span><span>(pid </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#abb0b6;font-style:italic>// parent process
 </span><span>    {
 </span><span>        </span><span style=color:#f29718>close</span><span>(right[READ])</span><span style=color:#61676ccc>;
-</span><span>        
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 筛选
+</span><span>
 </span><span>        </span><span style=color:#fa6e32>while</span><span>(</span><span style=color:#f29718>read</span><span>(left[READ]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>temp</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof</span><span>(</span><span style=color:#fa6e32>int</span><span>)))
 </span><span>        {
 </span><span>            </span><span style=color:#fa6e32>if </span><span>(temp </span><span style=color:#ed9366>%</span><span> prime </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0</span><span>)
@@ -180,16 +188,16 @@
 </span><span>        </span><span style=color:#f29718>wait</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
-</span><span>    </span><span style=color:#fa6e32>else if </span><span>(pid </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>else if </span><span>(pid </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#abb0b6;font-style:italic>// child process
 </span><span>    {
 </span><span>        </span><span style=color:#f29718>close</span><span>(left[READ])</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(right[WRITE])</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>sieve_algo</span><span>(right</span><span style=color:#61676ccc>,</span><span> depth </span><span style=color:#ed9366>+ </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
-</span><span>    </span><span style=color:#fa6e32>else
+</span><span>    </span><span style=color:#fa6e32>else </span><span style=color:#abb0b6;font-style:italic>// fork failed
 </span><span>    {
-</span><span>        </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"fork error...</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"fork error</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(right[READ])</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(right[WRITE])</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(left[READ])</span><span style=color:#61676ccc>;
@@ -200,29 +208,30 @@
 </span><span style=color:#fa6e32>int </span><span style=color:#f29718>main</span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>argc</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char</span><span style=color:#ed9366>* </span><span style=color:#ff8f40>argv</span><span>[])
 </span><span>{
 </span><span>    </span><span style=color:#fa6e32>int</span><span> pid</span><span style=color:#61676ccc>,</span><span> p[</span><span style=color:#ff8f40>2</span><span>]</span><span style=color:#61676ccc>;
-</span><span>    </span><span style=color:#f29718>pipe</span><span>(p)</span><span style=color:#61676ccc>; 
+</span><span>    </span><span style=color:#f29718>pipe</span><span>(p)</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>    </span><span style=color:#fa6e32>if </span><span>((pid </span><span style=color:#ed9366>= </span><span style=color:#f29718>fork</span><span>()) </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>0</span><span>) 
+</span><span>    pid </span><span style=color:#ed9366>= </span><span style=color:#f29718>fork</span><span>()</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>if </span><span>(pid </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#abb0b6;font-style:italic>// parent process
 </span><span>    {
 </span><span>        </span><span style=color:#f29718>close</span><span>(p[READ])</span><span style=color:#61676ccc>;
-</span><span>
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 把2到35一个一个写进去P管道
+</span><span>        
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// write 2 to 35 to the pipe
 </span><span>        </span><span style=color:#fa6e32>for </span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366><= </span><span style=color:#ff8f40>35</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>)
 </span><span>        {
 </span><span>            </span><span style=color:#f29718>write</span><span>(p[WRITE]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>i</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof</span><span>(</span><span style=color:#fa6e32>int</span><span>))</span><span style=color:#61676ccc>;
 </span><span>        }
-</span><span>
-</span><span>        </span><span style=color:#abb0b6;font-style:italic>// P的工作正式结束
-</span><span>        </span><span style=color:#f29718>close</span><span>(p[WRITE])</span><span style=color:#61676ccc>; 
-</span><span>        </span><span style=color:#f29718>wait</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 等待子进程结束
-</span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 退出程序
+</span><span>        
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// p finish working
+</span><span>        </span><span style=color:#f29718>close</span><span>(p[WRITE])</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f29718>wait</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>; 
+</span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>; 
 </span><span>    }
-</span><span>    </span><span style=color:#fa6e32>else if </span><span>(pid </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)  </span><span style=color:#abb0b6;font-style:italic>// 子进程
+</span><span>    </span><span style=color:#fa6e32>else if </span><span>(pid </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#abb0b6;font-style:italic>// child process
 </span><span>    {
-</span><span>        </span><span style=color:#f29718>sieve_algo</span><span>(p</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>; 
+</span><span>        </span><span style=color:#f29718>sieve_algo</span><span>(p</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
-</span><span>    </span><span style=color:#fa6e32>else
+</span><span>    </span><span style=color:#fa6e32>else </span><span style=color:#abb0b6;font-style:italic>// fork failed
 </span><span>    {
 </span><span>        </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"fork error</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
@@ -234,62 +243,69 @@
 </span><span style=color:#fa6e32>#include </span><span style=color:#86b300>"kernel/fs.h"
 </span><span style=color:#fa6e32>#include </span><span style=color:#86b300>"user/user.h"
 </span><span style=color:#fa6e32>#include </span><span style=color:#86b300>"kernel/fcntl.h"
+</span><span>
 </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*
-</span><span style=color:#f29718>fmtname </span><span>(</span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>path</span><span>)
+</span><span style=color:#f29718>fmtname</span><span>(</span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>path</span><span>)
 </span><span>{
 </span><span>  </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span>p</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>  </span><span style=color:#fa6e32>for </span><span>(p </span><span style=color:#ed9366>=</span><span> path </span><span style=color:#ed9366>+ </span><span style=color:#f07171>strlen </span><span>(path)</span><span style=color:#61676ccc>;</span><span> p </span><span style=color:#ed9366>>=</span><span> path </span><span style=color:#ed9366>&& *</span><span>p </span><span style=color:#ed9366>!= </span><span style=color:#86b300>'/'</span><span style=color:#61676ccc>; </span><span style=color:#ed9366>--</span><span>p)
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// find the last '/' in the path
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(p </span><span style=color:#ed9366>=</span><span> path </span><span style=color:#ed9366>+ </span><span style=color:#f07171>strlen</span><span>(path)</span><span style=color:#61676ccc>;</span><span> p </span><span style=color:#ed9366>>=</span><span> path </span><span style=color:#ed9366>&& *</span><span>p </span><span style=color:#ed9366>!= </span><span style=color:#86b300>'/'</span><span style=color:#61676ccc>; </span><span style=color:#ed9366>--</span><span>p)
 </span><span>    </span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>return</span><span> p </span><span style=color:#ed9366>+ </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>}
 </span><span>
 </span><span style=color:#fa6e32>void
-</span><span style=color:#f29718>find </span><span>(</span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>path</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>filename</span><span>)
+</span><span style=color:#f29718>find</span><span>(</span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>path</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>filename</span><span>)
 </span><span>{
 </span><span>  </span><span style=color:#fa6e32>char</span><span> buf[</span><span style=color:#ff8f40>512</span><span>]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>*</span><span>p</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>int</span><span> fd</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>struct</span><span> stat st</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>struct</span><span> dirent de</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>  </span><span style=color:#fa6e32>if </span><span>((fd </span><span style=color:#ed9366>= </span><span style=color:#f29718>open </span><span>(path</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// get the file descriptor
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((fd </span><span style=color:#ed9366>= </span><span style=color:#f29718>open </span><span>(path</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
 </span><span>  {
-</span><span>    </span><span style=color:#f07171>fprintf </span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"find: cannot open </span><span style=color:#ff8f40>%s</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"find: cannot open </span><span style=color:#ff8f40>%s</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>return</span><span style=color:#61676ccc>;
 </span><span>  }
 </span><span>
-</span><span>  </span><span style=color:#fa6e32>if </span><span>(</span><span style=color:#f29718>fstat </span><span>(fd</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>st) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// get the file stats
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>fstat </span><span>(fd</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>st) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
 </span><span>  {
-</span><span>    </span><span style=color:#f07171>fprintf </span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"find: cannot stat </span><span style=color:#ff8f40>%s</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
-</span><span>    </span><span style=color:#f29718>close </span><span>(fd)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"find: cannot stat </span><span style=color:#ff8f40>%s</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f29718>close</span><span>(fd)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>return</span><span style=color:#61676ccc>;
 </span><span>  }
 </span><span>
-</span><span>  </span><span style=color:#fa6e32>switch </span><span>(st</span><span style=color:#ed9366>.</span><span>type)
+</span><span>  </span><span style=color:#fa6e32>switch</span><span>(st</span><span style=color:#ed9366>.</span><span>type)
 </span><span>  {
-</span><span>    </span><span style=color:#fa6e32>case</span><span> T_FILE</span><span style=color:#61676ccc>:
-</span><span>      </span><span style=color:#fa6e32>if </span><span>(</span><span style=color:#f07171>strcmp </span><span>(</span><span style=color:#f29718>fmtname </span><span>(path)</span><span style=color:#61676ccc>,</span><span> filename) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>case</span><span> T_FILE</span><span style=color:#61676ccc>: </span><span style=color:#abb0b6;font-style:italic>// if it is a file
+</span><span>      </span><span style=color:#abb0b6;font-style:italic>// check if the file name matches the given filename
+</span><span>      </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f07171>strcmp</span><span>(</span><span style=color:#f29718>fmtname</span><span>(path)</span><span style=color:#61676ccc>,</span><span> filename) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
 </span><span>      {
-</span><span>        </span><span style=color:#f07171>printf </span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%s</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%s</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
 </span><span>      }
 </span><span>      </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>    </span><span style=color:#fa6e32>case</span><span> T_DIR</span><span style=color:#61676ccc>:
-</span><span>      </span><span style=color:#f07171>strcpy </span><span>(buf</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
-</span><span>      p </span><span style=color:#ed9366>=</span><span> buf </span><span style=color:#ed9366>+ </span><span style=color:#f07171>strlen </span><span>(buf)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>case</span><span> T_DIR</span><span style=color:#61676ccc>: </span><span style=color:#abb0b6;font-style:italic>// if it is a directory
+</span><span>      </span><span style=color:#f07171>strcpy</span><span>(buf</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
+</span><span>      p </span><span style=color:#ed9366>=</span><span> buf </span><span style=color:#ed9366>+ </span><span style=color:#f07171>strlen</span><span>(buf)</span><span style=color:#61676ccc>;
 </span><span>      </span><span style=color:#ed9366>*</span><span>p</span><span style=color:#ed9366>++ = </span><span style=color:#86b300>'/'</span><span style=color:#61676ccc>;
-</span><span>
-</span><span>      </span><span style=color:#fa6e32>while </span><span>(</span><span style=color:#f29718>read </span><span>(fd</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>de</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof </span><span>(de)) </span><span style=color:#ed9366>== </span><span style=color:#fa6e32>sizeof </span><span>(de))
+</span><span>      
+</span><span>      </span><span style=color:#abb0b6;font-style:italic>// read the whole directory, until the end of the directory
+</span><span>      </span><span style=color:#fa6e32>while</span><span>(</span><span style=color:#f29718>read</span><span>(fd</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>de</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof</span><span>(de)) </span><span style=color:#ed9366>== </span><span style=color:#fa6e32>sizeof</span><span>(de))
 </span><span>      {
-</span><span>        </span><span style=color:#fa6e32>if </span><span>(de</span><span style=color:#ed9366>.</span><span>inum </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>|| </span><span style=color:#f07171>strcmp </span><span>(de</span><span style=color:#ed9366>.</span><span>name</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"."</span><span>) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0
-</span><span>          </span><span style=color:#ed9366>|| </span><span style=color:#f07171>strcmp </span><span>(de</span><span style=color:#ed9366>.</span><span>name</span><span style=color:#61676ccc>, </span><span style=color:#86b300>".."</span><span>) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
+</span><span>        </span><span style=color:#fa6e32>if</span><span>(de</span><span style=color:#ed9366>.</span><span>inum </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>|| </span><span style=color:#f07171>strcmp</span><span>(de</span><span style=color:#ed9366>.</span><span>name</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"."</span><span>) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0
+</span><span>          </span><span style=color:#ed9366>|| </span><span style=color:#f07171>strcmp</span><span>(de</span><span style=color:#ed9366>.</span><span>name</span><span style=color:#61676ccc>, </span><span style=color:#86b300>".."</span><span>) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
 </span><span>          </span><span style=color:#fa6e32>continue</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>        </span><span style=color:#f07171>memmove </span><span>(p</span><span style=color:#61676ccc>,</span><span> de</span><span style=color:#ed9366>.</span><span>name</span><span style=color:#61676ccc>,</span><span> DIRSIZ)</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>memmove</span><span>(p</span><span style=color:#61676ccc>,</span><span> de</span><span style=color:#ed9366>.</span><span>name</span><span style=color:#61676ccc>,</span><span> DIRSIZ)</span><span style=color:#61676ccc>;
 </span><span>        p[DIRSIZ] </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
-</span><span>        </span><span style=color:#f29718>find </span><span>(buf</span><span style=color:#61676ccc>,</span><span> filename)</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f29718>find</span><span>(buf</span><span style=color:#61676ccc>,</span><span> filename)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// recursive call to find in subdirectories
 </span><span>      }
 </span><span>      </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>
 </span><span>    </span><span style=color:#fa6e32>default</span><span style=color:#61676ccc>:
 </span><span>      </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
 </span><span>  }
@@ -297,15 +313,15 @@
 </span><span>}
 </span><span>
 </span><span style=color:#fa6e32>int
-</span><span style=color:#f29718>main </span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>argc</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>argv</span><span>[])
+</span><span style=color:#f29718>main</span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>argc</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>argv</span><span>[])
 </span><span>{
-</span><span>  </span><span style=color:#fa6e32>if </span><span>(argc </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>3</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(argc </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>3</span><span>)
 </span><span>  {
-</span><span>    </span><span style=color:#f07171>fprintf </span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"usage: find &LTstart_path> &LTfile_name></span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
-</span><span>    </span><span style=color:#f07171>exit </span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"usage: find &LTstart_path> &LTfile_name></span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>  }
-</span><span>  </span><span style=color:#f29718>find </span><span>(argv[</span><span style=color:#ff8f40>1</span><span>]</span><span style=color:#61676ccc>,</span><span> argv[</span><span style=color:#ff8f40>2</span><span>])</span><span style=color:#61676ccc>;
-</span><span>  </span><span style=color:#f07171>exit </span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f29718>find</span><span>(argv[</span><span style=color:#ff8f40>1</span><span>]</span><span style=color:#61676ccc>,</span><span> argv[</span><span style=color:#ff8f40>2</span><span>])</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>}
 </span></code></pre><h3 id=chang-jian-yi-wen-2><a aria-label="Anchor link for: chang-jian-yi-wen-2" class=zola-anchor href=#chang-jian-yi-wen-2>常见疑问</a></h3><p>Q：为什么<code>p == path - 1</code>不会报错？<br> A：因为没有解引用，只是存储那个地址是被允许的。<p>Q：<code>T_DIR</code>的那部分<code>while</code>循环是怎么运作的？<br> A：每当你使用<code>read</code>成功读取了N个字节后，<code>fd</code>的文件偏移量就会增加N个字节。简单来说就是，读取成功后<code>fd</code>就会跳到下一个。<br> ps：我自己也不是很清楚，写到这里时，我的进度只是LAB5: LAZY ALLOCATION而已，LAB9才是FILE SYSTEM，可能到时候就能理解了<h2 id=xargs-moderate><a aria-label="Anchor link for: xargs-moderate" class=zola-anchor href=#xargs-moderate>xargs (moderate)</a></h2><pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>#include </span><span style=color:#86b300>"kernel/types.h"
 </span><span style=color:#fa6e32>#include </span><span style=color:#86b300>"user/user.h"

@@ -12,6 +12,8 @@ comment = true
 
 这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。
 
+这是我的GitHub链接，如果有关于这个项目的问题，可以试试查看[这里](https://github.com/aethernet65535/DOCKER-XV6_2020)
+
 ## boot xv6 (easy)
 首先，先下载`git`，再`clone`下来`xv6-labs-2020`的文件。
 ```sh
@@ -44,24 +46,24 @@ xv6-labs-2020/
 
 int main (int argc, char *argv[])
 {
-    // 参数是否为2个？例子：sleep 10
+    // if the argument is not 2 (sleep <ticks>)
     if (argc != 2)
     {
         fprintf (2, "usage: sleep <ticks>\n");
         exit(1);
     }
     
-    // 把ASCII转为INT
+    // change ascii to integer
     int ticks = atoi(argv[1]);
-    // int adjusted_ticks = ticks * 10; 这个别抄，作用是把CPU TICKS换成秒数 
-    
-    // 如果用户输入的TICKS小于0，那就改为0（毕竟总不可能给你来个时间倒流）
+
+    // turn back time: disabled
     if (ticks < 0)
     {
-        ticks = 0;
+        fprintf (2, "ticks must be a positive integer\n");
+        exit(1);
     }
 
-    sleep(ticks); // 这里就是调用sleep，xv6已经写好sleep的实现了
+    sleep(ticks);
 
     exit(0);
 }
@@ -107,7 +109,6 @@ xv6-labs-2020/
 #include "kernel/stat.h"
 #include "user/user.h"
 
-// 给文件描述符起个更直观的别名	
 #define READ 0
 #define WRITE 1
 
@@ -119,47 +120,55 @@ int main (int argc, char *argv[])
         exit(1);
     }
 
-    int pid, p2c[2], c2p[2];
+    int pid;
+
+    // one-way pipes for communication
+    // p2c: parent to child
+    // c2p: child to parent
+    int p2c[2], c2p[2]; 
     char signal = 0;
     
-    pipe(p2c); // 创建P2C管道，简称P（PARENT）
-    pipe(c2p); // 创建C2P管道，简称C（CHILD）
+    // create pipes
+    pipe(p2c); 
+    pipe(c2p);
 
-    if ((pid = fork()) > 0) // 父进程
+    pid = fork();
+
+    if (pid > 0) // parent process
     {
-        // 父进程只需要写P2C，读C2P
+        // parent process just needs to write[p2c] and read[c2p]
         close(p2c[READ]);
-        close(c2p[WRITE]); 
+        close(c2p[WRITE]);
 
-        // 发球：向子进程发送一个字节（触发子进程的read）
+        // tee off: send a byte signal to child
         write(p2c[WRITE], &signal, 1);
         close(p2c[WRITE]);
 
-        // 等待接球：阻塞直到读取子进程的返回信号
+        // waiting for catch: blocking until child sends a byte signal
         read(c2p[READ], &signal, 1);
         close(c2p[READ]);
 
         printf("%d: Received Pong\n", getpid());
         
-        exit(0); // 关闭程序
+        exit(0);
     }
-    else if (pid == 0) // 子进程
+    else if (pid == 0) // child process
     {
-        // 子进程只需要读P2C，写C2P
+        // child process just needs to read[p2c] and write[c2p]
         close(c2p[READ]);
-        close(p2c[WRITE]); 
+        close(p2c[WRITE]);
 
-        // 等待接球：阻塞直到读取父进程的信号
+        // waiting for catch: blocking until parent sends a byte signal
         read(p2c[READ], &signal, 1);
         close(p2c[READ]);
 
         printf("%d: Received Ping\n", getpid());
         
-        // 回球：向父进程返回一个字节
-        write(c2p[WRITE], &signal, 1); 
-        close(c2p[WRITE]); 
+        // tee off: send a byte signal to parent
+        write(c2p[WRITE], &signal, 1);
+        close(c2p[WRITE]);
 
-        exit(0); // 关闭子进程
+        exit(0);
     }
     else
     {
@@ -207,23 +216,24 @@ A: 可能导致——子进程的`read`无法收到EOF（因为父进程的写�
 #define READ 0
 #define WRITE 1
 
-__attribute__((noreturn)) // 没报递归警告的话就不用加
+__attribute__((noreturn)) // to avoid warning about not returning
 void sieve_algo (int left[2], int depth)
 {
     close(left[WRITE]);
 
     int prime, temp, pid, right[2];
-    
-    // 读取第一个数字
+
+    // read a prime number from the pipe
     if (read(left[READ], &prime, sizeof(int)) == 0)
     {
         close(left[READ]);
         exit(0);
     }
     
+    // if the depth is too deep, we have a stack overflow
     if (depth > 15)
     {
-        fprintf(2, "error: stackoverflow\n");
+        fprintf(2, "stackoverflow\n");
         close(right[READ]);
         close(right[WRITE]);
         close(left[READ]);
@@ -233,11 +243,11 @@ void sieve_algo (int left[2], int depth)
     printf("prime: %d\n", prime);
     pipe(right);
 
-    if ((pid = fork()) > 0)
+    pid = fork();
+    if (pid > 0) // parent process
     {
         close(right[READ]);
-        
-        // 筛选
+
         while(read(left[READ], &temp, sizeof(int)))
         {
             if (temp % prime != 0)
@@ -252,16 +262,16 @@ void sieve_algo (int left[2], int depth)
         wait(0);
         exit(0);
     }
-    else if (pid == 0)
+    else if (pid == 0) // child process
     {
         close(left[READ]);
         close(right[WRITE]);
         sieve_algo(right, depth + 1);
         exit(0);
     }
-    else
+    else // fork failed
     {
-        fprintf(2, "fork error...\n");
+        fprintf(2, "fork error\n");
         close(right[READ]);
         close(right[WRITE]);
         close(left[READ]);
@@ -272,29 +282,30 @@ void sieve_algo (int left[2], int depth)
 int main(int argc, char* argv[])
 {
     int pid, p[2];
-    pipe(p); 
+    pipe(p);
 
-    if ((pid = fork()) > 0) 
+    pid = fork();
+    if (pid > 0) // parent process
     {
         close(p[READ]);
-
-        // 把2到35一个一个写进去P管道
+        
+        // write 2 to 35 to the pipe
         for (int i = 2; i <= 35; i++)
         {
             write(p[WRITE], &i, sizeof(int));
         }
-
-        // P的工作正式结束
-        close(p[WRITE]); 
-        wait(0); // 等待子进程结束
-        exit(0); // 退出程序
+        
+        // p finish working
+        close(p[WRITE]);
+        wait(0); 
+        exit(0); 
     }
-    else if (pid == 0)  // 子进程
+    else if (pid == 0) // child process
     {
-        sieve_algo(p, 1); 
+        sieve_algo(p, 1);
         exit(0);
     }
-    else
+    else // fork failed
     {
         fprintf(2, "fork error\n");
         exit(1);
@@ -320,62 +331,69 @@ if (read(left[READ], &prime, sizeof(int)) == 0) // 这里会堵塞
 #include "kernel/fs.h"
 #include "user/user.h"
 #include "kernel/fcntl.h"
+
 char *
-fmtname (char *path)
+fmtname(char *path)
 {
   char *p;
 
-  for (p = path + strlen (path); p >= path && *p != '/'; --p)
+  // find the last '/' in the path
+  for(p = path + strlen(path); p >= path && *p != '/'; --p)
     ;
   return p + 1;
 }
 
 void
-find (char *path, char *filename)
+find(char *path, char *filename)
 {
   char buf[512], *p;
   int fd;
   struct stat st;
   struct dirent de;
 
-  if ((fd = open (path, 0)) < 0)
+  // get the file descriptor
+  if((fd = open (path, 0)) < 0)
   {
-    fprintf (2, "find: cannot open %s\n", path);
+    fprintf(2, "find: cannot open %s\n", path);
     return;
   }
 
-  if (fstat (fd, &st) < 0)
+  // get the file stats
+  if(fstat (fd, &st) < 0)
   {
-    fprintf (2, "find: cannot stat %s\n", path);
-    close (fd);
+    fprintf(2, "find: cannot stat %s\n", path);
+    close(fd);
     return;
   }
 
-  switch (st.type)
+  switch(st.type)
   {
-    case T_FILE:
-      if (strcmp (fmtname (path), filename) == 0)
+    case T_FILE: // if it is a file
+      // check if the file name matches the given filename
+      if(strcmp(fmtname(path), filename) == 0)
       {
-        printf ("%s\n", path);
+        printf("%s\n", path);
       }
       break;
 
-    case T_DIR:
-      strcpy (buf, path);
-      p = buf + strlen (buf);
+    case T_DIR: // if it is a directory
+      strcpy(buf, path);
+      p = buf + strlen(buf);
       *p++ = '/';
-
-      while (read (fd, &de, sizeof (de)) == sizeof (de))
+      
+      // read the whole directory, until the end of the directory
+      while(read(fd, &de, sizeof(de)) == sizeof(de))
       {
-        if (de.inum == 0 || strcmp (de.name, ".") == 0
-          || strcmp (de.name, "..") == 0)
+        if(de.inum == 0 || strcmp(de.name, ".") == 0
+          || strcmp(de.name, "..") == 0)
           continue;
 
-        memmove (p, de.name, DIRSIZ);
+        memmove(p, de.name, DIRSIZ);
         p[DIRSIZ] = 0;
-        find (buf, filename);
+        find(buf, filename); // recursive call to find in subdirectories
       }
       break;
+
     default:
       break;
   }
@@ -383,15 +401,15 @@ find (char *path, char *filename)
 }
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
-  if (argc < 3)
+  if(argc < 3)
   {
-    fprintf (2, "usage: find <start_path> <file_name>\n");
-    exit (0);
+    fprintf(2, "usage: find <start_path> <file_name>\n");
+    exit(0);
   }
-  find (argv[1], argv[2]);
-  exit (0);
+  find(argv[1], argv[2]);
+  exit(0);
 }
 ```
 ### 常见疑问
