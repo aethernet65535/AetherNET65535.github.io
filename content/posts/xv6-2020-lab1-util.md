@@ -422,6 +422,8 @@ ps：我自己也不是很清楚，写到这里时，我的进度只是LAB5: LAZ
 
 ## xargs (moderate)
 
+这个稍微有一些难度，你得了解下管道，不用理解的很深，只要知道左边给右边传输数据，左边再读取数据就行了。
+
 ```C
 #include "kernel/types.h"
 #include "user/user.h"

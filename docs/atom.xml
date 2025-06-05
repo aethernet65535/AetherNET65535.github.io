@@ -401,6 +401,7 @@ A：因为没有解引用，只是存储那个地址是被允许的。&lt;&#x2F;
 A：每当你使用&lt;code&gt;read&lt;&#x2F;code&gt;成功读取了N个字节后，&lt;code&gt;fd&lt;&#x2F;code&gt;的文件偏移量就会增加N个字节。简单来说就是，读取成功后&lt;code&gt;fd&lt;&#x2F;code&gt;就会跳到下一个。&lt;br &#x2F;&gt;
 ps：我自己也不是很清楚，写到这里时，我的进度只是LAB5: LAZY ALLOCATION而已，LAB9才是FILE SYSTEM，可能到时候就能理解了&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;xargs-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xargs-moderate&quot; aria-label=&quot;Anchor link for: xargs-moderate&quot;&gt;xargs (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个稍微有一些难度，你得了解下管道，不用理解的很深，只要知道左边给右边传输数据，左边再读取数据就行了。&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#include &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;kernel&#x2F;types.h&amp;quot;
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#include &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;user&#x2F;user.h&amp;quot;
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#include &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;kernel&#x2F;param.h&amp;quot;
