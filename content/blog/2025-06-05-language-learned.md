@@ -6,7 +6,6 @@ title = "Language Learned"
 display_published = true 
 author = "aethernet"
 +++
-
 ### Learning
 - C
 - RISC-V ASM

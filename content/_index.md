@@ -11,7 +11,7 @@
 ## XV6-TUTORIAL
 - [LAB1-UTIL](./blog/xv6-2020-lab1-util)
 
-## GITHUB
-[![Github Stats](https://github-readme-stats.vercel.app/api?username=aethernet65535&show_icons=true&theme=monokai)](https://github.com/aethernet65535)
+## STATS
+[![WakaTime stats](https://github-readme-stats.vercel.app/api/wakatime?username=aethernet65535&layout=)](https://github.com/aethernet)
 
-[![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=aethernet65535&layout=compact&theme=monokai)](https://github.com/aethernet65535)
+[![wakatime](https://wakatime.com/badge/user/741532f3-7128-4d58-b723-01a8d907831b.svg)](https://wakatime.com/@741532f3-7128-4d58-b723-01a8d907831b)
