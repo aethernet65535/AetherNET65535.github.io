@@ -2,11 +2,11 @@
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
     <title>not-matthias</title>
     <subtitle>This is an example description</subtitle>
-    <link rel="self" type="application/atom+xml" href="https://not-matthias.github.io/apollo/atom.xml"/>
-    <link rel="alternate" type="text/html" href="https://not-matthias.github.io/apollo/"/>
+    <link rel="self" type="application/atom+xml" href="https://aethernet65535.github.io/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://aethernet65535.github.io"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
     <updated>2025-06-04T00:00:00+00:00</updated>
-    <id>https://not-matthias.github.io/apollo/atom.xml</id>
+    <id>https://aethernet65535.github.io/atom.xml</id>
     <entry xml:lang="en">
         <title>XV6-2020 LAB1-UTIL</title>
         <published>2025-06-04T00:00:00+00:00</published>
@@ -20,10 +20,10 @@
           </name>
         </author>
         
-        <link rel="alternate" type="text/html" href="https://not-matthias.github.io/apollo/posts/xv6-2020-lab1-util/"/>
-        <id>https://not-matthias.github.io/apollo/posts/xv6-2020-lab1-util/</id>
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/xv6-2020-lab1-util/"/>
+        <id>https://aethernet65535.github.io/posts/xv6-2020-lab1-util/</id>
         
-        <content type="html" xml:base="https://not-matthias.github.io/apollo/posts/xv6-2020-lab1-util/">&lt;p&gt;事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。&lt;&#x2F;p&gt;
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab1-util/">&lt;p&gt;事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。&lt;&#x2F;p&gt;
 &lt;p&gt;这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;boot-xv6-easy&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#boot-xv6-easy&quot; aria-label=&quot;Anchor link for: boot-xv6-easy&quot;&gt;boot xv6 (easy)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;首先，先下载&lt;code&gt;git&lt;&#x2F;code&gt;，再&lt;code&gt;clone&lt;&#x2F;code&gt;下来&lt;code&gt;xv6-labs-2020&lt;&#x2F;code&gt;的文件。&lt;&#x2F;p&gt;
@@ -399,14 +399,14 @@ ps：我自己也不是很清楚，写到这里时，我的进度只是LAB5: LAZ
           </name>
         </author>
         
-        <link rel="alternate" type="text/html" href="https://not-matthias.github.io/apollo/posts/mermaid/"/>
-        <id>https://not-matthias.github.io/apollo/posts/mermaid/</id>
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/mermaid/"/>
+        <id>https://aethernet65535.github.io/posts/mermaid/</id>
         
-        <content type="html" xml:base="https://not-matthias.github.io/apollo/posts/mermaid/">&lt;p&gt;This Theme supports &lt;a href=&quot;https:&#x2F;&#x2F;mermaid.js.org&#x2F;&quot;&gt;mermaid&lt;&#x2F;a&gt; markdown diagram rendering.&lt;&#x2F;p&gt;
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/mermaid/">&lt;p&gt;This Theme supports &lt;a href=&quot;https:&#x2F;&#x2F;mermaid.js.org&#x2F;&quot;&gt;mermaid&lt;&#x2F;a&gt; markdown diagram rendering.&lt;&#x2F;p&gt;
 &lt;p&gt;To use mermaid diagrams in your posts, see the example in the raw markdown code.
 https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;not-matthias&#x2F;apollo&#x2F;refs&#x2F;heads&#x2F;main&#x2F;content&#x2F;posts&#x2F;mermaid.md&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;rendered-example&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#rendered-example&quot; aria-label=&quot;Anchor link for: rendered-example&quot;&gt;Rendered Example&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
-&lt;script src=https:&#x2F;&#x2F;not-matthias.github.io&#x2F;apollo&#x2F;js&#x2F;mermaid.js&gt;&lt;&#x2F;script&gt;
+&lt;script src=https:&#x2F;&#x2F;aethernet65535.github.io&#x2F;js&#x2F;mermaid.js&gt;&lt;&#x2F;script&gt;
 
 &lt;pre class=&quot;mermaid&quot;&gt;
   graph LR
@@ -434,10 +434,10 @@ https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;not-matthias&#x2F;apollo&#x2F;r
           </name>
         </author>
         
-        <link rel="alternate" type="text/html" href="https://not-matthias.github.io/apollo/posts/configuration/"/>
-        <id>https://not-matthias.github.io/apollo/posts/configuration/</id>
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/configuration/"/>
+        <id>https://aethernet65535.github.io/posts/configuration/</id>
         
-        <content type="html" xml:base="https://not-matthias.github.io/apollo/posts/configuration/">&lt;h1 id=&quot;site-configuration&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#site-configuration&quot; aria-label=&quot;Anchor link for: site-configuration&quot;&gt;Site Configuration&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/configuration/">&lt;h1 id=&quot;site-configuration&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#site-configuration&quot; aria-label=&quot;Anchor link for: site-configuration&quot;&gt;Site Configuration&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
 &lt;h2 id=&quot;search-build-search-index&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#search-build-search-index&quot; aria-label=&quot;Anchor link for: search-build-search-index&quot;&gt;Search (&lt;code&gt;build_search_index&lt;&#x2F;code&gt;)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;Enables or disables the search functionality for your blog.&lt;&#x2F;p&gt;
 &lt;ul&gt;
@@ -626,10 +626,10 @@ When enabled, this allows readers to leave comments on your blog posts. This fea
           </name>
         </author>
         
-        <link rel="alternate" type="text/html" href="https://not-matthias.github.io/apollo/posts/shortcode/"/>
-        <id>https://not-matthias.github.io/apollo/posts/shortcode/</id>
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/shortcode/"/>
+        <id>https://aethernet65535.github.io/posts/shortcode/</id>
         
-        <content type="html" xml:base="https://not-matthias.github.io/apollo/posts/shortcode/">&lt;h2 id=&quot;note&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#note&quot; aria-label=&quot;Anchor link for: note&quot;&gt;Note&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/shortcode/">&lt;h2 id=&quot;note&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#note&quot; aria-label=&quot;Anchor link for: note&quot;&gt;Note&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;Here is an example of the &lt;code&gt;note&lt;&#x2F;code&gt; shortcode:&lt;&#x2F;p&gt;
 &lt;p&gt;This one is static!
 &lt;div class=&quot;note-container&quot;&gt;
@@ -756,10 +756,10 @@ When enabled, this allows readers to leave comments on your blog posts. This fea
           </name>
         </author>
         
-        <link rel="alternate" type="text/html" href="https://not-matthias.github.io/apollo/posts/math-symbol/"/>
-        <id>https://not-matthias.github.io/apollo/posts/math-symbol/</id>
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/math-symbol/"/>
+        <id>https://aethernet65535.github.io/posts/math-symbol/</id>
         
-        <content type="html" xml:base="https://not-matthias.github.io/apollo/posts/math-symbol/">&lt;p&gt;Note: This requires the &lt;code&gt;mathjax&lt;&#x2F;code&gt; and &lt;code&gt;mathjax_dollar_inline_enable&lt;&#x2F;code&gt; option set to &lt;code&gt;true&lt;&#x2F;code&gt; in &lt;code&gt;[extra]&lt;&#x2F;code&gt; section.&lt;&#x2F;p&gt;
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/math-symbol/">&lt;p&gt;Note: This requires the &lt;code&gt;mathjax&lt;&#x2F;code&gt; and &lt;code&gt;mathjax_dollar_inline_enable&lt;&#x2F;code&gt; option set to &lt;code&gt;true&lt;&#x2F;code&gt; in &lt;code&gt;[extra]&lt;&#x2F;code&gt; section.&lt;&#x2F;p&gt;
 &lt;h1 id=&quot;inline-math&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#inline-math&quot; aria-label=&quot;Anchor link for: inline-math&quot;&gt;Inline Math&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
 &lt;ul&gt;
 &lt;li&gt;$(a+b)^2$ = $a^2 + 2ab + b^2$&lt;&#x2F;li&gt;
@@ -787,10 +787,10 @@ $$&lt;&#x2F;p&gt;
           </name>
         </author>
         
-        <link rel="alternate" type="text/html" href="https://not-matthias.github.io/apollo/posts/markdown/"/>
-        <id>https://not-matthias.github.io/apollo/posts/markdown/</id>
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/markdown/"/>
+        <id>https://aethernet65535.github.io/posts/markdown/</id>
         
-        <content type="html" xml:base="https://not-matthias.github.io/apollo/posts/markdown/">&lt;h1 id=&quot;h1&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#h1&quot; aria-label=&quot;Anchor link for: h1&quot;&gt;H1&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/markdown/">&lt;h1 id=&quot;h1&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#h1&quot; aria-label=&quot;Anchor link for: h1&quot;&gt;H1&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
 &lt;h2 id=&quot;h2&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#h2&quot; aria-label=&quot;Anchor link for: h2&quot;&gt;H2&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;h3 id=&quot;h3&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#h3&quot; aria-label=&quot;Anchor link for: h3&quot;&gt;H3&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Aliquet sagittis id consectetur purus ut. In pellentesque massa placerat duis ultricies. Neque laoreet suspendisse interdum consectetur libero id. Justo nec ultrices dui sapien eget mi proin. Nunc consequat interdum varius sit amet mattis vulputate. Sollicitudin tempor id eu nisl nunc mi ipsum. Non odio euismod lacinia at quis. Sit amet nisl suscipit adipiscing. Amet mattis vulputate enim nulla aliquet porttitor lacus luctus accumsan. Sit amet consectetur adipiscing elit pellentesque habitant. Ac placerat vestibulum lectus mauris. Molestie ac feugiat sed lectus vestibulum mattis ullamcorper velit sed. &lt;a href=&quot;https:&#x2F;&#x2F;www.google.com&quot;&gt;Google&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
