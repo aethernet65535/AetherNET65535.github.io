@@ -1,55 +1,57 @@
-# General
-base_url = "https://aethernet65535.github.io"
-compile_sass = false
-minify_html = true
+base_url = "https://not-matthias.github.io/apollo/"
+title = "not-matthias"
+description = "This is an example description"
+build_search_index = true
 generate_feeds = true
-generate_sitemap = true
+compile_sass = true
+minify_html = true
+taxonomies = [{ name = "tags" }]
 
-# Taxonomies
-taxonomies = [
-    {name = "tags", feed = true, paginate_by = 10},
-]
-
-# Language
-default_language = "en"
-
-[languages.en]
-build_search_index = true
-title = "aethernet-blog"
-description = "A minimalist Zola theme that prioritizes clean CSS and avoids heavy JavaScript. Enjoy a seamless user experience with lightning-fast load times. Let your content take center stage in a clutter-free, elegant design that enhances readability. Responsive and efficient, anemone brings focus to your ideas."
-
-[languages.fr]
-build_search_index = true
-title = "anemone"
-description = "Un thème Zola minimaliste qui privilégie un CSS épuré et évite le JavaScript lourd. Profitez d'une expérience utilisateur fluide avec des temps de chargement ultra-rapides. Mettez votre contenu en valeur grâce à un design épuré et élégant qui améliore la lisibilité. Réactif et efficace, Anémone met en valeur vos idées."
+[search]
+include_title = true
+include_description = true
+include_path = true
+include_content = true
+index_format = "elasticlunr_json"
 
 [markdown]
-render_emoji = true
-external_links_target_blank = true
-smart_punctuation = true
-highlight_code = false
-highlight_theme = "gruvbox-dark"
+highlight_code = true
+highlight_theme = "ayu-light"
 
-[slugify]
-paths = "on"
-taxonomies = "on"
-anchors = "on"
-
-[link_checker]
-internal_level = "warn"
-
-# Extra
 [extra]
-author = "aethernet65535"
-favicon = "favicon.ico"
-list_pages = false
-twitter_card = true
-enable_search = true
+toc = true
+use_cdn = false
+favicon = "/icon/favicon.png"
+theme = "toggle"              # light, dark, auto, toggle
+fancy_code = true
+dynamic_note = true           # a note that can be toggled
+mathjax = true
+mathjax_dollar_inline_enable = true
+repo_url = "https://github.com/not-matthias/apollo/tree/main/content/"
 
-## Navigation
-header_nav = [
-  { url = "/", name_en = "/home/", name_fr = "/accueil/" },
-  { url = "/about", name_en = "/about/", name_fr = "/concernant/" },
-  { url = "/journal", name_en = "/journal/", name_fr = "/journal/" },
-  { url = "/blog", name_en = "/blog/", name_fr = "/blog/" }
+menu = [
+    { name = "/posts", url = "/posts", weight = 1 },
+    { name = "/projects", url = "/projects", weight = 2 },
+    { name = "/about", url = "/about", weight = 3 },
+    { name = "/tags", url = "/tags", weight = 4 },
 ]
+
+socials = [
+    { name = "twitter", url = "https://twitter.com/not_matthias", icon = "twitter" },
+    { name = "github", url = "https://github.com/not-matthias/", icon = "github" },
+]
+
+stylesheets = [
+    # "custom.css"    # at /static/custom.css
+]
+
+[extra.analytics]
+enabled = false
+
+[extra.analytics.goatcounter]
+user = "your_user"
+host = "example.com" # default= goatcounter.com
+
+[extra.analytics.umami]
+website_id = "43929cd1-1e83...."
+host_url = "https://stats.mywebsite.com" # default: https://api-gateway.umami.dev/

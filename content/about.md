@@ -1,5 +1,4 @@
 +++
 title = "About"
+path = "about"
 +++
-
-just a blog page, for send my blog.

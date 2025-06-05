@@ -1,9 +1,8 @@
-{% extends "base.html" %}
+{% extends "page.html" %}
 
-{% block content %}
-<article class="center">
-    <h1>404 - Not Found</h1>
-    <p>The page you're looking for doesn't exist.</p>
-    <a href="/" class="no-style">← Return home</a>
-</article>
-{% endblock %}
+{% block main_content %}
+    <main class="centered-header">
+        {{ post_macros::page_header(title="404") }}
+        <span>Page not found :(</span>
+    </main>
+{% endblock main_content %}
