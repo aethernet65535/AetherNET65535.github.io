@@ -176,7 +176,7 @@
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;上面的代码你可能看不懂，让我解释解释。
 &lt;br&gt;
-首先，当我们当前的进程&lt;code&gt;fork&lt;&#x2F;code&gt;出了一个子进程后，这两个进程是并行的，就是他们是同时跑的。
+首先，我们当前的进程&lt;code&gt;fork&lt;&#x2F;code&gt;出了一个子进程后，这两个进程是并行的，就是他们是同时跑的。
 &lt;br&gt;
 但是我们希望这个代码是有顺序的，所以我们需要让其中一个不能跑。
 &lt;br&gt;
