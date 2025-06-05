@@ -1,10 +1,10 @@
-<!doctype html><html lang=en><head><meta charset=UTF-8><meta content="width=device-width,initial-scale=1.0" name=viewport><meta content="index, follow" name=robots><link href=https://aethernet65535.github.io/rss.xml rel=alternate title=RSS type=application/rss+xml><title>aethernet-blog | XV6-2020 LAB1-UTIL</title><link as=style href=https://aethernet65535.github.io/css/style.css rel=preload><link crossorigin href=https://raw.githack.com/Speyll/suCSS/main/reset-min.css rel=stylesheet><link crossorigin href=https://raw.githack.com/Speyll/suCSS/main/suCSS-min.css rel=stylesheet><link href=https://aethernet65535.github.io/css/style.css rel=stylesheet><link href=https://aethernet65535.github.io/css/custom.css rel=stylesheet><link href=https://aethernet65535.github.io/favicon.ico rel=icon><body><nav id=nav-bar><a href=/> /home/ </a><a href=/about> /about/ </a><a href=/journal> /journal/ </a><a href=/blog> /blog/ </a><div aria-label="Toggle theme" class=theme-toggle data-icon-base=https://aethernet65535.github.io/icons.svg data-icon-dark=#darkMode data-icon-light=#lightMode data-sound-src=https://aethernet65535.github.io/click.ogg id=theme-toggle role=button tabindex=0><svg class=icon><use id=theme-icon></use></svg></div></nav><main><article class=post><header class=post-header><time datetime=2025-06-04>Published on: <span class=accent-data>2025-06-04</span> </time><address rel=author>By <span class=accent-data>aethernet</span></address><h1>XV6-2020 LAB1-UTIL</h1></header><div class=toc-container><h2>Table of content</h2><ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#boot-xv6-easy>boot xv6 (easy)</a><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#sleep-easy>sleep (easy)</a><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#pingpong-easy>pingpong (easy)</a> <ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#chang-jian-yi-wen>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#primes-moderate-hard>primes(moderate)/(hard)</a> <ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#chang-jian-yi-wen-1>常见疑问</a></ul></ul></div><div class=post-content><p>事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。<p>这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。<h2 id=boot-xv6-easy>boot xv6 (easy)</h2><p>首先，先下载git，再clone下来xv6-labs-2020的文件。<pre class=language-sh data-lang=sh><code class=language-sh data-lang=sh>sudo pacman -S git
+<!doctype html><html lang=en><head><meta charset=UTF-8><meta content="width=device-width,initial-scale=1.0" name=viewport><meta content="index, follow" name=robots><link href=https://aethernet65535.github.io/rss.xml rel=alternate title=RSS type=application/rss+xml><title>aethernet-blog | XV6-2020 LAB1-UTIL</title><link as=style href=https://aethernet65535.github.io/css/style.css rel=preload><link crossorigin href=https://raw.githack.com/Speyll/suCSS/main/reset-min.css rel=stylesheet><link crossorigin href=https://raw.githack.com/Speyll/suCSS/main/suCSS-min.css rel=stylesheet><link href=https://aethernet65535.github.io/css/style.css rel=stylesheet><link href=https://aethernet65535.github.io/css/custom.css rel=stylesheet><link href=https://aethernet65535.github.io/favicon.ico rel=icon><body><nav id=nav-bar><a href=/> /home/ </a><a href=/about> /about/ </a><a href=/journal> /journal/ </a><a href=/blog> /blog/ </a><div aria-label="Toggle theme" class=theme-toggle data-icon-base=https://aethernet65535.github.io/icons.svg data-icon-dark=#darkMode data-icon-light=#lightMode data-sound-src=https://aethernet65535.github.io/click.ogg id=theme-toggle role=button tabindex=0><svg class=icon><use id=theme-icon></use></svg></div></nav><main><article class=post><header class=post-header><time datetime=2025-06-04>Published on: <span class=accent-data>2025-06-04</span> </time><address rel=author>By <span class=accent-data>aethernet</span></address><h1>XV6-2020 LAB1-UTIL</h1></header><div class=toc-container><h2>Table of content</h2><ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#boot-xv6-easy>boot xv6 (easy)</a><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#sleep-easy>sleep (easy)</a><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#pingpong-easy>pingpong (easy)</a> <ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#chang-jian-yi-wen>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#primes-moderate-hard>primes(moderate)/(hard)</a> <ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#chang-jian-yi-wen-1>常见疑问</a></ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#find-moderate>find (moderate)</a> <ul><li><a href=https://aethernet65535.github.io/blog/xv6-2020-lab1-util/#chang-jian-yi-wen-2>常见疑问</a></ul></ul></div><div class=post-content><p>事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。<p>这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。<h2 id=boot-xv6-easy>boot xv6 (easy)</h2><p>首先，先下载<code>git</code>，再<code>clone</code>下来<code>xv6-labs-2020</code>的文件。<pre class=language-sh data-lang=sh><code class=language-sh data-lang=sh>sudo pacman -S git
 
 git clone git://g.csail.mit.edu/xv6/labs-2020
 cd xv6-labs-2020
 git checkout util
 make clean && make qemu
-</code></pre><br><blockquote><p>如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。</blockquote><h2 id=sleep-easy>sleep (easy)</h2><p>在user目录里，创建名为sleep.c的文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
+</code></pre><br><blockquote><p>如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。</blockquote><h2 id=sleep-easy>sleep (easy)</h2><p>在<code>user</code>目录里，创建名为<code>sleep.c</code>的文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
 |-- user/
 |-- |-- sleep.c
 </code></pre><p>调用sleep系统调用来实现这个功能。<pre class=language-C data-lang=C><code class=language-C data-lang=C>#include "kernel/types.h"
@@ -34,7 +34,7 @@ int main (int argc, char *argv[])
 
     exit(0);
 }
-</code></pre><p>在Makefile的UPROGS处添加$U/_sleep\<pre class=language-Makefile data-lang=Makefile><code class=language-Makefile data-lang=Makefile>UPROGS=\
+</code></pre><p>在<code>Makefile</code>的<code>UPROGS</code>处添加<code>$U/_sleep\</code><pre class=language-Makefile data-lang=Makefile><code class=language-Makefile data-lang=Makefile>UPROGS=\
 	$U/_cat\
 	$U/_echo\
 	$U/_forktest\
@@ -52,7 +52,7 @@ int main (int argc, char *argv[])
 	$U/_wc\
 	$U/_zombie\
 	$U/_sleep\ # 加上这个
-</code></pre><h2 id=pingpong-easy>pingpong (easy)</h2><p>和上一个一样，先在user目录里创建pingpong.c文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
+</code></pre><h2 id=pingpong-easy>pingpong (easy)</h2><p>和上一个一样，先在<code>user</code>目录里创建<code>pingpong.c</code>文件。<pre class=language-tree data-lang=tree><code class=language-tree data-lang=tree>xv6-labs-2020/
 |-- user/
 |-- |-- sleep.c
 |-- |-- pingpong.c
@@ -221,4 +221,82 @@ int main(int argc, char* argv[])
     }
 }
 </code></pre><h3 id=chang-jian-yi-wen-1>常见疑问</h3><p>Q：为什么<code>sieve_algo</code>函数里，子进程不等待父进程就直接进入递归？<br> A：因为在<code>sieve_algo</code>的某段代码，会让子进程被堵塞，但是此时父进程还没有关闭输入端，所以子进程只会堵塞，不会报错。<pre class=language-C data-lang=C><code class=language-C data-lang=C>if (read(left[READ], &prime, sizeof(int)) == 0) // 这里会堵塞
-</code></pre></div><div class=post-tags><a class=tag href=/tags/xv6>#xv6 </a></div></article></main><footer><hr><div id=footer-container><p>Made using <a rel="noopener noreferrer" href=https://github.com/Speyll/anemone target=_blank>anemone</a> Zola theme</div></footer><script defer src=https://aethernet65535.github.io/js/script.js></script>
+</code></pre><h2 id=find-moderate>find (moderate)</h2><p>说实话，这个其实不难，基本上CV再改改就行了。<br> 但是，如果你不知道怎么做的话，你得先去看看<code>user/ls.c</code>，还有<code>kernel/fs.h</code>的一部分，先看懂这几个再想要怎么做。<pre class=language-C data-lang=C><code class=language-C data-lang=C>#include "kernel/types.h"
+#include "kernel/stat.h"
+#include "kernel/fs.h"
+#include "user/user.h"
+#include "kernel/fcntl.h"
+char *
+fmtname (char *path)
+{
+  char *p;
+
+  for (p = path + strlen (path); p >= path && *p != '/'; --p)
+    ;
+  return p + 1;
+}
+
+void
+find (char *path, char *filename)
+{
+  char buf[512], *p;
+  int fd;
+  struct stat st;
+  struct dirent de;
+
+  if ((fd = open (path, 0)) < 0)
+  {
+    fprintf (2, "find: cannot open %s\n", path);
+    return;
+  }
+
+  if (fstat (fd, &st) < 0)
+  {
+    fprintf (2, "find: cannot stat %s\n", path);
+    close (fd);
+    return;
+  }
+
+  switch (st.type)
+  {
+    case T_FILE:
+      if (strcmp (fmtname (path), filename) == 0)
+      {
+        printf ("%s\n", path);
+      }
+      break;
+
+    case T_DIR:
+      strcpy (buf, path);
+      p = buf + strlen (buf);
+      *p++ = '/';
+
+      while (read (fd, &de, sizeof (de)) == sizeof (de))
+      {
+        if (de.inum == 0 || strcmp (de.name, ".") == 0
+          || strcmp (de.name, "..") == 0)
+          continue;
+
+        memmove (p, de.name, DIRSIZ);
+        p[DIRSIZ] = 0;
+        find (buf, filename);
+      }
+      break;
+    default:
+      break;
+  }
+  close (fd);
+}
+
+int
+main (int argc, char *argv[])
+{
+  if (argc < 3)
+  {
+    fprintf (2, "usage: find &LTstart_path> &LTfile_name>\n");
+    exit (0);
+  }
+  find (argv[1], argv[2]);
+  exit (0);
+}
+</code></pre><h3 id=chang-jian-yi-wen-2>常见疑问</h3><p>Q：为什么<code>p == path - 1</code>不会报错？<br> A：因为没有解引用，只是存储那个地址是被允许的。<p>Q：<code>T_DIR</code>的那部分<code>while</code>循环是怎么运作的？<br> A：每当你使用<code>read</code>成功读取了N个字节后，<code>fd</code>的文件偏移量就会增加N个字节。简单来说就是，读取成功后<code>fd</code>就会跳到下一个。<br> ps：我自己也不是很清楚，写到这里时，我的进度只是LAB5: LAZY ALLOCATION而已，LAB9才是FILE SYSTEM，可能到时候就能理解了</div><div class=post-tags><a class=tag href=/tags/xv6>#xv6 </a></div></article></main><footer><hr><div id=footer-container><p>Made using <a rel="noopener noreferrer" href=https://github.com/Speyll/anemone target=_blank>anemone</a> Zola theme</div></footer><script defer src=https://aethernet65535.github.io/js/script.js></script>

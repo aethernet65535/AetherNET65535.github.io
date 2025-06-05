@@ -3,7 +3,7 @@
     <title>aethernet-blog</title>
     <link href="https://aethernet65535.github.io/atom.xml" rel="self"/>
     <link href="https:&#x2F;&#x2F;aethernet65535.github.io"/>
-    <updated>2025-06-05T06:25:43+0800</updated>
+    <updated>2025-06-05T08:07:19+0800</updated>
     <id>https:&#x2F;&#x2F;aethernet65535.github.io</id>
 
     
@@ -70,7 +70,7 @@
                 <content type="html">&amp;lt;p&amp;gt;事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;p&amp;gt;这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;h2 id=&amp;quot;boot-xv6-easy&amp;quot;&amp;gt;boot xv6 (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
-&amp;lt;p&amp;gt;首先，先下载git，再clone下来xv6-labs-2020的文件。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;首先，先下载&amp;lt;code&amp;gt;git&amp;lt;&amp;#x2F;code&amp;gt;，再&amp;lt;code&amp;gt;clone&amp;lt;&amp;#x2F;code&amp;gt;下来&amp;lt;code&amp;gt;xv6-labs-2020&amp;lt;&amp;#x2F;code&amp;gt;的文件。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;pre data-lang=&amp;quot;sh&amp;quot; class=&amp;quot;language-sh &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-sh&amp;quot; data-lang=&amp;quot;sh&amp;quot;&amp;gt;sudo pacman -S git
 
 git clone git:&amp;amp;#x2F;&amp;amp;#x2F;g.csail.mit.edu&amp;amp;#x2F;xv6&amp;amp;#x2F;labs-2020
@@ -83,7 +83,7 @@ make clean &amp;amp;amp;&amp;amp;amp; make qemu
 &amp;lt;p&amp;gt;如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;&amp;#x2F;blockquote&amp;gt;
 &amp;lt;h2 id=&amp;quot;sleep-easy&amp;quot;&amp;gt;sleep (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
-&amp;lt;p&amp;gt;在user目录里，创建名为sleep.c的文件。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;在&amp;lt;code&amp;gt;user&amp;lt;&amp;#x2F;code&amp;gt;目录里，创建名为&amp;lt;code&amp;gt;sleep.c&amp;lt;&amp;#x2F;code&amp;gt;的文件。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;pre data-lang=&amp;quot;tree&amp;quot; class=&amp;quot;language-tree &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-tree&amp;quot; data-lang=&amp;quot;tree&amp;quot;&amp;gt;xv6-labs-2020&amp;amp;#x2F;
 |-- user&amp;amp;#x2F;
 |-- |-- sleep.c
@@ -117,7 +117,7 @@ int main (int argc, char *argv[])
     exit(0);
 }
 &amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
-&amp;lt;p&amp;gt;在Makefile的UPROGS处添加$U&amp;#x2F;_sleep\&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;在&amp;lt;code&amp;gt;Makefile&amp;lt;&amp;#x2F;code&amp;gt;的&amp;lt;code&amp;gt;UPROGS&amp;lt;&amp;#x2F;code&amp;gt;处添加&amp;lt;code&amp;gt;$U&amp;#x2F;_sleep\&amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;pre data-lang=&amp;quot;Makefile&amp;quot; class=&amp;quot;language-Makefile &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-Makefile&amp;quot; data-lang=&amp;quot;Makefile&amp;quot;&amp;gt;UPROGS=\
 	$U&amp;amp;#x2F;_cat\
 	$U&amp;amp;#x2F;_echo\
@@ -138,7 +138,7 @@ int main (int argc, char *argv[])
 	$U&amp;amp;#x2F;_sleep\ # 加上这个
 &amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
 &amp;lt;h2 id=&amp;quot;pingpong-easy&amp;quot;&amp;gt;pingpong (easy)&amp;lt;&amp;#x2F;h2&amp;gt;
-&amp;lt;p&amp;gt;和上一个一样，先在user目录里创建pingpong.c文件。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;和上一个一样，先在&amp;lt;code&amp;gt;user&amp;lt;&amp;#x2F;code&amp;gt;目录里创建&amp;lt;code&amp;gt;pingpong.c&amp;lt;&amp;#x2F;code&amp;gt;文件。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;pre data-lang=&amp;quot;tree&amp;quot; class=&amp;quot;language-tree &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-tree&amp;quot; data-lang=&amp;quot;tree&amp;quot;&amp;gt;xv6-labs-2020&amp;amp;#x2F;
 |-- user&amp;amp;#x2F;
 |-- |-- sleep.c
@@ -339,6 +339,94 @@ int main(int argc, char* argv[])
 A：因为在&amp;lt;code&amp;gt;sieve_algo&amp;lt;&amp;#x2F;code&amp;gt;的某段代码，会让子进程被堵塞，但是此时父进程还没有关闭输入端，所以子进程只会堵塞，不会报错。&amp;lt;&amp;#x2F;p&amp;gt;
 &amp;lt;pre data-lang=&amp;quot;C&amp;quot; class=&amp;quot;language-C &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-C&amp;quot; data-lang=&amp;quot;C&amp;quot;&amp;gt;if (read(left[READ], &amp;amp;amp;prime, sizeof(int)) == 0) &amp;amp;#x2F;&amp;amp;#x2F; 这里会堵塞
 &amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;h2 id=&amp;quot;find-moderate&amp;quot;&amp;gt;find (moderate)&amp;lt;&amp;#x2F;h2&amp;gt;
+&amp;lt;p&amp;gt;说实话，这个其实不难，基本上CV再改改就行了。&amp;lt;br &amp;#x2F;&amp;gt;
+但是，如果你不知道怎么做的话，你得先去看看&amp;lt;code&amp;gt;user&amp;#x2F;ls.c&amp;lt;&amp;#x2F;code&amp;gt;，还有&amp;lt;code&amp;gt;kernel&amp;#x2F;fs.h&amp;lt;&amp;#x2F;code&amp;gt;的一部分，先看懂这几个再想要怎么做。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;pre data-lang=&amp;quot;C&amp;quot; class=&amp;quot;language-C &amp;quot;&amp;gt;&amp;lt;code class=&amp;quot;language-C&amp;quot; data-lang=&amp;quot;C&amp;quot;&amp;gt;#include &amp;amp;quot;kernel&amp;amp;#x2F;types.h&amp;amp;quot;
+#include &amp;amp;quot;kernel&amp;amp;#x2F;stat.h&amp;amp;quot;
+#include &amp;amp;quot;kernel&amp;amp;#x2F;fs.h&amp;amp;quot;
+#include &amp;amp;quot;user&amp;amp;#x2F;user.h&amp;amp;quot;
+#include &amp;amp;quot;kernel&amp;amp;#x2F;fcntl.h&amp;amp;quot;
+char *
+fmtname (char *path)
+{
+  char *p;
+
+  for (p = path + strlen (path); p &amp;amp;gt;= path &amp;amp;amp;&amp;amp;amp; *p != &amp;amp;#x27;&amp;amp;#x2F;&amp;amp;#x27;; --p)
+    ;
+  return p + 1;
+}
+
+void
+find (char *path, char *filename)
+{
+  char buf[512], *p;
+  int fd;
+  struct stat st;
+  struct dirent de;
+
+  if ((fd = open (path, 0)) &amp;amp;lt; 0)
+  {
+    fprintf (2, &amp;amp;quot;find: cannot open %s\n&amp;amp;quot;, path);
+    return;
+  }
+
+  if (fstat (fd, &amp;amp;amp;st) &amp;amp;lt; 0)
+  {
+    fprintf (2, &amp;amp;quot;find: cannot stat %s\n&amp;amp;quot;, path);
+    close (fd);
+    return;
+  }
+
+  switch (st.type)
+  {
+    case T_FILE:
+      if (strcmp (fmtname (path), filename) == 0)
+      {
+        printf (&amp;amp;quot;%s\n&amp;amp;quot;, path);
+      }
+      break;
+
+    case T_DIR:
+      strcpy (buf, path);
+      p = buf + strlen (buf);
+      *p++ = &amp;amp;#x27;&amp;amp;#x2F;&amp;amp;#x27;;
+
+      while (read (fd, &amp;amp;amp;de, sizeof (de)) == sizeof (de))
+      {
+        if (de.inum == 0 || strcmp (de.name, &amp;amp;quot;.&amp;amp;quot;) == 0
+          || strcmp (de.name, &amp;amp;quot;..&amp;amp;quot;) == 0)
+          continue;
+
+        memmove (p, de.name, DIRSIZ);
+        p[DIRSIZ] = 0;
+        find (buf, filename);
+      }
+      break;
+    default:
+      break;
+  }
+  close (fd);
+}
+
+int
+main (int argc, char *argv[])
+{
+  if (argc &amp;amp;lt; 3)
+  {
+    fprintf (2, &amp;amp;quot;usage: find &amp;amp;lt;start_path&amp;amp;gt; &amp;amp;lt;file_name&amp;amp;gt;\n&amp;amp;quot;);
+    exit (0);
+  }
+  find (argv[1], argv[2]);
+  exit (0);
+}
+&amp;lt;&amp;#x2F;code&amp;gt;&amp;lt;&amp;#x2F;pre&amp;gt;
+&amp;lt;h3 id=&amp;quot;chang-jian-yi-wen-2&amp;quot;&amp;gt;常见疑问&amp;lt;&amp;#x2F;h3&amp;gt;
+&amp;lt;p&amp;gt;Q：为什么&amp;lt;code&amp;gt;p == path - 1&amp;lt;&amp;#x2F;code&amp;gt;不会报错？&amp;lt;br &amp;#x2F;&amp;gt;
+A：因为没有解引用，只是存储那个地址是被允许的。&amp;lt;&amp;#x2F;p&amp;gt;
+&amp;lt;p&amp;gt;Q：&amp;lt;code&amp;gt;T_DIR&amp;lt;&amp;#x2F;code&amp;gt;的那部分&amp;lt;code&amp;gt;while&amp;lt;&amp;#x2F;code&amp;gt;循环是怎么运作的？&amp;lt;br &amp;#x2F;&amp;gt;
+A：每当你使用&amp;lt;code&amp;gt;read&amp;lt;&amp;#x2F;code&amp;gt;成功读取了N个字节后，&amp;lt;code&amp;gt;fd&amp;lt;&amp;#x2F;code&amp;gt;的文件偏移量就会增加N个字节。简单来说就是，读取成功后&amp;lt;code&amp;gt;fd&amp;lt;&amp;#x2F;code&amp;gt;就会跳到下一个。&amp;lt;br &amp;#x2F;&amp;gt;
+ps：我自己也不是很清楚，写到这里时，我的进度只是LAB5: LAZY ALLOCATION而已，LAB9才是FILE SYSTEM，可能到时候就能理解了&amp;lt;&amp;#x2F;p&amp;gt;
 </content>
             </entry>
             
