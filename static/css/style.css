@@ -123,3 +123,8 @@
 .webring {
   margin: .375rem;
 }
+
+pre{
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
