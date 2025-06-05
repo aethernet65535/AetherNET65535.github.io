@@ -1,6 +1,7 @@
 +++
 +++
 
+## STATUS
 [aethernet](https://github.com/aethernet65535) 🤖 2025/06/05        
 > been learning programming for 6 months
 
