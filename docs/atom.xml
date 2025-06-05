@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
-    <title>not-matthias</title>
+    <title>aethernet-blog</title>
     <subtitle>This is an example description</subtitle>
     <link rel="self" type="application/atom+xml" href="https://aethernet65535.github.io/atom.xml"/>
     <link rel="alternate" type="text/html" href="https://aethernet65535.github.io"/>
