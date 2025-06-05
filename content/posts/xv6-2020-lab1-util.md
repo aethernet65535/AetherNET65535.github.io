@@ -1,13 +1,12 @@
 +++
 title = "XV6-2020 LAB1-UTIL"
 date = 2025-06-04
-draft = false
+
 [taxonomies]
 tags = ["xv6"]
+
 [extra]
-toc = true
-display_published = true 
-author = "aethernet"
+comment = true
 +++
 事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。
 
