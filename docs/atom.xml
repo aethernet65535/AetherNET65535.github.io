@@ -468,6 +468,11 @@ ps：我自己也不是很清楚，写到这里时，我的进度只是LAB5: LAZ
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;exit&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;chang-jian-yi-wen-3&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#chang-jian-yi-wen-3&quot; aria-label=&quot;Anchor link for: chang-jian-yi-wen-3&quot;&gt;常见疑问&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Q：为什么&lt;code&gt;malloc&lt;&#x2F;code&gt;还要&lt;code&gt;+1&lt;&#x2F;code&gt;？&lt;br &#x2F;&gt;
+A：记得数组吧？最后一个要放什么？没错，就是要放&lt;code&gt;0&lt;&#x2F;code&gt;&#x2F;&lt;code&gt;NULL&lt;&#x2F;code&gt;用的。&lt;&#x2F;p&gt;
+&lt;p&gt;Q：为什么程序一开始就&lt;code&gt;read&lt;&#x2F;code&gt;了，它读取的数据是什么？&lt;br &#x2F;&gt;
+A：读取的数据是来自管道的，就是左边的&lt;code&gt;echo hello&lt;&#x2F;code&gt;，右边我们写&lt;code&gt;xargs&lt;&#x2F;code&gt;的就是读取+输出端，具体的我还不是很了解，还请各位自己去了解关于管道的知识！&lt;&#x2F;p&gt;
 </content>
         
     </entry>
