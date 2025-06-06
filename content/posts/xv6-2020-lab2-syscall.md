@@ -161,3 +161,83 @@ ret
 1. 将系统调用号（这里是22）加载到`a7`寄存器。
 2. 执行`ecall`指令，在用户态触发系统调用（之后会进入内核态，不过那又是更复杂的事情了...）。
 3. 返回到用户态。
+
+## sysinfo (moderate)
+这个实验要做的差不多就是：获取当前空闲的内存字节数，和所有没用到的进程的数量（因为XV6的进程数量是有上限的）
+
+我们要修改的文件有这些：（之前做过的我就不说了，流程差不多）
+```tree
+kernel/
+|-- kalloc.c
+|-- proc.c
+|-- sysproc.c
+```
+
+#### kalloc.c
+```C
+uint64
+get_freemem(void)
+{ 
+  uint64 pages = 0;
+  struct run *r;
+  
+  acquire(&kmem.lock);
+  r = kmem.freelist;
+  while(r){
+    pages++;
+    r = r->next;
+  }
+  release(&kmem.lock);
+
+  return pages * PGSIZE; 
+}
+```
+这代码的作用就是遍历所有空闲页，也可以说是`freelist`。
+##### proc.c
+```C
+uint64
+get_nproc(void)
+{
+  uint64 count = 0;
+  struct proc *p;
+  
+  for(p = proc; p < &proc[NPROC]; p++){
+    acquire(&p->lock);
+    if(p->state != UNUSED){
+      count++;
+    }
+    release(&p->lock);
+  }
+  return count;
+}
+```
+这代码的作用就是遍历进程的列表，然后记录`UNUSED`进程的数量。
+##### sysproc.c
+```C
+uint64
+sys_sysinfo(void)
+{
+  uint64 param;
+  if(argaddr(0, &param) < 0)
+    return -1;
+
+  struct sysinfo info;
+  info.freemem = get_freemem();
+  info.nproc = get_nproc();
+
+  struct proc *p = myproc();
+  if(copyout(p->pagetable, param, (char*)&info, sizeof(info)) < 0)
+    return -1;
+
+  return 0;
+}
+```
+这段代码的作用是：
+1. 获取地址。
+2. 获取空闲内存字节数以及`UNUSED`进程数量。
+3. 将其打包然后放进结构体。
+4. 将结构体发送给用户。（使用`copyout`，感兴趣可以看看实现，不是很容易看，不过下一个lab你也得看就是了）
+
+### 常见疑问
+Q：`sysinfo`结构体是？    
+A：xv6给我们做的，就是专门放这两个数据的，毕竟你想想，如果你只能发送一个文件，你要怎么发两个文件呢？没错，就是用结构体。
