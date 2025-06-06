@@ -129,6 +129,8 @@
 &lt;h4 id=&quot;ce-shi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ce-shi&quot; aria-label=&quot;Anchor link for: ce-shi&quot;&gt;测试&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
 &lt;p&gt;现在你去测试后，应该能拿到和作业需求相同的结果了，如果没有的话，就需要你自己去排查问题了。&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;chang-jian-yi-wen&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#chang-jian-yi-wen&quot; aria-label=&quot;Anchor link for: chang-jian-yi-wen&quot;&gt;常见疑问&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Q：&lt;code&gt;NELEM&lt;&#x2F;code&gt;是干什么的？&lt;br &#x2F;&gt;
+A：&lt;code&gt;defs.h&lt;&#x2F;code&gt;有定义，是一个宏，作用是：算出整个数组有多少元素。&lt;&#x2F;p&gt;
 &lt;p&gt;Q：&lt;code&gt;extern&lt;&#x2F;code&gt;是什么意思&lt;br &#x2F;&gt;
 A：&lt;code&gt;extern&lt;&#x2F;code&gt;用来声明一个变量或者函数是在其他文件中定义的，这样编译器就知道它的存在了，比如：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;extern&lt;&#x2F;span&gt;&lt;span&gt; uint64 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_trace&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
