@@ -129,13 +129,13 @@
 &lt;h4 id=&quot;ce-shi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ce-shi&quot; aria-label=&quot;Anchor link for: ce-shi&quot;&gt;测试&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
 &lt;p&gt;现在你去测试后，应该能拿到和作业需求相同的结果了，如果没有的话，就需要你自己去排查问题了。&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;chang-jian-yi-wen&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#chang-jian-yi-wen&quot; aria-label=&quot;Anchor link for: chang-jian-yi-wen&quot;&gt;常见疑问&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
-&lt;p&gt;Q：&lt;code&gt;extern&lt;&#x2F;code&gt;是什么意思？&lt;br &#x2F;&gt;
+&lt;p&gt;Q：&lt;code&gt;extern&lt;&#x2F;code&gt;是什么意思&lt;br &#x2F;&gt;
 A：&lt;code&gt;extern&lt;&#x2F;code&gt;修饰符在这里的意思是，声明一个变量的存在，但不定义它。它会告诉编译器“这个变量在其他地方定义了，你现在看到的只是一个声明”&lt;&#x2F;p&gt;
-&lt;p&gt;Q：为什么除了&lt;code&gt;user.h&lt;&#x2F;code&gt;的，其他的&lt;code&gt;trace&lt;&#x2F;code&gt;都是接收&lt;code&gt;void&lt;&#x2F;code&gt;的？
+&lt;p&gt;Q：为什么除了&lt;code&gt;user.h&lt;&#x2F;code&gt;的，其他的&lt;code&gt;trace&lt;&#x2F;code&gt;都是接收&lt;code&gt;void&lt;&#x2F;code&gt;的？&lt;br &#x2F;&gt;
 A：我不知道呀，不过我们在&lt;code&gt;sysproc.c&lt;&#x2F;code&gt;那里实现的确实有接收&lt;code&gt;int&lt;&#x2F;code&gt;参数，我想其他的都是&lt;code&gt;void&lt;&#x2F;code&gt;可能是什么规定吧，而且系统上功能确实可以正常使用。&lt;&#x2F;p&gt;
-&lt;p&gt;Q：&lt;code&gt;usys.pl&lt;&#x2F;code&gt;文件是什么呀？是汇编吗？不过看着也不像呀。
+&lt;p&gt;Q：&lt;code&gt;usys.pl&lt;&#x2F;code&gt;文件是什么呀？是汇编吗？不过看着也不像呀。&lt;br &#x2F;&gt;
 A：似乎是这样的，我们在&lt;code&gt;user.h&lt;&#x2F;code&gt;提供给用户API对吧？然后&lt;code&gt;usys.pl&lt;&#x2F;code&gt;就会将&lt;code&gt;trace&lt;&#x2F;code&gt;的系统调用号放到&lt;code&gt;a7&lt;&#x2F;code&gt;寄存器，之后我们就能用让用户态和内核态连接了，大概（我也不知道呀）&lt;&#x2F;p&gt;
-&lt;p&gt;Q：那么...我们是怎么从用户态转到内核态的呢？
+&lt;p&gt;Q：那么...我们是怎么从用户态转到内核态的呢？&lt;br &#x2F;&gt;
 A：这个我也不知道，我想是这样。CPU把我们送过去&lt;code&gt;syscall&lt;&#x2F;code&gt;函数那里，然后就跳到&lt;code&gt;sysproc.c&lt;&#x2F;code&gt;执行我们的系统调用，应该是这样吧？&lt;&#x2F;p&gt;
 </content>
         
