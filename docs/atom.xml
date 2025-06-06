@@ -41,7 +41,7 @@
 &lt;&#x2F;span&gt;&lt;span&gt;|-- |-- sysproc.c
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h4 id=&quot;user-h&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#user-h&quot; aria-label=&quot;Anchor link for: user-h&quot;&gt;user.h&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
-&lt;p&gt;我们得在这文件里添加这行。&lt;&#x2F;p&gt;
+&lt;p&gt;我们得在这文件里添加这行：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;trace&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h4 id=&quot;usys-pl&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#usys-pl&quot; aria-label=&quot;Anchor link for: usys-pl&quot;&gt;usys.pl&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
@@ -53,7 +53,7 @@
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;SYS_trace &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;22
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h4 id=&quot;syscall-c&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#syscall-c&quot; aria-label=&quot;Anchor link for: syscall-c&quot;&gt;syscall.c&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
-&lt;p&gt;添加这行。&lt;&#x2F;p&gt;
+&lt;p&gt;添加这行：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;extern&lt;&#x2F;span&gt;&lt;span&gt; uint64 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_trace&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;然后因为我们需要输出系统调用的名称，所以相应的，我们也得添加字符串数组。&lt;&#x2F;p&gt;
@@ -130,15 +130,33 @@
 &lt;p&gt;现在你去测试后，应该能拿到和作业需求相同的结果了，如果没有的话，就需要你自己去排查问题了。&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;chang-jian-yi-wen&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#chang-jian-yi-wen&quot; aria-label=&quot;Anchor link for: chang-jian-yi-wen&quot;&gt;常见疑问&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;Q：&lt;code&gt;extern&lt;&#x2F;code&gt;是什么意思&lt;br &#x2F;&gt;
-A：&lt;code&gt;extern&lt;&#x2F;code&gt;修饰符在这里的意思是，声明一个变量的存在，但不定义它。它会告诉编译器“这个变量在其他地方定义了，你现在看到的只是一个声明”&lt;&#x2F;p&gt;
+A：&lt;code&gt;extern&lt;&#x2F;code&gt;用来声明一个变量或者函数是在其他文件中定义的，这样编译器就知道它的存在了，比如：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;extern&lt;&#x2F;span&gt;&lt;span&gt; uint64 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_trace&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这就代表&lt;code&gt;sys_trace&lt;&#x2F;code&gt;函数在其他地方定义了，我们只是声明一下，让编译器知道它的存在，不然调用时可能就会报错。&lt;&#x2F;p&gt;
 &lt;p&gt;Q：为什么除了&lt;code&gt;user.h&lt;&#x2F;code&gt;的，其他的&lt;code&gt;trace&lt;&#x2F;code&gt;都是接收&lt;code&gt;void&lt;&#x2F;code&gt;的？&lt;br &#x2F;&gt;
-A：我刚刚找了下，好像是这样。因为内核和我们平时写的用户态程序不同，内核一般是用特定的寄存器来存参数（a0-a7好像是，8个寄存器）来让用户态的参数传到内核态，然后内核态再通过&lt;code&gt;arg&lt;&#x2F;code&gt;（如我们刚刚用的&lt;code&gt;argint&lt;&#x2F;code&gt;）什么的从寄存器提取出来实际的参数。&lt;&#x2F;p&gt;
+A：在用户态，我们调用系统调用时是这样写的：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;trace&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;mask&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;而在内核态，系统调用的是这样：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;uint64 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_trace&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;虽然函数定义中没有参数，但是实际上参数是通过寄存器传递的。
+还记得刚刚我们用的&lt;code&gt;argint&lt;&#x2F;code&gt;吗？&lt;code&gt;argint(0, &amp;amp;var)&lt;&#x2F;code&gt;，这个&lt;code&gt;0&lt;&#x2F;code&gt;的意思就是&lt;code&gt;a0&lt;&#x2F;code&gt;寄存器，我们要从&lt;code&gt;a0&lt;&#x2F;code&gt;寄存器提取出实际的参数，然后复制给&lt;code&gt;var&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
 &lt;p&gt;Q：&lt;code&gt;usys.pl&lt;&#x2F;code&gt;文件是什么呀？是汇编吗？不过看着也不像呀。&lt;br &#x2F;&gt;
-A：首先，他不是汇编文件，是&lt;code&gt;perl&lt;&#x2F;code&gt;脚本。他的作用...类似一个中间人，他会生成&lt;code&gt;usys.S&lt;&#x2F;code&gt;，他会做两件事：&lt;&#x2F;p&gt;
-&lt;ul&gt;
-&lt;li&gt;准备参数：他会把你要调用的那个系统调用号放到&lt;code&gt;a7&lt;&#x2F;code&gt;寄存器。&lt;&#x2F;li&gt;
-&lt;li&gt;去找内核：他会带着系统调用号去找内核，然后把系统调用号送给内核。&lt;&#x2F;li&gt;
-&lt;&#x2F;ul&gt;
+A：首先，他不是汇编文件，是&lt;code&gt;perl&lt;&#x2F;code&gt;脚本。他的作用是生成&lt;code&gt;usys.S&lt;&#x2F;code&gt;，是个汇编文件，我们&lt;code&gt;make qemu&lt;&#x2F;code&gt;之后会生成，感兴趣的话可以自己去看看。我复制了一段里面的代码：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;.global&lt;&#x2F;span&gt;&lt;span&gt; trace
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;trace:
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;li&lt;&#x2F;span&gt;&lt;span&gt; a7, SYS_trace
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;ecall
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;ret
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这段代码的作用是：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;将系统调用号（这里是22）加载到&lt;code&gt;a7&lt;&#x2F;code&gt;寄存器。&lt;&#x2F;li&gt;
+&lt;li&gt;执行&lt;code&gt;ecall&lt;&#x2F;code&gt;指令，在用户态触发系统调用（之后会进入内核态，不过那又是更复杂的事情了...）。&lt;&#x2F;li&gt;
+&lt;li&gt;返回到用户态。&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
 </content>
         
     </entry>
