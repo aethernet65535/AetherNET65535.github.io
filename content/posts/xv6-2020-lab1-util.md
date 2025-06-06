@@ -208,6 +208,8 @@ A: 可能导致——子进程的`read`无法收到EOF（因为父进程的写�
 
 ## primes(moderate)/(hard)
 
+就看代码的话，不算难，只要记住一句话即可：`一个2到35的管道，我们要用的进程数量大约是这里所有素数，一个进程输出一个素数。`
+
 ```C
 #include "kernel/types.h"
 #include "kernel/stat.h"
