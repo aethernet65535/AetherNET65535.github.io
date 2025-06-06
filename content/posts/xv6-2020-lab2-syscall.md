@@ -132,7 +132,7 @@ np->mask = p->mask;
 Q：嗯？为什么`trace`可以输出那么多行，不是只执行了一次吗？   
 A：细节可以去看`user/trace.c`，主要是这样：
 1. 修改进程的`mask`数值。
-2. 执行`trace 32`之后的命令，比如我们这里的是`grep hello README`。
+2. 执行`trace 32`之后的命令，比如我们这里的是`grep hello README`。   
 之后每次`grep`程序在执行时，他每调用任何一个系统调用（如`read`），`syscall`检测到我们写了`mask`的数值，它就会输出，所以可能不止执行一次。
 
 Q：那么为什么`mask`的数值可以保留？   
