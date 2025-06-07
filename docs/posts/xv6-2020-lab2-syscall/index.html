@@ -70,11 +70,16 @@
 </span></code></pre><h4 id=sysproc-c><a aria-label="Anchor link for: sysproc-c" class=zola-anchor href=#sysproc-c>sysproc.c</a></h4><p>添加一个新的系统调用。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>uint64 
 </span><span style=color:#f29718>sys_trace</span><span>(</span><span style=color:#fa6e32>void</span><span>)
 </span><span>{
+</span><span>  </span><span style=color:#fa6e32>int</span><span> mask</span><span style=color:#61676ccc>;
+</span><span>  
 </span><span>  </span><span style=color:#abb0b6;font-style:italic>// get int from user
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#ed9366>-></span><span>mask) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>mask) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>  </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"trace pid: </span><span style=color:#ff8f40>%d</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>, </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#ed9366>-></span><span>pid)</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span>p </span><span style=color:#ed9366>= </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"trace pid: </span><span style=color:#ff8f40>%d</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> p</span><span style=color:#ed9366>-></span><span>pid)</span><span style=color:#61676ccc>;
+</span><span>  p</span><span style=color:#ed9366>-></span><span>mask </span><span style=color:#ed9366>=</span><span> mask</span><span style=color:#61676ccc>;
+</span><span>  
 </span><span>  </span><span style=color:#fa6e32>return </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
 </span><span>}
 </span></code></pre><h4 id=proc-c><a aria-label="Anchor link for: proc-c" class=zola-anchor href=#proc-c>proc.c</a></h4><p>在<code>freeproc</code>函数中顺便清除<code>mask</code>。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>p</span><span style=color:#ed9366>-></span><span>mask </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;

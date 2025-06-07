@@ -107,11 +107,16 @@ syscall(void)
 uint64 
 sys_trace(void)
 {
+  int mask;
+  
   // get int from user
-  if(argint(0, &myproc()->mask) < 0)
+  if(argint(0, &mask) < 0)
     return -1;
 
-  printf("trace pid: %d\n", myproc()->pid);
+  struct proc *p = myproc();
+  printf("trace pid: %d\n", p->pid);
+  p->mask = mask;
+  
   return 0;
 }
 ```
