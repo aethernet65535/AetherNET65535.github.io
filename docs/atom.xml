@@ -94,13 +94,14 @@
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;ol start=&quot;3&quot;&gt;
 &lt;li&gt;错误处理：
-如果发现是叶子页表，那就要直接内核恐慌了（&lt;code&gt;kernel panic&lt;&#x2F;code&gt;），因为一般是开发者自行更改页表才会出现这种问题，比起数据遭到乱改，直接死机是更好的选择。&lt;&#x2F;li&gt;
+如果发现是叶子页表，那就要直接内核恐慌了（&lt;code&gt;kernel panic&lt;&#x2F;code&gt;），因为一般是开发者自行更改页表才会出现这种问题，比起数据遭到预期以为的修改，直接死机是更好的选择。&lt;&#x2F;li&gt;
 &lt;&#x2F;ol&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else if&lt;&#x2F;span&gt;&lt;span&gt;(pte &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt; PTE_V){
 &lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;panic&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;freewalk: leaf&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;你可能不是很理解我在说什么，简单来说就是，如果叶子节点是有效的，那就代表它还是有数据的，我们不应该清空有数据的页表，至少这不是&lt;code&gt;freewalk&lt;&#x2F;code&gt;需要做的，这是&lt;code&gt;proc_freepagetable&lt;&#x2F;code&gt;做的，感兴趣的可以去&lt;code&gt;kernel&#x2F;proc.c&lt;&#x2F;code&gt;看看。
-4. 释放当前页表（包括物理内存里的数据）：&lt;&#x2F;p&gt;
+&lt;p&gt;我说的可能有点绕，简单来说就是，如果叶子节点是有效的，那就代表它还是有数据的，我们不应该清空有数据的页表。&lt;br &#x2F;&gt;
+至少这不是&lt;code&gt;freewalk&lt;&#x2F;code&gt;需要做的，这是&lt;code&gt;uvmunmap&lt;&#x2F;code&gt;做的，感兴趣的可以去&lt;code&gt;kernel&#x2F;proc.c&lt;&#x2F;code&gt;和&lt;code&gt;kernel&#x2F;vm.c&lt;&#x2F;code&gt;看看。
+4. 释放当前页表：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kfree&lt;&#x2F;span&gt;&lt;span&gt;((&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)pagetable)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 这个可以执行很多次，有几次取决于你的pagetable总共有多少个 
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;这之后，你的页表们都会被放进&lt;code&gt;freelist&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
@@ -151,6 +152,110 @@
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;vmprint&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pagetable)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;然后去跑跑TEST，应该就可以通过了，那个回答问题的测试你自己&lt;code&gt;touch&lt;&#x2F;code&gt;一个然后写答案就可以了。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;a-kernel-page-table-per-process-hard&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#a-kernel-page-table-per-process-hard&quot; aria-label=&quot;Anchor link for: a-kernel-page-table-per-process-hard&quot;&gt;a kernel page table per process (hard)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;好，这个就是卡我最久的LAB了，是真的难。（2个月左右）&lt;&#x2F;p&gt;
+&lt;p&gt;好！我们先来看看这个LAB是要做什么吧！&lt;br &#x2F;&gt;
+首先，XV6的页表现在是怎么样的呢？&lt;&#x2F;p&gt;
+&lt;p&gt;XV6的页表是这样的：
+每个用户进程，在用户态运行时，都使用自己的用户态页表。&lt;br &#x2F;&gt;
+但是，一旦进入内核态，就要切换到内核页表，现在这个内核页表是全局的。&lt;&#x2F;p&gt;
+&lt;p&gt;这个实验要我们做的就是，让每个用户进程都有自己的内核页表。&lt;br &#x2F;&gt;
+嘛不过，分两步，这个LAB和下一个关系很大，不可以先去做下一个LAB！&lt;br &#x2F;&gt;
+这个LAB要做的是让XV6从全局内核页表进化为全局+多个副本，并且效果和现在一样。（就是不报错，所有功能正常）&lt;br &#x2F;&gt;
+下一个LAB才是让完善这种进程页表。&lt;&#x2F;p&gt;
+&lt;p&gt;这个LAB会改变的：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;❎ 内核页表有各自用户页表的映射&lt;&#x2F;li&gt;
+&lt;li&gt;✅ 每个用户进程在内核态将会使用自己的内核页表&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;好，开始吧！&lt;br &#x2F;&gt;
+首先我们要先让我们的进程有一个新的字段。&lt;br &#x2F;&gt;
+和&lt;code&gt;pagetable&lt;&#x2F;code&gt;差不多，不过是内核的，所以就叫&lt;code&gt;kpagetable&lt;&#x2F;code&gt;吧！&lt;br &#x2F;&gt;
+在&lt;code&gt;kernel&#x2F;proc.h&lt;&#x2F;code&gt;加上新字段：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;proc &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; spinlock lock&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; p-&amp;gt;lock must be held when using these:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;enum&lt;&#x2F;span&gt;&lt;span&gt; procstate state&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Process state
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;proc&lt;&#x2F;span&gt;&lt;span&gt; *parent&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;         &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Parent process
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;chan&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;                  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; If non-zero, sleeping on chan
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; killed&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;                  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; If non-zero, have been killed
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; xstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;                  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Exit status to be returned to parent&amp;#39;s wait
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; pid&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;                     &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Process ID
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; these are private to the process, so p-&amp;gt;lock need not be held.
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 kstack&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;               &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Virtual address of kernel stack
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 sz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;                   &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Size of process memory (bytes)
+&lt;&#x2F;span&gt;&lt;span&gt;  pagetable_t pagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;       &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; User page table
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;trapframe&lt;&#x2F;span&gt;&lt;span&gt; *trapframe&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; data page for trampoline.S
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; context context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;      &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; swtch() here to run process
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;file&lt;&#x2F;span&gt;&lt;span&gt; *ofile[NOFILE]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Open files
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;inode&lt;&#x2F;span&gt;&lt;span&gt; *cwd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;           &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Current directory
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char&lt;&#x2F;span&gt;&lt;span&gt; name[&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;16&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;               &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Process name (debugging)
+&lt;&#x2F;span&gt;&lt;span&gt;  
+&lt;&#x2F;span&gt;&lt;span&gt;  pagetable_t kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;      &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 添加这个，以后我们的内核页表就是这个了
+&lt;&#x2F;span&gt;&lt;span&gt;}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;然后我们要模仿&lt;code&gt;kvminit&lt;&#x2F;code&gt;，这样就能给进程内核页表分东西了。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;pagetable_t
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kvmmake&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;global&lt;&#x2F;span&gt;&lt;span&gt;) 
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 这个参数主要是用来区分全局和副本的
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 副本放CLINT会报错，具体怎么修复我也不知道，目前已知的就是不分配
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  pagetable_t kpagetable &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(pagetable_t) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kalloc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;memset&lt;&#x2F;span&gt;&lt;span&gt;(kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; uart registers
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mappages&lt;&#x2F;span&gt;&lt;span&gt;(kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; UART0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; UART0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PTE_R &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt; PTE_W)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; virtio mmio disk interface
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mappages&lt;&#x2F;span&gt;&lt;span&gt;(kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; VIRTIO0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; VIRTIO0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PTE_R &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt; PTE_W)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(global &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; CLINT
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mappages&lt;&#x2F;span&gt;&lt;span&gt;(kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; CLINT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x10000&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; CLINT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PTE_R &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt; PTE_W)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; PLIC
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mappages&lt;&#x2F;span&gt;&lt;span&gt;(kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PLIC&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x400000&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PLIC&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PTE_R &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt; PTE_W)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; map kernel text executable and read-only.
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mappages&lt;&#x2F;span&gt;&lt;span&gt;(kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; KERNBASE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;(uint64)etext&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span&gt;KERNBASE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; KERNBASE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PTE_R &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt; PTE_X)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; map kernel data and the physical RAM we&amp;#39;ll make use of.
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mappages&lt;&#x2F;span&gt;&lt;span&gt;(kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;(uint64)etext&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PHYSTOP&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span&gt;(uint64)etext&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;(uint64)etext&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PTE_R &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt; PTE_W)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; map the trampoline for trap entry&#x2F;exit to
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; the highest virtual address in the kernel.
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mappages&lt;&#x2F;span&gt;&lt;span&gt;(kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; TRAMPOLINE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;(uint64)trampoline&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PTE_R &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt; PTE_X)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span&gt; kpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;*
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt; * create a direct-map page table for the kernel.
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt; *&#x2F;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kvminit&lt;&#x2F;span&gt;&lt;span&gt;()
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  kernel_pagetable &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kvmmake&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;接下来，我们要把这个副本放进进程里，在&lt;code&gt;kernel&#x2F;proc.c&lt;&#x2F;code&gt;的&lt;code&gt;allocproc&lt;&#x2F;code&gt;函数添加以下代码：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; An empty user page table.
+&lt;&#x2F;span&gt;&lt;span&gt;  p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pagetable &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;proc_pagetable&lt;&#x2F;span&gt;&lt;span&gt;(p)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pagetable &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;freeproc&lt;&#x2F;span&gt;&lt;span&gt;(p)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;release&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 添加这个
+&lt;&#x2F;span&gt;&lt;span&gt;  p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;kpagetable &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kvmmake&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 正如刚刚所说的，这是副本，所以用参数0
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;kpagetable &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;freeproc&lt;&#x2F;span&gt;&lt;span&gt;(p)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;release&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 </content>
         
     </entry>
@@ -414,7 +519,19 @@ A：xv6给我们做的，就是专门放这两个数据的，毕竟你想想，�
         <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/xv6-2020-lab1-util/"/>
         <id>https://aethernet65535.github.io/posts/xv6-2020-lab1-util/</id>
         
-        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab1-util/">&lt;p&gt;事先声明，我写的博客，操作基本都是在ARCH LINUX上实现的。&lt;&#x2F;p&gt;
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab1-util/">&lt;p&gt;前言：&lt;br &#x2F;&gt;
+读者们好！&lt;&#x2F;p&gt;
+&lt;p&gt;我写的这个博客，大量参考了其他的博客，因为我也是一个初学者，这系列的博客与其说是教程，不如说就是我的个人笔记，我借鉴了大量其他大佬的代码，不过我有尽量理解大佬们写的代码是干什么的就是了，我已知其然，但并不完全知其所以然。虽然还不完全知其所以然，但是思考过程本身也是学习的乐趣与收获。&lt;&#x2F;p&gt;
+&lt;p&gt;读者可能还在犹豫自己适不适合学习&lt;code&gt;XV6-2020&lt;&#x2F;code&gt;，我当然不知道读者的水平，也不可能知道你适不适合，但是如果读者的水平和我差不多，或者更好，我想读者可以试试。&lt;br &#x2F;&gt;
+博主的水平：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;刚学编程6个月（XV6大概是从第2&#x2F;3个月左右开始的）&lt;&#x2F;li&gt;
+&lt;li&gt;目前学会了&lt;code&gt;C&#x2F;RISC-V ASM&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;参考的博客&#x2F;教程包括但不限于：&lt;br &#x2F;&gt;
+https:&#x2F;&#x2F;github.com&#x2F;whileskies&#x2F;xv6-labs-2020&#x2F;&lt;&#x2F;p&gt;
+&lt;p&gt;正文：&lt;br &#x2F;&gt;
+事先声明，这个博客，操作基本都是在ARCH LINUX上实现的。&lt;&#x2F;p&gt;
 &lt;p&gt;这是XV6-2020的第一个LAB，主要是初步认识RISC-V版的XV6，然后为其实现一些用户态的小工具。&lt;&#x2F;p&gt;
 &lt;p&gt;这是我的GitHub链接，如果有关于这个项目的问题，可以试试查看&lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;aethernet65535&#x2F;DOCKER-XV6_2020&quot;&gt;这里&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;boot-xv6-easy&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#boot-xv6-easy&quot; aria-label=&quot;Anchor link for: boot-xv6-easy&quot;&gt;boot xv6 (easy)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
