@@ -90,11 +90,11 @@ syscall(void)
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     p->trapframe->a0 = syscalls[num]();
     
-    // output trace
+    // 输出检测到的每次调用
     if(p->mask & (1 << num)) {
       printf("%d: syscall %s -> %d\n", p->pid, syscall_names[num], p->trapframe->a0);
     }
-  } else { // error
+  } else { // 输入了错误的系统调用号
     printf("%d %s: unknown sys call %d\n",
             p->pid, p->name, num);
     p->trapframe->a0 = -1;
@@ -109,7 +109,7 @@ sys_trace(void)
 {
   int mask;
   
-  // get int from user
+  // 从用户那里获取系统调用号（int）
   if(argint(0, &mask) < 0)
     return -1;
 
@@ -258,3 +258,5 @@ sys_sysinfo(void)
 ### 常见疑问
 Q：`sysinfo`结构体是？    
 A：xv6给我们做的，就是专门放这两个数据的，毕竟你想想，如果你只能发送一个文件，你要怎么发两个文件呢？没错，就是用结构体。
+
+最后编辑时间：2025/6/12

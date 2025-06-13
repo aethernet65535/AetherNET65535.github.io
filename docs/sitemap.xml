@@ -29,6 +29,9 @@
         <loc>https://aethernet65535.github.io/posts/page/1/</loc>
     </url>
     <url>
+        <loc>https://aethernet65535.github.io/posts/page/2/</loc>
+    </url>
+    <url>
         <loc>https://aethernet65535.github.io/posts/shortcode/</loc>
         <lastmod>2024-06-14</lastmod>
     </url>
@@ -39,6 +42,10 @@
     <url>
         <loc>https://aethernet65535.github.io/posts/xv6-2020-lab2-syscall/</loc>
         <lastmod>2025-06-06</lastmod>
+    </url>
+    <url>
+        <loc>https://aethernet65535.github.io/posts/xv6-2020-lab3-pgtbl/</loc>
+        <lastmod>2025-06-07</lastmod>
     </url>
     <url>
         <loc>https://aethernet65535.github.io/projects/</loc>

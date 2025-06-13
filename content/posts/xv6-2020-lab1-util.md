@@ -30,6 +30,7 @@ make clean && make qemu
 > 如果跑不了的话，可能是因为你的QEMU太新了，也有可能是其它问题。你可以试试给QEMU降级，或者去学习使用PODMAN或DOCKER（并不难）。
 
 ## sleep (easy)
+首先，`XV6`已经为我们做好了`sleep`这个系统调用，可以理解为一个“功能”，而我们需要做的只是调用这个功能，而不是写出这个功能的具体实现。
 
 在`user`目录里，创建名为`sleep.c`的文件。
 ```tree
@@ -38,7 +39,7 @@ xv6-labs-2020/
 |-- |-- sleep.c
 ```
 
-调用sleep系统调用来实现这个功能。
+调用`sleep`系统调用来实现这个功能。
 ```C
 #include "kernel/types.h"
 #include "kernel/stat.h"
@@ -46,17 +47,17 @@ xv6-labs-2020/
 
 int main (int argc, char *argv[])
 {
-    // if the argument is not 2 (sleep <ticks>)
+    // 检查用户输入的参数是不是只有两个 (sleep <ticks>)
     if (argc != 2)
     {
         fprintf (2, "usage: sleep <ticks>\n");
         exit(1);
     }
     
-    // change ascii to integer
+    // 把ASCII字符转化为整数（int）
     int ticks = atoi(argv[1]);
 
-    // turn back time: disabled
+    // 防止用户不知道自己不能让时间倒流（悲）
     if (ticks < 0)
     {
         fprintf (2, "ticks must be a positive integer\n");
@@ -102,8 +103,6 @@ xv6-labs-2020/
 |-- |-- pingpong.c
 ```
 
-<br>
-
 ```C
 #include "kernel/types.h"
 #include "kernel/stat.h"
@@ -122,29 +121,29 @@ int main (int argc, char *argv[])
 
     int pid;
 
-    // one-way pipes for communication
+    // 通信用的单向管道
     // p2c: parent to child
     // c2p: child to parent
     int p2c[2], c2p[2]; 
     char signal = 0;
     
-    // create pipes
+    // 创建管道
     pipe(p2c); 
     pipe(c2p);
 
     pid = fork();
 
-    if (pid > 0) // parent process
+    if (pid > 0) // 父进程
     {
-        // parent process just needs to write[p2c] and read[c2p]
+        // 父进程只需要两个权限：写入P2C与读取C2P
         close(p2c[READ]);
         close(c2p[WRITE]);
 
-        // tee off: send a byte signal to child
+        // 开球：向子进程发送一个字节的信号（最方便）
         write(p2c[WRITE], &signal, 1);
         close(p2c[WRITE]);
 
-        // waiting for catch: blocking until child sends a byte signal
+        // 等球：直到子进程发送信号到C2P前，父进程都会一直阻塞
         read(c2p[READ], &signal, 1);
         close(c2p[READ]);
 
@@ -152,19 +151,19 @@ int main (int argc, char *argv[])
         
         exit(0);
     }
-    else if (pid == 0) // child process
+    else if (pid == 0) // 子进程
     {
-        // child process just needs to read[p2c] and write[c2p]
+        // 子进程只需要两个权限：写入C2P与读取P2C
         close(c2p[READ]);
         close(p2c[WRITE]);
 
-        // waiting for catch: blocking until parent sends a byte signal
+        // 等球：直到父进程发送信号到P2C前，子进程都会一直阻塞
         read(p2c[READ], &signal, 1);
         close(p2c[READ]);
 
         printf("%d: Received Ping\n", getpid());
         
-        // tee off: send a byte signal to parent
+        // 开球：向父进程发送一个字节的信号
         write(c2p[WRITE], &signal, 1);
         close(c2p[WRITE]);
 
@@ -177,23 +176,16 @@ int main (int argc, char *argv[])
     }
 }
 ```
-上面的代码你可能看不懂，让我解释解释。
-<br>
-首先，我们当前的进程`fork`出了一个子进程后，这两个进程是并行的，就是他们是同时跑的。
-<br>
-但是我们希望这个代码是有顺序的，所以我们需要让其中一个不能跑。
-<br>
+上面的代码你可能看不懂，让我解释解释。     
+首先，我们当前的进程`fork`出了一个子进程后，这两个进程是并行的，就是他们是同时跑的。       
+但是我们希望这个代码是有顺序的，所以我们需要让其中一个不能跑。     
 我们在这里利用的是管道的堵塞机制，即“如果读取不到，就不执行下一个代码”。
 
-用乒乓球举例（我没打过，也不了解乒乓球）
-<br>
-乒乓球的桌子，上面有两个区域，一个是P区域，一个是C区域。
-<br>
-父亲站在P那里，他只可以把球打过去C那里，或者抓住飞到P区域的球。
-<br>
-一样的，儿子只能站在C那里，他只能把球打去P区域，或者抓住飞到C区域的球。
-
-当父亲还没有把球打给儿子时，儿子就不能抓住球，因为球没有飞向他。
+用乒乓球举例（我没打过，也不了解乒乓球）：        
+乒乓球的桌子，上面有两个区域，一个是P区域，一个是C区域。       
+父亲站在P那里，他只可以把球打过去C那里，或者抓住飞到P区域的球。       
+一样的，儿子只能站在C那里，他只能把球打去P区域，或者抓住飞到C区域的球。       
+当父亲还没有把球打给儿子时，儿子就不能抓住球，因为球没有飞向他。        
 
 ### 常见疑问
 
@@ -218,21 +210,21 @@ A: 可能导致——子进程的`read`无法收到EOF（因为父进程的写�
 #define READ 0
 #define WRITE 1
 
-__attribute__((noreturn)) // to avoid warning about not returning
+__attribute__((noreturn)) // 可有可无，如果给你报错了就加上这行
 void sieve_algo (int left[2], int depth)
 {
     close(left[WRITE]);
 
     int prime, temp, pid, right[2];
 
-    // read a prime number from the pipe
+    // 读取来自管道的数字，读取不到就阻塞（或者写端没关）
     if (read(left[READ], &prime, sizeof(int)) == 0)
     {
         close(left[READ]);
         exit(0);
     }
     
-    // if the depth is too deep, we have a stack overflow
+    // 防爆栈的，不过因为我们基本属于硬编码，所以这个也是属于可有可无
     if (depth > 15)
     {
         fprintf(2, "stackoverflow\n");
@@ -246,7 +238,7 @@ void sieve_algo (int left[2], int depth)
     pipe(right);
 
     pid = fork();
-    if (pid > 0) // parent process
+    if (pid > 0) // 父进程
     {
         close(right[READ]);
 
@@ -264,14 +256,14 @@ void sieve_algo (int left[2], int depth)
         wait(0);
         exit(0);
     }
-    else if (pid == 0) // child process
+    else if (pid == 0) // 子进程
     {
         close(left[READ]);
         close(right[WRITE]);
         sieve_algo(right, depth + 1);
         exit(0);
     }
-    else // fork failed
+    else // fork 失败
     {
         fprintf(2, "fork error\n");
         close(right[READ]);
@@ -287,27 +279,27 @@ int main(int argc, char* argv[])
     pipe(p);
 
     pid = fork();
-    if (pid > 0) // parent process
+    if (pid > 0) // 父进程
     {
         close(p[READ]);
         
-        // write 2 to 35 to the pipe
+        // 把2到35全写入管道
         for (int i = 2; i <= 35; i++)
         {
             write(p[WRITE], &i, sizeof(int));
         }
         
-        // p finish working
+        // 到这里，P管道就等着下班了
         close(p[WRITE]);
         wait(0); 
         exit(0); 
     }
-    else if (pid == 0) // child process
+    else if (pid == 0) // 子进程
     {
         sieve_algo(p, 1);
         exit(0);
     }
-    else // fork failed
+    else // fork 失败
     {
         fprintf(2, "fork error\n");
         exit(1);
@@ -339,7 +331,7 @@ fmtname(char *path)
 {
   char *p;
 
-  // find the last '/' in the path
+  // 找到路径中最后的'/'（最右边的）
   for(p = path + strlen(path); p >= path && *p != '/'; --p)
     ;
   return p + 1;
@@ -353,14 +345,14 @@ find(char *path, char *filename)
   struct stat st;
   struct dirent de;
 
-  // get the file descriptor
+  // 获取文件描述符
   if((fd = open (path, 0)) < 0)
   {
     fprintf(2, "find: cannot open %s\n", path);
     return;
   }
 
-  // get the file stats
+  // 获取该文件的更多资料（比如它是文件还是目录）
   if(fstat (fd, &st) < 0)
   {
     fprintf(2, "find: cannot stat %s\n", path);
@@ -370,20 +362,20 @@ find(char *path, char *filename)
 
   switch(st.type)
   {
-    case T_FILE: // if it is a file
-      // check if the file name matches the given filename
+    case T_FILE: // 如果是文件的话
+      // 检查该文件是否为用户指定的
       if(strcmp(fmtname(path), filename) == 0)
       {
         printf("%s\n", path);
       }
       break;
 
-    case T_DIR: // if it is a directory
+    case T_DIR: // 如果它是目录的话
       strcpy(buf, path);
       p = buf + strlen(buf);
       *p++ = '/';
       
-      // read the whole directory, until the end of the directory
+      // 不断读取整个目录，直到读完
       while(read(fd, &de, sizeof(de)) == sizeof(de))
       {
         if(de.inum == 0 || strcmp(de.name, ".") == 0
@@ -392,7 +384,7 @@ find(char *path, char *filename)
 
         memmove(p, de.name, DIRSIZ);
         p[DIRSIZ] = 0;
-        find(buf, filename); // recursive call to find in subdirectories
+        find(buf, filename); // 在子目录里递归
       }
       break;
 
@@ -424,7 +416,8 @@ ps：我自己也不是很清楚，写到这里时，我的进度只是LAB5: LAZ
 
 ## xargs (moderate)
 
-这个稍微有一些难度，你得了解下管道，不用理解的很深，只要知道左边给右边传输数据，左边再读取数据就行了。
+这个稍微有一些难度，你得了解下管道，不用理解的很深，只要知道左边给右边传输数据，左边再读取数据就行了。     
+假设输入是`echo hello world | xargs echo two`，那么xargs的argv就是`xargs, echo, two`这三个参数，然后它向管道读取到的数据就是`hello world`。
 
 ```C
 #include "kernel/types.h"
@@ -448,15 +441,15 @@ int main(int argc, char *argv[])
     int index = 0;
     char ch;
     
-    // read a char
+    // 读取一个字符
     while (read(READ, &ch, 1) > 0) 
     {
-        // end of a line
+        // 可以看看echo.c，它会在结尾加上\n
         if (ch == '\n') 
         {
-            line[index] = '\0'; // add null terminator
+            line[index] = '\0'; // 在该行的结尾加上结束符
             
-            // a memory per argument
+            // 给每个argv分配内存
             char *cmd_argv[MAXARG];
             for (int i = 0; i < argc - 1; i++) 
             {
@@ -464,43 +457,45 @@ int main(int argc, char *argv[])
                 strcpy(cmd_argv[i], argv[i+1]); 
             }
 
-            // a block for input line
+            // 把该行的内容添加到结尾
+            // 例子：刚刚把 echo hello world | xargs echo two 更改为 echo two
+            // 现在就把 echo two 更改为 echo two hello world
             cmd_argv[argc-1] = malloc(strlen(line) + 1);
             strcpy(cmd_argv[argc-1], line);
-            cmd_argv[argc] = 0; // add end of array
+            cmd_argv[argc] = 0; // 加个数组的结束字符
 
             int pid = fork();
-            if (pid == 0) // child process
+            if (pid == 0) // 子进程
             {
                 exec(cmd_argv[0], cmd_argv); // exec(path, argv)
-                fprintf(2, "exec %s failed\n", cmd_argv[0]); // if exec fails
+                fprintf(2, "exec %s failed\n", cmd_argv[0]); // 只要exec成功的话，这里就不可能执行
                 exit(1);
             } 
-            else if (pid > 0) // parent process
+            else if (pid > 0) // 父进程
             {
                 wait(0);
                 
-                // free memory allocated
+                // 子进程结束后，就释放所有内存，避免下次的意外输出
                 for (int i = 0; i < argc; i++) 
                 {
                     free(cmd_argv[i]);
                 }
             }
-            else // fork failed 
+            else // fork 失败
             {
                 fprintf(2, "fork failed\n");
                 exit(1);
             }
             index = 0;    
         } 
-        else // common char
+        else // 普通字符就来这里
         {
-            // check if the argument length is out of limit
+            // 检查用户输入的字符长度是否过长
             if (index < MAX_ARG_LEN - 1) 
             {
                 line[index++] = ch;
             } 
-            else // argument too long
+            else // 如果过长，就报错，避免了其他更严重的错误
             {
                 fprintf(2, "argument too long\n");
                 while (read(READ, &ch, 1) > 0 && ch != '\n');
@@ -517,3 +512,5 @@ A：记得数组吧？最后一个要放什么？没错，就是要放`0`/`NULL`
 
 Q：为什么程序一开始就`read`了，它读取的数据是什么？   
 A：读取的数据是来自管道的，就是左边的`echo hello`，右边我们写`xargs`的就是读取+输出端，具体的我还不是很了解，还请各位自己去了解关于管道的知识！
+
+最后编辑时间：2025/6/12
