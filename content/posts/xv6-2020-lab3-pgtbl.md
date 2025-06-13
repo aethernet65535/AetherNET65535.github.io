@@ -10,7 +10,7 @@ comment = true
 +++
 ## 前言
 好，这个就是最难的LAB了（我觉得）。如果说LAB1、2是小学水平，那么LAB3至少都是高中水平了，真的难。      
-不过，做完之后（如果有尽量认真思考的话），你会发现你的水平有了大提升，页表很难，不过也很有趣。     
+不过，做完之后，你会发现你的水平有了大提升，页表很难，不过也很有趣。     
 
 先提醒一下，如果你还没读`xv6-book`，或是还没看`MIT S6.081`的公开课，我建议你去看一下，页表我学了有差不多1个月吧，很难真的。（也有可能是我太菜了嘤嘤嘤QAQ）      
 
@@ -18,7 +18,9 @@ comment = true
 
 ## print a page table (easy)
 这个难度是`easy`，事实也确实如此，因为这个是最后的`easy`了，之后就是大boss了。     
-我先说一下，这个如果真遇到问题了也别抄我`GITHUB REPO`的，我的比较不一样，输出大概是这样：
+如果你有去看我的`GITHUB REPO`，你可能会觉得我的代码很奇怪，我这里说明一下我的代码的作用。   
+我写的那些是用来输出`VA`和`PERM`的，没什么用，我DEBUG是完全没用到`VMPRINT`，那些代码可以不抄，毕竟不是作业要求。    
+如果你去修改代码调用我的版本，输出会是这样的：
 ```C
 PAGETABLE:0x0000000087f1c000
 |-- VA:0x0000000000000000 PTE:0x0000000021fc6001 PA:0x0000000087f18000 PERM:0x1
@@ -31,7 +33,7 @@ PAGETABLE:0x0000000087f1c000
 |-- |-- |-- VA:0x0000003fffffe000 PTE:0x0000000021fed807 PA:0x0000000087fb6000 PERM:0x2055
 |-- |-- |-- VA:0x0000003ffffff000 PTE:0x0000000020001c0b PA:0x0000000080007000 PERM:0x3083
 ```
-仔细读过实验要求的肯定能看出这不是作业要求的，而是我自己加的，我先放一下作业要求的输出：
+我放一下作业要求的输出：
 ```C
 page table 0x0000000087f6e000
 ..0: pte 0x0000000021fda801 pa 0x0000000087f6a000
@@ -73,7 +75,7 @@ for(int i = 0; i < 512; i++){
     pte_t pte = pagetable[i];
 ```
 2. 处理中间页表：
-检查`PTE`是否为`VALID`，并且没有`READ`、`WRITE`、`EXECUTE`权限。如果是的话说明这是中间页表，如果有那三个权限的话，就是叶子页表了。（指向物理内存的页表）
+检查`PTE`是否为`VALID`，并且没有`READ`、`WRITE`、`EXECUTE`权限。如果是的话说明这是中间页表，如果有那三个权限中的任意一个的话，就是叶子节点了。（指向物理内存的页表）
 通过`PTE2PA`获得下一个页表的地址然后递归调用：
 ```C
 if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
@@ -81,14 +83,64 @@ if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
       freewalk((pagetable_t)child);
 ```
 3. 错误处理：
-如果发现是叶子页表，那就要直接内核恐慌了（`kernel panic`），因为一般是开发者乱改页表才会出现这种问题，比起数据遭到乱改，直接死机是更好的选择。
+如果发现是叶子页表，那就要直接内核恐慌了（`kernel panic`），因为一般是开发者自行更改页表才会出现这种问题，比起数据遭到乱改，直接死机是更好的选择。
 ```C
 else if(pte & PTE_V){
       panic("freewalk: leaf");
 ```
-你可能不是很理解我在说什么，简单来说就是，如果叶子节点是有效的，那就代表他还是有数据的，我们不应该清空有数据的页表，至少这不是`freewalk`需要做的，这是`proc_freepagetable`做的，感兴趣的可以去`kernel/proc.c`看看。
+你可能不是很理解我在说什么，简单来说就是，如果叶子节点是有效的，那就代表它还是有数据的，我们不应该清空有数据的页表，至少这不是`freewalk`需要做的，这是`proc_freepagetable`做的，感兴趣的可以去`kernel/proc.c`看看。
 4. 释放当前页表（包括物理内存里的数据）：
 ```C
-kfree((void*)pagetable); // 这个会执行很多次，有几次取决于你的pagetable总共有多少个 
+kfree((void*)pagetable); // 这个可以执行很多次，有几次取决于你的pagetable总共有多少个 
 ```
 这之后，你的页表们都会被放进`freelist`。
+
+好，可以开始做实验了。    
+首先，去打开`kernel/vm.c`。   
+然后，实验代码就是这个：
+```C
+void
+vmprint_ori(pagetable_t pagetable, int level)
+{
+  for(int i = 0; i < 512; i++){
+    pte_t pte = pagetable[i];
+    if (!(pte & PTE_V)) continue;
+
+    for (int i = 3; i > level; i--) {
+      printf("..");
+      if(i-1 > level){
+        printf(" ");
+      }
+    }
+    printf("%d: pte %p pa %p\n", i, pte, PTE2PA(pte));
+      
+    if((pte & (PTE_R|PTE_W|PTE_X)) == 0){
+      uint64 child = PTE2PA(pte);
+      vmprint_ori((pagetable_t)child, level - 1);
+    }
+  }
+}
+
+void 
+vmprint(pagetable_t pagetable)
+{
+  printf("page table %p\n", pagetable);
+  vmprint_ori(pagetable, 2);
+}
+```
+然后我们打开`kernel/exec.c`。   
+实验代码如下：
+```C
+// Commit to the user image.
+  oldpagetable = p->pagetable;
+  p->pagetable = pagetable;
+  p->sz = sz;
+  p->trapframe->epc = elf.entry;  // initial program counter = main
+  p->trapframe->sp = sp; // initial stack pointer
+  proc_freepagetable(oldpagetable, oldsz);
+
+  // 添加这个
+  if(p->pid == 1)
+    vmprint(p->pagetable);
+```
+然后去跑跑TEST，应该就可以通过了，那个回答问题的测试你自己`touch`一个然后写答案就可以了。

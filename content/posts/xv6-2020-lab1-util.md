@@ -147,7 +147,7 @@ int main (int argc, char *argv[])
         read(c2p[READ], &signal, 1);
         close(c2p[READ]);
 
-        printf("%d: Received Pong\n", getpid());
+        printf("%d: received pong\n", getpid());
         
         exit(0);
     }
@@ -161,7 +161,7 @@ int main (int argc, char *argv[])
         read(p2c[READ], &signal, 1);
         close(p2c[READ]);
 
-        printf("%d: Received Ping\n", getpid());
+        printf("%d: received ping\n", getpid());
         
         // 开球：向父进程发送一个字节的信号
         write(c2p[WRITE], &signal, 1);
@@ -234,7 +234,7 @@ void sieve_algo (int left[2], int depth)
         exit(1);
     }
 
-    printf("prime: %d\n", prime);
+    printf("prime %d\n", prime);
     pipe(right);
 
     pid = fork();

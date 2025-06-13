@@ -107,7 +107,7 @@
 </span><span>        </span><span style=color:#f29718>read</span><span>(c2p[READ]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>signal</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(c2p[READ])</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>        </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%d</span><span style=color:#86b300>: Received Pong</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>, </span><span style=color:#f29718>getpid</span><span>())</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%d</span><span style=color:#86b300>: received pong</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>, </span><span style=color:#f29718>getpid</span><span>())</span><span style=color:#61676ccc>;
 </span><span>        
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
@@ -121,7 +121,7 @@
 </span><span>        </span><span style=color:#f29718>read</span><span>(p2c[READ]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>signal</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f29718>close</span><span>(p2c[READ])</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>        </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%d</span><span style=color:#86b300>: Received Ping</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>, </span><span style=color:#f29718>getpid</span><span>())</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%d</span><span style=color:#86b300>: received ping</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>, </span><span style=color:#f29718>getpid</span><span>())</span><span style=color:#61676ccc>;
 </span><span>        
 </span><span>        </span><span style=color:#abb0b6;font-style:italic>// 开球：向父进程发送一个字节的信号
 </span><span>        </span><span style=color:#f29718>write</span><span>(c2p[WRITE]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>signal</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
@@ -166,7 +166,7 @@
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
 </span><span>
-</span><span>    </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"prime: </span><span style=color:#ff8f40>%d</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> prime)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"prime </span><span style=color:#ff8f40>%d</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> prime)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#f29718>pipe</span><span>(right)</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>    pid </span><span style=color:#ed9366>= </span><span style=color:#f29718>fork</span><span>()</span><span style=color:#61676ccc>;
