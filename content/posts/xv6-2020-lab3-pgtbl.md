@@ -166,6 +166,8 @@ XV6的页表是这样的：
 - ✅ 每个用户进程在内核态将会使用自己的内核页表
 
 好，开始吧！    
+
+### 内核页表副本字段
 首先我们要先让我们的进程有一个新的字段。    
 和`pagetable`差不多，不过是内核的，所以就叫`kpagetable`吧！   
 在`kernel/proc.h`加上新字段：
@@ -194,6 +196,8 @@ struct proc {
   pagetable_t kpagetable;      // 添加这个，以后我们的内核页表就是这个了
 };
 ```
+
+### 创建内核页表副本
 然后我们要模仿`kvminit`，这样就能给进程内核页表分东西了。
 ```C
 pagetable_t
@@ -239,6 +243,7 @@ kvminit()
   kernel_pagetable = kvmmake(1);
 }
 ```
+### 将其分配至进程
 接下来，我们要把这个副本放进进程里，在`kernel/proc.c`的`allocproc`函数添加以下代码：    
 ```C
  // An empty user page table.
@@ -256,3 +261,129 @@ kvminit()
     release(&p->lock);
     return 0;
 ```
+
+### 将其删除！
+因为我们分配了新东西，所以我们要释放进程时也要让系统知道我们要释放新东西！
+```C
+if(p->pagetable)
+    proc_freepagetable(p->pagetable, p->sz);
+  p->pagetable = 0;
+
+  // 要释放新东西！
+  // 一定要先释放KSTACK！不然会报错！
+  if(p->kstack)
+    uvmunmap(p->kpagetable, p->kstack, 1, 1);
+  p->kstack = 0;
+  if(p->kpagetable)
+    kvmfree(p->kpagetable); // 这个是新函数，之后你会看到的
+  p->kpagetable = 0;
+```
+
+### 全部删除！
+看到上面的`kvmfree`了对吧？这不是XV6自己的函数，是我们自己实现的函数，具体怎么实现就看这里：    
+```C
+void
+kvmfree(pagetable_t kpagetable)
+{
+  for(int i = 0; i < 512; i++){
+    pte_t pte = kpagetable[i];
+    if(pte & PTE_V) 
+      kpagetable[i] = 0;
+    if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
+      uint64 child = PTE2PA(pte);
+      kvmfree((pagetable_t)child);
+    }
+  }
+  kfree((void*)kpagetable);
+}
+```
+你可能发现了，这不就是`freewalk`吗？    
+那确实差不多，但是差了一些，`kvmfree`呢，他是不管`L0 PTE`还有没有指向数据都给你删的，如果是freewalk的话，他是禁止删除指向数据的`L0 PTE`的。
+总结一下区别就是：
+- freewalk：L0还指向数据？不能删，PANIC！
+- kvmfree：L0还指向数据？不过代码让都让我删了，删吧，开发者自己会负责的。
+
+### 内核栈转移
+之后，我们看看`kernel/proc.c`里的`procinit`函数，我们会发现，这里有一段分配内核栈的代码：   
+```C
+// Allocate a page for the process's kernel stack.
+// Map it high in memory, followed by an invalid
+// guard page.
+char *pa = kalloc(); // 分配一页
+if(pa == 0) // 错误处理（如果没分配成功）
+  panic("kalloc");
+uint64 va = KSTACK((int) (p - proc)); // 计算出VA的地址
+kvmmap(va, (uint64)pa, PGSIZE, PTE_R | PTE_W); // 把内核栈分配到全局内核页表
+p->kstack = va; // 让进程自己知道内核栈的地址
+```
+我们得把它剪切下来，然后粘贴到`allocproc`，并修改一些代码：   
+```C
+char *pa = kalloc();
+if(pa == 0)
+  panic("kalloc");
+uint64 va = KSTACK((int) (p - proc));
+mappages(p->kpagetable, va, PGSIZE, (uint64)pa, PTE_R | PTE_W);
+p->kstack = va;
+```
+我们修改的代码是：    
+```C
+kvmmap(va, (uint64)pa, PGSIZE, PTE_R | PTE_W);
+mappages(p->kpagetable, va, PGSIZE, (uint64)pa, PTE_R | PTE_W);
+```
+`kvmmap`版做的是把内核栈分配给全局内核页表。    
+但是这个LAB要我们做的就是把全局内核页表的东西搬到或映射到内核页表副本。
+
+所以我们的`mappages`版本做的就是把它分配到进程自己的内核页表副本。
+
+
+### 小修小补
+之后我们还要改一个地方，这个hint没有说，不过是肯定要改的，不然会报错。    
+在`kernel/vm.c`的kvmpa函数，修改一些代码：    
+```C
+uint64
+kvmpa(uint64 va)
+{
+  uint64 off = va % PGSIZE;
+  pte_t *pte;
+  uint64 pa;
+ 
+  // 从全局页表改为页表副本
+  pte = walk(myproc()->kpagetable, va, 0);
+  if(pte == 0)
+    panic("kvmpa");
+  if((*pte & PTE_V) == 0)
+    panic("kvmpa");
+  pa = PTE2PA(*pte);
+  return pa+off;
+}
+```
+
+### SATP指向全局内核页表？内核页表副本！
+如果你有看`kernel/main.c`，你可能会发现，XV6初始化后，就会进入`scheduler`函数找进程，`main.c`我们就像不看了，毕竟这LAB也没有必要看那个（而且我也看不懂（＞人＜；））    
+
+好，那我们就来看`kernel/proc.c`的`scheduler`函数：    
+```C
+p->state = RUNNING;
+c->proc = p;
+
+// 切换至内核页表副本
+w_satp(MAKE_SATP(p->kpagetable));
+sfence_vma();
+
+// （继续）执行进程
+swtch(&c->context, &p->context);
+
+// 进程暂停/结束后
+
+// 切换到全局内核页表！
+kvminithart();
+
+// 如果找不到进程跑的话，就先在全局页表观望观望
+if(found == 0) {
+  kvminithart(); 
+
+  intr_on();
+  asm volatile("wfi");
+}
+```
+最后编辑时间：2025/6/14
