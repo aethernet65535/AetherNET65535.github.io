@@ -587,7 +587,7 @@ uvmdealloc_nofree(pagetable_t pagetable, uint64 oldsz, uint64 newsz)
 现在的话，要给用户进程不能无限扩容了，不然他可能会覆盖到内核页表。    
 那我们要怎么做呢？没错，就是找到内核页表最低的地方，也就是`PLIC`！    
 然后就不让他长到那里！        
-为什么不是CLINT呢？因为内核副本不映射呀！(。・∀・)ノ    
+为什么不是`CLINT`呢？因为内核副本不映射呀！(。・∀・)ノ    
 
 修改`kernel/sysproc.c`：
 ```C

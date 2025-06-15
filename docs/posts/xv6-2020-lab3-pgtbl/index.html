@@ -385,7 +385,7 @@
 </span><span>
 </span><span>  </span><span style=color:#fa6e32>return</span><span> newsz</span><span style=color:#61676ccc>;
 </span><span>}
-</span></code></pre><h3 id=xian-zhi-sheng-chang><a aria-label="Anchor link for: xian-zhi-sheng-chang" class=zola-anchor href=#xian-zhi-sheng-chang>限制生长！</a></h3><p>现在的话，要给用户进程不能无限扩容了，不然他可能会覆盖到内核页表。<br> 那我们要怎么做呢？没错，就是找到内核页表最低的地方，也就是<code>PLIC</code>！<br> 然后就不让他长到那里！<br> 为什么不是CLINT呢？因为内核副本不映射呀！(。・∀・)ノ<p>修改<code>kernel/sysproc.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>uint64
+</span></code></pre><h3 id=xian-zhi-sheng-chang><a aria-label="Anchor link for: xian-zhi-sheng-chang" class=zola-anchor href=#xian-zhi-sheng-chang>限制生长！</a></h3><p>现在的话，要给用户进程不能无限扩容了，不然他可能会覆盖到内核页表。<br> 那我们要怎么做呢？没错，就是找到内核页表最低的地方，也就是<code>PLIC</code>！<br> 然后就不让他长到那里！<br> 为什么不是<code>CLINT</code>呢？因为内核副本不映射呀！(。・∀・)ノ<p>修改<code>kernel/sysproc.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>uint64
 </span><span style=color:#f29718>sys_sbrk</span><span>(</span><span style=color:#fa6e32>void</span><span>)
 </span><span>{
 </span><span>  </span><span style=color:#fa6e32>int</span><span> addr</span><span style=color:#61676ccc>;
