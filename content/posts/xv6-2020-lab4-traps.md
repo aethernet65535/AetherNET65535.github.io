@@ -78,17 +78,17 @@ What value is in the register `ra` just after the `jalr` to `printf` in `main`?
 
 解答：    
 ```sh
-34:	610080e7          	jalr	1552(ra) # 640 <printf>
+34:	610080e7          	jalr 1552(ra) # 640 <printf>
 exit(0);
-38:	4501                	li	a0,0
+38:	4501                li a0,0
 ```
 `ra`保存的是下一条指令，所以值是`38`，就是`34`+`4`。
 
 ### 第五个问题：
 Run the following code.
 ```C
-	unsigned int i = 0x00646c72;
-	printf("H%x Wo%s", 57616, &i); 
+  unsigned int i = 0x00646c72;
+  printf("H%x Wo%s", 57616, &i); 
 ```
 What is the output? 
 
@@ -98,7 +98,7 @@ The output depends on that fact that the `RISC-V` is `little-endian`. If the `RI
 跑一下这个代码。
 ```C
   unsigned int i = 0x00646c72;
-	printf("H%x Wo%s", 57616, &i); 
+  printf("H%x Wo%s", 57616, &i); 
 ```
 输出会是什么？    
 有那样的输出，是因为`RISC-V`是`小端`。    
@@ -119,7 +119,7 @@ The output depends on that fact that the `RISC-V` is `little-endian`. If the `RI
 ### 第六个问题：
 In the following code, what is going to be printed after 'y='? (note: the answer is not a specific value.) Why does this happen?
 ```C
-	printf("x=%d y=%d", 3);
+  printf("x=%d y=%d", 3);
 ```
 
 中文翻译：    
