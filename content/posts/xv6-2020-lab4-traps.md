@@ -41,7 +41,7 @@ Which registers contain arguments to functions? For example, which register hold
 哪些寄存器用于传递函数参数？比如，`main`调用`printf`时，数字13存在于哪个寄存器中？
 
 解答：    
-明显，很明显，这题答案就是`13`，我们看`24`那里就知道了：
+明显，很明显，我们先找到`13`在哪，在`a2`那里，所以答案就是`a2`。
 ```sh
 li a2, 13 # 了解x86的读者可以暂时理解为mov a2, 13
 ```

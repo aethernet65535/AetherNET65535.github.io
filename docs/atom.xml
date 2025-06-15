@@ -51,7 +51,7 @@
 &lt;p&gt;中文翻译：&lt;br &#x2F;&gt;
 哪些寄存器用于传递函数参数？比如，&lt;code&gt;main&lt;&#x2F;code&gt;调用&lt;code&gt;printf&lt;&#x2F;code&gt;时，数字13存在于哪个寄存器中？&lt;&#x2F;p&gt;
 &lt;p&gt;解答：&lt;br &#x2F;&gt;
-明显，很明显，这题答案就是&lt;code&gt;13&lt;&#x2F;code&gt;，我们看&lt;code&gt;24&lt;&#x2F;code&gt;那里就知道了：&lt;&#x2F;p&gt;
+明显，很明显，我们先找到&lt;code&gt;13&lt;&#x2F;code&gt;在哪，在&lt;code&gt;a2&lt;&#x2F;code&gt;那里，所以答案就是&lt;code&gt;a2&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;sh&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-sh &quot;&gt;&lt;code class=&quot;language-sh&quot; data-lang=&quot;sh&quot;&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;li&lt;&#x2F;span&gt;&lt;span&gt; a2, 13 &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;# 了解x86的读者可以暂时理解为mov a2, 13
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;di-er-ge-wen-ti&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#di-er-ge-wen-ti&quot; aria-label=&quot;Anchor link for: di-er-ge-wen-ti&quot;&gt;第二个问题：&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
