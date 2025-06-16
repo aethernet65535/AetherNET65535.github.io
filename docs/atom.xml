@@ -525,7 +525,7 @@
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;copyinstr_new&lt;&#x2F;span&gt;&lt;span&gt;(pagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; dst&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; srcva&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; max)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;h3 id=&quot;nei-he-he-yong-hu-tong-bu-wo-cao-xiu-gai-di-ceng-dai-ma&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#nei-he-he-yong-hu-tong-bu-wo-cao-xiu-gai-di-ceng-dai-ma&quot; aria-label=&quot;Anchor link for: nei-he-he-yong-hu-tong-bu-wo-cao-xiu-gai-di-ceng-dai-ma&quot;&gt;内核和用户同步！（卧槽！修改底层代码！）&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;h3 id=&quot;nei-he-he-yong-hu-tong-bu-xiu-gai-di-ceng-dai-ma&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#nei-he-he-yong-hu-tong-bu-xiu-gai-di-ceng-dai-ma&quot; aria-label=&quot;Anchor link for: nei-he-he-yong-hu-tong-bu-xiu-gai-di-ceng-dai-ma&quot;&gt;内核和用户同步！（修改底层代码！）&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;在我们每次修改用户内存时，我们就让内核页表副本也一同修改就行了，这样不就可以同步了嘛（(￣y▽,￣)╭ ）：&lt;&#x2F;p&gt;
 &lt;p&gt;第一个，是我们分配内存时，也要给自己的内核分配一下！&lt;br &#x2F;&gt;
 所以我们得去&lt;code&gt;kernel&#x2F;vm.c&lt;&#x2F;code&gt;修改一些东西：&lt;&#x2F;p&gt;
@@ -733,11 +733,38 @@
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pid &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;)
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;vmprint&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pagetable)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;h3 id=&quot;wo-cao-zen-me-bao-cuo&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wo-cao-zen-me-bao-cuo&quot; aria-label=&quot;Anchor link for: wo-cao-zen-me-bao-cuo&quot;&gt;卧槽怎么报错？&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;h3 id=&quot;ng-zen-me-bao-cuo&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ng-zen-me-bao-cuo&quot; aria-label=&quot;Anchor link for: ng-zen-me-bao-cuo&quot;&gt;嗯？怎么报错？&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;报错了吗？那确实可能是我这笔记不够仔细呢，不过如果你好好跟着这个笔记走的话，是不太可能有什么大报错的，基本都是一些语法的报错，比如我们刚刚动了很多函数对吧，你只要去改一些参数就可以了，这些就当作是练习吧，不难的！&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;wan-jie-sa-hua&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wan-jie-sa-hua&quot; aria-label=&quot;Anchor link for: wan-jie-sa-hua&quot;&gt;完结撒花&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;这个真的是最难的一个LAB了，是不是之一不知道，不过很难，博主用了至少一个月来理解页表呀！&lt;br &#x2F;&gt;
 不过这LAB让我学到的东西也超级多的，可以说是最好的LAB了！&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;chang-jian-yi-wen&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#chang-jian-yi-wen&quot; aria-label=&quot;Anchor link for: chang-jian-yi-wen&quot;&gt;常见疑问&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;Q：这个实验之后，我们在内核态和用户态用的分别是什么页表呢？&lt;br &#x2F;&gt;
+A：我调试了下，在&lt;code&gt;usertrap&lt;&#x2F;code&gt;时，使用的是&lt;code&gt;kpagetable&lt;&#x2F;code&gt;。用户态理论上是&lt;code&gt;pagetable&lt;&#x2F;code&gt;，但是我调试不出。具体为什么我会说理论上是，主要是这两段代码：&lt;br &#x2F;&gt;
+&lt;code&gt;kernel&#x2F;trampoline.S:88&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;userret&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  # &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;userret&lt;&#x2F;span&gt;&lt;span&gt;(TRAPFRAME&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; pagetable)
+&lt;&#x2F;span&gt;&lt;span&gt;  # &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;switch&lt;&#x2F;span&gt;&lt;span&gt; from kernel to user&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.
+&lt;&#x2F;span&gt;&lt;span&gt;  # &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;usertrapret&lt;&#x2F;span&gt;&lt;span&gt;() calls here&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.
+&lt;&#x2F;span&gt;&lt;span&gt;  # a0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:&lt;&#x2F;span&gt;&lt;span&gt; TRAPFRAME&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; in user page table&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.
+&lt;&#x2F;span&gt;&lt;span&gt;  # a1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:&lt;&#x2F;span&gt;&lt;span&gt; user page table&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt; satp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  # &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;switch&lt;&#x2F;span&gt;&lt;span&gt; to the user page table&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.
+&lt;&#x2F;span&gt;&lt;span&gt;  csrw satp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; a1
+&lt;&#x2F;span&gt;&lt;span&gt;  sfence&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;vma zero&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; zero
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;kernel&#x2F;trap.c:usertrapret&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; tell trampoline.S the user page table to switch to.
+&lt;&#x2F;span&gt;&lt;span&gt;uint64 satp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;MAKE_SATP&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pagetable)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; jump to trampoline.S at the top of memory, which 
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; switches to the user page table, restores user registers,
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; and switches to user mode with sret.
+&lt;&#x2F;span&gt;&lt;span&gt;uint64 fn &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; TRAMPOLINE &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span&gt;(userret &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span&gt; trampoline)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;((&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)(uint64&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt;uint64))fn)(TRAPFRAME&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; satp)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Q：为什么蹦床会跳进&lt;code&gt;kpagetable&lt;&#x2F;code&gt;，而不是&lt;code&gt;kernel_pagetable&lt;&#x2F;code&gt;？&lt;br &#x2F;&gt;
+A：因为&lt;code&gt;trampoline&lt;&#x2F;code&gt;用的内核页表似乎是&lt;code&gt;scheduler&lt;&#x2F;code&gt;设置的内核页表。&lt;&#x2F;p&gt;
 &lt;p&gt;最后编辑时间：2025&#x2F;6&#x2F;15&lt;&#x2F;p&gt;
 </content>
         

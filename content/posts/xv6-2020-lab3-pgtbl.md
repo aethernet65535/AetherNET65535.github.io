@@ -425,7 +425,7 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
   return copyinstr_new(pagetable, dst, srcva, max);
 }
 ```
-### 内核和用户同步！（卧槽！修改底层代码！）
+### 内核和用户同步！（修改底层代码！）
 在我们每次修改用户内存时，我们就让内核页表副本也一同修改就行了，这样不就可以同步了嘛（(￣y▽,￣)╭ ）：   
 
 第一个，是我们分配内存时，也要给自己的内核分配一下！    
@@ -656,11 +656,42 @@ if(p->pid == 1)
   vmprint(p->pagetable);
 ```
 
-### 卧槽怎么报错？
+### 嗯？怎么报错？
 报错了吗？那确实可能是我这笔记不够仔细呢，不过如果你好好跟着这个笔记走的话，是不太可能有什么大报错的，基本都是一些语法的报错，比如我们刚刚动了很多函数对吧，你只要去改一些参数就可以了，这些就当作是练习吧，不难的！
 
 ### 完结撒花
 这个真的是最难的一个LAB了，是不是之一不知道，不过很难，博主用了至少一个月来理解页表呀！   
 不过这LAB让我学到的东西也超级多的，可以说是最好的LAB了！
+
+## 常见疑问
+Q：这个实验之后，我们在内核态和用户态用的分别是什么页表呢？   
+A：我调试了下，在`usertrap`时，使用的是`kpagetable`。用户态理论上是`pagetable`，但是我调试不出。具体为什么我会说理论上是，主要是这两段代码：    
+`kernel/trampoline.S:88`
+```C
+userret:
+  # userret(TRAPFRAME, pagetable)
+  # switch from kernel to user.
+  # usertrapret() calls here.
+  # a0: TRAPFRAME, in user page table.
+  # a1: user page table, for satp.
+
+  # switch to the user page table.
+  csrw satp, a1
+  sfence.vma zero, zero
+```
+`kernel/trap.c:usertrapret`
+```C
+// tell trampoline.S the user page table to switch to.
+uint64 satp = MAKE_SATP(p->pagetable);
+
+// jump to trampoline.S at the top of memory, which 
+// switches to the user page table, restores user registers,
+// and switches to user mode with sret.
+uint64 fn = TRAMPOLINE + (userret - trampoline);
+((void (*)(uint64,uint64))fn)(TRAPFRAME, satp);
+```
+
+Q：为什么蹦床会跳进`kpagetable`，而不是`kernel_pagetable`？   
+A：因为`trampoline`用的内核页表似乎是`scheduler`设置的内核页表。
 
 最后编辑时间：2025/6/15
