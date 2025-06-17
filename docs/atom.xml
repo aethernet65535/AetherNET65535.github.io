@@ -772,11 +772,18 @@ A：因为&lt;code&gt;trampoline&lt;&#x2F;code&gt;用的内核页表似乎是&lt
 &lt;&#x2F;span&gt;&lt;span&gt;p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;trapframe&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;kernel_trap &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(uint64)usertrap&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;trapframe&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;kernel_hartid &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_tp&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;         &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; hartid for cpuid()
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;h2 id=&quot;che-dan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#che-dan&quot; aria-label=&quot;Anchor link for: che-dan&quot;&gt;扯淡&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
-&lt;p&gt;今天学校几乎没老师来，学校好像60多位，至少30个没来，所以我就在班上读&lt;code&gt;XV6-BOOK&lt;&#x2F;code&gt;，然后我刚好重新读了CHAPTER-4，就看到了陷阱相关的知识。
+&lt;h2 id=&quot;che-dan-zui-mei-yong-de-xiao-pian-zhang-bu-jian-yi-kan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#che-dan-zui-mei-yong-de-xiao-pian-zhang-bu-jian-yi-kan&quot; aria-label=&quot;Anchor link for: che-dan-zui-mei-yong-de-xiao-pian-zhang-bu-jian-yi-kan&quot;&gt;扯淡 （最没用的小篇章，不建议看）&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;就是随便说说的东西而已，和笔记有些关系，不过无关的也多，读者无聊的话可以看，不过干货不多就是了。&lt;br &#x2F;&gt;
+（；´д｀）ゞ&lt;&#x2F;p&gt;
+&lt;p&gt;更新：2025&#x2F;6&#x2F;17 PM04:00&lt;br &#x2F;&gt;
+今天学校几乎没老师来，学校好像60多位，至少30个没来，所以我就在班上读&lt;code&gt;XV6-BOOK&lt;&#x2F;code&gt;，然后我刚好重新读了CHAPTER-4，就看到了陷阱相关的知识。
 现在我回到家了，我再次用&lt;code&gt;gdb&lt;&#x2F;code&gt;调试，这次专门给&lt;code&gt;usertrapret&lt;&#x2F;code&gt;设置断点，然后我发现，第一次拦截时，SATP指向一个既不是全局内核页表也不是内核页表副本的地方，我不知道是哪里。但是第二次拦截时，就是指向内核页表副本了。&lt;&#x2F;p&gt;
 &lt;p&gt;我觉得有点奇怪，不过也正常，毕竟我还在学习XV6，太难了这一课，虽然作业是做好了，但是我不觉得我理解了页表什么时候切换。&lt;&#x2F;p&gt;
 &lt;p&gt;有什么新发现我会继续更新，这篇说不定到我做完XV6所有LABS了都还会更新呢，毕竟太难了( ´･･)ﾉ(._.`)&lt;&#x2F;p&gt;
+&lt;p&gt;更新：2025&#x2F;6&#x2F;17 PM09:05&lt;br &#x2F;&gt;
+似乎知道为什么第一次是奇怪的SATP了，估计是因为我断点在了开头，现在发现只要跑多几行就可以了，好神奇！&lt;&#x2F;p&gt;
+&lt;p&gt;不过我现在很累了呢，眼睛已经要关起来了，毕竟学校弄了个笨活动，我不喜欢，要多人合作，不能自己搞，自己搞比较容易...&lt;br &#x2F;&gt;
+算了，反正我做好了，睡觉（＞人＜；）！&lt;&#x2F;p&gt;
 &lt;p&gt;上次编辑日期：2025&#x2F;6&#x2F;15&lt;br &#x2F;&gt;
 最后编辑时间：2025&#x2F;6&#x2F;17&lt;&#x2F;p&gt;
 </content>
