@@ -693,5 +693,22 @@ uint64 fn = TRAMPOLINE + (userret - trampoline);
 
 Q：为什么蹦床会跳进`kpagetable`，而不是`kernel_pagetable`？   
 A：因为`trampoline`用的内核页表似乎是`scheduler`设置的内核页表。
+```C
+// set up trapframe values that uservec will need when
+// the process next re-enters the kernel.
+p->trapframe->kernel_satp = r_satp();         // kernel page table
+p->trapframe->kernel_sp = p->kstack + PGSIZE; // process's kernel stack
+p->trapframe->kernel_trap = (uint64)usertrap;
+p->trapframe->kernel_hartid = r_tp();         // hartid for cpuid()
+```
 
-最后编辑时间：2025/6/15
+## 扯淡
+今天学校几乎没老师来，学校好像60多位，至少30个没来，所以我就在班上读`XV6-BOOK`，然后我刚好重新读了CHAPTER-4，就看到了陷阱相关的知识。
+现在我回到家了，我再次用`gdb`调试，这次专门给`usertrapret`设置断点，然后我发现，第一次拦截时，SATP指向一个既不是全局内核页表也不是内核页表副本的地方，我不知道是哪里。但是第二次拦截时，就是指向内核页表副本了。
+
+我觉得有点奇怪，不过也正常，毕竟我还在学习XV6，太难了这一课，虽然作业是做好了，但是我不觉得我理解了页表什么时候切换。
+
+有什么新发现我会继续更新，这篇说不定到我做完XV6所有LABS了都还会更新呢，毕竟太难了( ´･･)ﾉ(._.`)
+
+上次编辑日期：2025/6/15
+最后编辑时间：2025/6/17
