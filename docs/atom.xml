@@ -784,6 +784,9 @@ A：因为&lt;code&gt;trampoline&lt;&#x2F;code&gt;用的内核页表似乎是&lt
 似乎知道为什么第一次是奇怪的SATP了，估计是因为我断点在了开头，现在发现只要跑多几行就可以了，好神奇！&lt;&#x2F;p&gt;
 &lt;p&gt;不过我现在很累了呢，眼睛已经要关起来了，毕竟学校弄了个笨活动，我不喜欢，要多人合作，不能自己搞，自己搞比较容易...&lt;br &#x2F;&gt;
 算了，反正我做好了，睡觉（＞人＜；）！&lt;&#x2F;p&gt;
+&lt;p&gt;更新：2025&#x2F;6&#x2F;18 AM08:28&lt;br &#x2F;&gt;
+发现了个新东西，如果电脑性能不好的话，&lt;code&gt;echo hi&lt;&#x2F;code&gt;会被&lt;code&gt;scheduler&lt;&#x2F;code&gt;断点停下，但是如果好的话就不会。这似乎是因为，时间片还没用完。&lt;br &#x2F;&gt;
+嘛不过，&lt;code&gt;usertrapret&lt;&#x2F;code&gt;还是一定会停下的。&lt;&#x2F;p&gt;
 &lt;p&gt;上次编辑日期：2025&#x2F;6&#x2F;15&lt;br &#x2F;&gt;
 最后编辑时间：2025&#x2F;6&#x2F;17&lt;&#x2F;p&gt;
 </content>
