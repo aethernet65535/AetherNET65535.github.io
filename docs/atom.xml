@@ -25,7 +25,7 @@
         
         <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab5-lazy/">&lt;h2 id=&quot;qian-yan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan&quot; aria-label=&quot;Anchor link for: qian-yan&quot;&gt;前言&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;这个LAB的平均难度和LAB4（TRAPS）差不多，就是稍微有点难。不过我们可以通过看Hints来有个大致上的思路。&lt;&#x2F;p&gt;
-&lt;h3 id=&quot;shen-me-shi-lazy-allocationduo-xing-fen-pei&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shen-me-shi-lazy-allocationduo-xing-fen-pei&quot; aria-label=&quot;Anchor link for: shen-me-shi-lazy-allocationduo-xing-fen-pei&quot;&gt;什么是 &lt;strong&gt;Lazy Allocation惰性分配）&lt;&#x2F;strong&gt; ？&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;h3 id=&quot;shen-me-shi-lazy-allocationduo-xing-fen-pei&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shen-me-shi-lazy-allocationduo-xing-fen-pei&quot; aria-label=&quot;Anchor link for: shen-me-shi-lazy-allocationduo-xing-fen-pei&quot;&gt;什么是 &lt;strong&gt;Lazy Allocation惰性分配&lt;&#x2F;strong&gt; ？&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;Lazy Allocation的功能和它的名字有些像，就是不到最后他都不做，拖延症老严重了呢。(⁠•⁠ ⁠▽⁠ ⁠•⁠;⁠)&lt;&#x2F;p&gt;
 &lt;p&gt;但是呢，在内存分配，有一点点的拖延症并不是坏事，只要做好工作就是好事，不要让程序和用户察觉到就可以了。&lt;&#x2F;p&gt;
 &lt;p&gt;重点来了，Lazy和XV6现在的内存分配方案有什么不同？（我们先不说释放内存）&lt;&#x2F;p&gt;
