@@ -20,6 +20,7 @@ comment = true
 
 参考的博客/教程包括但不限于：       
 https://github.com/whileskies/xv6-labs-2020/
+https://clownote.github.io/tags/xv6/
 
 正文：      
 事先声明，这个博客，操作基本都是在ARCH LINUX上实现的。

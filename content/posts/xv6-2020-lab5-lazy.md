@@ -123,6 +123,7 @@ sys_sbrk(void)
   if(n < 0){
     uvmdealloc(p->pagetable, p->sz, p->sz+n);
   }
+
   p->sz += n;
 
   return addr;
@@ -175,10 +176,11 @@ panic: uvmunmap: not mapped
 } else if((which_dev = devintr()) != 0){
     // ok
 
-  // 如果scause存储的13/15
+  // 如果scause存储的是13/15
   } else if (r_scause() == 13 || r_scause() == 15){
     uint64 stval = r_stval(); // 读取无效虚拟地址
-    lazyalloc(stval, p); // 分配内存！
+    if(lazyalloc(stval, p) == 0) // 尝试分配内存
+      p->killed = 1;
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
@@ -188,51 +190,35 @@ panic: uvmunmap: not mapped
 
 ### 分配内存
 这个你可以选择不封装，当然也可以选择封装，我的建议当然是封装起来，毕竟这函数可以让不少地方调用。    
-
 ```C
-int
+uint64
 lazyalloc(uint64 stval, struct proc *p)
 {
   uint64 va = PGROUNDDOWN(stval);
-  if(stval >= p->sz || stval < PGROUNDDOWN(p->trapframe->sp))
-    goto err;
+  
+  if(stval >= p->sz || stval <= PGROUNDDOWN(p->trapframe->sp))
+    return 0;
 
-  return _lazyalloc_internal(va, p, 0);
-
-  err:
-  p->killed = 1;
-  return -1;
-}
-```
-
-```C
-// mode 0: trap
-// mode 1: read/write
-static int
-_lazyalloc_internal(uint64 va, struct proc *p, int mode)
-{
   char *mem = kalloc();
-  if(mem == 0)
-    goto err;
-
-  memset(mem, 0, PGSIZE);
-  if(mappages(p->pagetable, va, PGSIZE, (uint64)mem, PTE_W|PTE_R|PTE_U) != 0){
-    kfree(mem);
-    goto err;
+  if(mem == 0){
+    return 0;
   }
 
-  return 0;
+  memset(mem, 0, PGSIZE);
+  if(mappages(p->pagetable, va, PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0){
+    kfree(mem);
+    return 0;
+  }
 
-  err:
-  if(mode == 0)
-    p->killed = 1;
-  return -1;
+  return (uint64)mem;
 }
 ```
 
 这个代码的作用是：      
 对**无效虚拟地址**向下取整，然后检查是否大于进程可以拥有的虚拟地址，再检查是否小于堆的底部    
-（堆的底部是栈，栈只有一页，PGROUNDDOWN(sp)可以很好的计算出堆的底部）
+（堆的底部是栈，栈只有一页，PGROUNDDOWN(sp) == 栈的底部）。   
+当**此虚拟地址**不处于该范围内，则必须将其终止。    
+当**此虚拟地址**处于该范围内，系统将会为其分配/添加**一页**。
 
 注：XV6的栈是低地址，堆是高地址   
 `kernel/memlayout.h`
@@ -248,11 +234,6 @@ _lazyalloc_internal(uint64 va, struct proc *p, int mode)
 //   TRAMPOLINE (the same page as in the kernel)
 #define TRAPFRAME (TRAMPOLINE - PGSIZE)
 ```
-
-#### 为什么我要用两个函数呢？说简单点就是             
-因为下一个小作业我们又要做一个新的函数了，功能上虽然有些重叠，但是我不想让他们的名字相同。      
-我一开始是有合并的，但是我之后想了想，还是拆分成这样了。        
-毕竟一个是处理陷阱的，一个是处理读写的，我想让调用方更容易理解代码，并且不让代码很乱或很重复。
 
 ### 跳过部分检查
 因为现在不是以前的传统分配了，所以有一些检查会导致我们失败。    
@@ -277,4 +258,50 @@ for(i = 0; i < sz; i += PGSIZE){
 
 现在你输入`echo hi`时，应该会看到系统输出`hi`。
 
-最后编辑时间：2025/6/22
+## lazytests and usertests (moderate)
+这个小作业做的我血压有点高呀，因为一直出了一些奇怪的问题，不过我现在已经整理好了，然后我可能会针对性的说一下这些问题，读者们如果遇到了问题也可以看看。    
+～(　TロT)σ
+
+### 提示
+这个LAB有两个测试，分别是`usertests`和`lazytests`。   
+不过官方也有给一些提示：    
+- 处理`sbrk(-n)`的情况，`-n`的意思是释放n个字节。
+- 当系统调用如`read()/write()`等函数时，可能会有预期之外的报错，修复它。    
+注：比如我们给进程分配了`0x65535`的内存，然后进程要`write()` `0x50000`，那么我们就应该让他可以写入，只要其处于我们的允许范围内，但并不是无视地址的有效性
+
+### 系统调用调整
+一开始我弄的是`write()` `read()` `pipe()`这三个函数，之后我想优化，就弄`copyin()`，然后我又发现基本所有`copyx()`的函数都会调用`walkaddr()`，然后我就去折腾那函数了，结果就陷入了只有报错的世界。前前后后改了很多次`lazyalloc()`和`walkaddr()`。       
+ヽ(*。>Д<)o゜   
+
+不过呢，我现在弄好了，读者们直接复制粘接就完事了！    
+(๑•̀ㅂ•́)و✧    
+```C
+uint64
+walkaddr(pagetable_t pagetable, uint64 va)
+{
+  pte_t *pte;
+  uint64 pa;
+
+  if(va >= MAXVA)
+    return 0;
+
+  pte = walk(pagetable, va, 0);
+  if(pte == 0||(*pte & PTE_V) == 0){
+    pa = lazyalloc(va, myproc());
+    if(pa == 0)
+      return 0;
+    return pa;
+  }
+  if((*pte & PTE_U) == 0)
+    return 0;
+
+  pa = PTE2PA(*pte);
+  return pa;
+}
+```
+
+## 完结撒花
+好，这下读者们应该就已经完成了，没完成的话...就陷入只有报错的世界吧，之后会变强的！   
+||ヽ(*￣▽￣*)ノミ|Ю
+
+最后编辑时间：2025/6/23
