@@ -5,8 +5,262 @@
     <link rel="self" type="application/atom+xml" href="https://aethernet65535.github.io/atom.xml"/>
     <link rel="alternate" type="text/html" href="https://aethernet65535.github.io"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2025-06-15T00:00:00+00:00</updated>
+    <updated>2025-06-21T00:00:00+00:00</updated>
     <id>https://aethernet65535.github.io/atom.xml</id>
+    <entry xml:lang="en">
+        <title>XV6-2020 LAB5-LAZY</title>
+        <published>2025-06-21T00:00:00+00:00</published>
+        <updated>2025-06-21T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/xv6-2020-lab5-lazy/"/>
+        <id>https://aethernet65535.github.io/posts/xv6-2020-lab5-lazy/</id>
+        
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab5-lazy/">&lt;h2 id=&quot;qian-yan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan&quot; aria-label=&quot;Anchor link for: qian-yan&quot;&gt;前言&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个LAB的平均难度和LAB4（TRAPS）差不多，就是稍微有点难。不过我们可以通过看Hints来有个大致上的思路。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;shen-me-shi-lazy-allocationduo-xing-fen-pei&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shen-me-shi-lazy-allocationduo-xing-fen-pei&quot; aria-label=&quot;Anchor link for: shen-me-shi-lazy-allocationduo-xing-fen-pei&quot;&gt;什么是 &lt;strong&gt;Lazy Allocation惰性分配）&lt;&#x2F;strong&gt; ？&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;Lazy Allocation的功能和它的名字有些像，就是不到最后他都不做，拖延症老严重了呢。(⁠•⁠ ⁠▽⁠ ⁠•⁠;⁠)&lt;&#x2F;p&gt;
+&lt;p&gt;但是呢，在内存分配，有一点点的拖延症并不是坏事，只要做好工作就是好事，不要让程序和用户察觉到就可以了。&lt;&#x2F;p&gt;
+&lt;p&gt;重点来了，Lazy和XV6现在的内存分配方案有什么不同？（我们先不说释放内存）&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;XV6：&lt;&#x2F;strong&gt; Foo进程想要内存，所以他调用&lt;code&gt;sbrk&lt;&#x2F;code&gt;，而&lt;code&gt;sbrk&lt;&#x2F;code&gt;则会调用&lt;code&gt;growproc&lt;&#x2F;code&gt;，它会给该进程的&lt;code&gt;sz&lt;&#x2F;code&gt;字段增值，然后直接给Foo 进程&lt;code&gt;kalloc()&lt;&#x2F;code&gt;，就是直接把页表借给他用。&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;strong&gt;Lazy：&lt;&#x2F;strong&gt; Foo进程调用&lt;code&gt;sbrk&lt;&#x2F;code&gt;，&lt;code&gt;sbrk&lt;&#x2F;code&gt;就会给进程&lt;code&gt;sz&lt;&#x2F;code&gt;增值，但是不给他&lt;code&gt;kalloc()&lt;&#x2F;code&gt;，因为他知道进程还没用到，所以&lt;code&gt;sbrk&lt;&#x2F;code&gt;就表示不急。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;之后，当Foo进程开始运作时，他就会告诉计算机说“我要对&lt;code&gt;0x65535&lt;&#x2F;code&gt;写入信息”，然后计算机就开始计算“这个进程中的&lt;code&gt;0x65535&lt;&#x2F;code&gt;真正指向哪里呢？”，但是计算机会发现这个虚拟地址是无效的，并把这个无效虚拟地址写入&lt;code&gt;stval&lt;&#x2F;code&gt;寄存器，然后就没然后了，不过XV6倒是会处理，XV6的处理方案是：报错&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;eliminate-allocation-from-sbrk-easy&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#eliminate-allocation-from-sbrk-easy&quot; aria-label=&quot;Anchor link for: eliminate-allocation-from-sbrk-easy&quot;&gt;eliminate allocation from sbrk() (easy)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个确实没骗人，就是&lt;code&gt;easy&lt;&#x2F;code&gt;难度。我们只要搞破坏就行了，不过因为之后的作业也会用到这个系统调用，所以我们得精心的“搞破坏” ٩(｡・ω・｡)و&lt;&#x2F;p&gt;
+&lt;p&gt;首先呢，XV6要我们做什么？&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;删除&lt;code&gt;sbrk&lt;&#x2F;code&gt;对&lt;code&gt;growproc&lt;&#x2F;code&gt;的调用&lt;&#x2F;li&gt;
+&lt;li&gt;只修改进程的&lt;code&gt;sz&lt;&#x2F;code&gt;值（sz + n）&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h3 id=&quot;yuan-dai-ma&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#yuan-dai-ma&quot; aria-label=&quot;Anchor link for: yuan-dai-ma&quot;&gt;原代码&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;首先我们先看原代码，然后才开始思考我们要做的事情。
+&lt;code&gt;kernel&#x2F;sysproc.c&lt;&#x2F;code&gt;：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;uint64
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_sbrk&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;argint&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;n) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  addr &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;myproc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;growproc&lt;&#x2F;span&gt;&lt;span&gt;(n) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这代码实现了以下操作：&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;获取用户想要被分配&#x2F;释放的内存字节量&lt;&#x2F;li&gt;
+&lt;li&gt;获取当前进程的&lt;code&gt;sz&lt;&#x2F;code&gt;值&lt;&#x2F;li&gt;
+&lt;li&gt;调用&lt;code&gt;growproc&lt;&#x2F;code&gt;，视情况分配&#x2F;释放内存&lt;&#x2F;li&gt;
+&lt;li&gt;返回当前进程的&lt;code&gt;sz&lt;&#x2F;code&gt;值，即新内存的起始地址&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h4 id=&quot;ng-wei-shen-me-szshi-xin-nei-cun-de-qi-shi-di-zhi-ni-ta-bu-shi-jiu-nei-cun-de-jie-wei-di-zhi-ma&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ng-wei-shen-me-szshi-xin-nei-cun-de-qi-shi-di-zhi-ni-ta-bu-shi-jiu-nei-cun-de-jie-wei-di-zhi-ma&quot; aria-label=&quot;Anchor link for: ng-wei-shen-me-szshi-xin-nei-cun-de-qi-shi-di-zhi-ni-ta-bu-shi-jiu-nei-cun-de-jie-wei-di-zhi-ma&quot;&gt;嗯？为什么&lt;code&gt;sz&lt;&#x2F;code&gt;是新内存的起始地址呢？它不是旧内存的结尾地址吗？&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
+&lt;p&gt;众所周知，编程有两大难题，其中一个是差一错误：
+好，首先我们先忽略内存对齐。&lt;&#x2F;p&gt;
+&lt;p&gt;如果我们有一个进程，他的&lt;code&gt;sz = 1&lt;&#x2F;code&gt;，那么它能用什么虚拟地址呢？&lt;br &#x2F;&gt;
+你可能会觉得是&lt;code&gt;0x01&lt;&#x2F;code&gt;，这不是正确答案。&lt;br &#x2F;&gt;
+仔细想一下，如果&lt;code&gt;sz = 0&lt;&#x2F;code&gt;呢？它应该可以使用&lt;code&gt;0x00&lt;&#x2F;code&gt;吗？&lt;br &#x2F;&gt;
+肯定是不行的，&lt;code&gt;0&lt;&#x2F;code&gt;应该是不能使用任何内存，对吧？&lt;&#x2F;p&gt;
+&lt;p&gt;所以&lt;code&gt;sz&lt;&#x2F;code&gt; == &lt;code&gt;可用地址的结束地址 + 1&lt;&#x2F;code&gt;。&lt;br &#x2F;&gt;
+ヾ(^▽^*)))&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;shan-chu-growproc&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shan-chu-growproc&quot; aria-label=&quot;Anchor link for: shan-chu-growproc&quot;&gt;删除&lt;code&gt;growproc&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;现在我们先把对&lt;code&gt;growproc&lt;&#x2F;code&gt;给删了，现在代码变成这样：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;uint64
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_sbrk&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;argint&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;n) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  addr &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;myproc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;xiu-gai-jin-cheng-de-szzhi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-jin-cheng-de-szzhi&quot; aria-label=&quot;Anchor link for: xiu-gai-jin-cheng-de-szzhi&quot;&gt;修改进程的&lt;code&gt;sz&lt;&#x2F;code&gt;值&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;然后别忘了这步，这步很重要呀！！&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;uint64
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_sbrk&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;argint&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;n) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; proc &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;p &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;myproc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  addr &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+=&lt;&#x2F;span&gt;&lt;span&gt; n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;shi-fang-nei-cun-ti-qian-zhun-bei&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shi-fang-nei-cun-ti-qian-zhun-bei&quot; aria-label=&quot;Anchor link for: shi-fang-nei-cun-ti-qian-zhun-bei&quot;&gt;释放内存（提前准备）&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;这个我不知道要怎么解释，反正就是，你之后肯定会出BUG的，如果你这样写的话，所以如果你怕你以后出BUG的话，就可以先抄成这样，如果想要自己解决BUG的话，可以跳过。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;uint64
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_sbrk&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;argint&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;n) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; proc &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;p &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;myproc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  addr &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(n &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;uvmdealloc&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span&gt;n)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+=&lt;&#x2F;span&gt;&lt;span&gt; n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;yun-xing-jie-guo&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#yun-xing-jie-guo&quot; aria-label=&quot;Anchor link for: yun-xing-jie-guo&quot;&gt;运行结果&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;init&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:&lt;&#x2F;span&gt;&lt;span&gt; starting sh
+&lt;&#x2F;span&gt;&lt;span&gt;$ echo hi
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;usertrap&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:&lt;&#x2F;span&gt;&lt;span&gt; unexpected scause &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x000000000000000f&lt;&#x2F;span&gt;&lt;span&gt; pid&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;3
+&lt;&#x2F;span&gt;&lt;span&gt;            sepc&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x0000000000001258&lt;&#x2F;span&gt;&lt;span&gt; stval&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x0000000000004008
+&lt;&#x2F;span&gt;&lt;span&gt;va&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x0000000000004000&lt;&#x2F;span&gt;&lt;span&gt; pte&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x0000000000000000
+&lt;&#x2F;span&gt;&lt;span&gt;panic&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:&lt;&#x2F;span&gt;&lt;span&gt; uvmunmap&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:&lt;&#x2F;span&gt;&lt;span&gt; not mapped
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;运行结果可能会是这样，不用太过担心，这是应该的，我们不必太过在意这个报错，直接开始下一个作业就行了！&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;lazy-allocation-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#lazy-allocation-moderate&quot; aria-label=&quot;Anchor link for: lazy-allocation-moderate&quot;&gt;lazy allocation (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个小作业很好玩的，而且也很简单，就是跟着hints走而已。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;yao-qiu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#yao-qiu&quot; aria-label=&quot;Anchor link for: yao-qiu&quot;&gt;要求&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;首先，我们要做什么呢？&lt;br &#x2F;&gt;
+刚刚报错了对吧？所以我们现在要做的就是，不让&lt;code&gt;sbrk&lt;&#x2F;code&gt;直接或间接调用&lt;code&gt;growproc&lt;&#x2F;code&gt;，但是要让他不会报错，并且可以正确的执行&lt;code&gt;echo hi&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;ti-shi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ti-shi&quot; aria-label=&quot;Anchor link for: ti-shi&quot;&gt;提示&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
+&lt;ul&gt;
+&lt;li&gt;此类错误发生时，会修改&lt;code&gt;scause&lt;&#x2F;code&gt;寄存器，如果是&lt;code&gt;13&lt;&#x2F;code&gt;那就是load page fault，&lt;code&gt;15&lt;&#x2F;code&gt;就是store&#x2F;AMO page fault&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;stval&lt;&#x2F;code&gt;会记录计算机试图访问什么虚拟地址时失效了&lt;&#x2F;li&gt;
+&lt;li&gt;你可以参考&lt;code&gt;uvmalloc&lt;&#x2F;code&gt;的代码，核心是&lt;code&gt;kalloc()&lt;&#x2F;code&gt;+&lt;code&gt;mappages()&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;使用&lt;code&gt;PGROUNDDOWN&lt;&#x2F;code&gt;宏对齐到该虚拟地址4KB内的起始地址，简称向下取整&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;uvmunmap&lt;&#x2F;code&gt;可能会导致kernel panic（你可以直接跳过某些检查）&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;que-ye-de-zheng-que-chu-li-fang-fa&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#que-ye-de-zheng-que-chu-li-fang-fa&quot; aria-label=&quot;Anchor link for: que-ye-de-zheng-que-chu-li-fang-fa&quot;&gt;缺页的正确处理方法&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;现在XV6的缺页处理是报错，所以呢，我们得改成，缺页了就尝试给它分页，当然，它得是合法的才行。&lt;br &#x2F;&gt;
+我们得保证只有在堆（HEAP）范围内的内存使用LAZY ALLOCATION，而不是整个XV6都用，毕竟&lt;code&gt;sbrk&lt;&#x2F;code&gt;本来就是只给堆用的。&lt;&#x2F;p&gt;
+&lt;p&gt;我们先看看，当触发PAGE FAULT时，XV6会在哪里报错？
+我们看看&lt;code&gt;kernel&#x2F;trap.c&lt;&#x2F;code&gt;的&lt;code&gt;usertrap&lt;&#x2F;code&gt;函数：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#f51818;&quot;&gt;} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else if&lt;&#x2F;span&gt;&lt;span&gt;((which_dev &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;devintr&lt;&#x2F;span&gt;&lt;span&gt;()) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 2 是计时器中断，1 是硬件中断，0 是未识别（就是没中断，不是软件中断）
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; ok
+&lt;&#x2F;span&gt;&lt;span&gt;  } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 就是我们看到的的那个报错
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;printf&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;usertrap(): unexpected scause &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt; pid=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%d&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_scause&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pid)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;printf&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;            sepc=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt; stval=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_sepc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_stval&lt;&#x2F;span&gt;&lt;span&gt;())&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;killed &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;现在，我们来做新的处理方法，但是报错可以保留，万一真的错了呢。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#f51818;&quot;&gt;} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else if&lt;&#x2F;span&gt;&lt;span&gt;((which_dev &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;devintr&lt;&#x2F;span&gt;&lt;span&gt;()) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; ok
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 如果scause存储的13&#x2F;15
+&lt;&#x2F;span&gt;&lt;span&gt;  } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else if &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_scause&lt;&#x2F;span&gt;&lt;span&gt;() &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;13 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|| &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_scause&lt;&#x2F;span&gt;&lt;span&gt;() &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;15&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    uint64 stval &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_stval&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 读取无效虚拟地址
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;lazyalloc&lt;&#x2F;span&gt;&lt;span&gt;(stval&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; p)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 分配内存！
+&lt;&#x2F;span&gt;&lt;span&gt;  } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;printf&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;usertrap(): unexpected scause &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt; pid=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%d&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_scause&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pid)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;printf&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;            sepc=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt; stval=&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_sepc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;r_stval&lt;&#x2F;span&gt;&lt;span&gt;())&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;killed &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;fen-pei-nei-cun&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#fen-pei-nei-cun&quot; aria-label=&quot;Anchor link for: fen-pei-nei-cun&quot;&gt;分配内存&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;这个你可以选择不封装，当然也可以选择封装，我的建议当然是封装起来，毕竟这函数可以让不少地方调用。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;lazyalloc&lt;&#x2F;span&gt;&lt;span&gt;(uint64 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;stval&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; proc &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;p&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 va &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;PGROUNDDOWN&lt;&#x2F;span&gt;&lt;span&gt;(stval)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(stval &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;=&lt;&#x2F;span&gt;&lt;span&gt; p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sz &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;||&lt;&#x2F;span&gt;&lt;span&gt; stval &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;PGROUNDDOWN&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;trapframe&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sp))
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;goto&lt;&#x2F;span&gt;&lt;span&gt; err&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;_lazyalloc_internal&lt;&#x2F;span&gt;&lt;span&gt;(va&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;err&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;killed &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; mode 0: trap
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; mode 1: read&#x2F;write
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;static int
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;_lazyalloc_internal&lt;&#x2F;span&gt;&lt;span&gt;(uint64 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;va&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; proc &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;mode&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;mem &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kalloc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(mem &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;goto&lt;&#x2F;span&gt;&lt;span&gt; err&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;memset&lt;&#x2F;span&gt;&lt;span&gt;(mem&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mappages&lt;&#x2F;span&gt;&lt;span&gt;(p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;pagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; va&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;(uint64)mem&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PTE_W&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt;PTE_R&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|&lt;&#x2F;span&gt;&lt;span&gt;PTE_U) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kfree&lt;&#x2F;span&gt;&lt;span&gt;(mem)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;goto&lt;&#x2F;span&gt;&lt;span&gt; err&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;err&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(mode &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;killed &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这个代码的作用是：&lt;br &#x2F;&gt;
+对&lt;strong&gt;无效虚拟地址&lt;&#x2F;strong&gt;向下取整，然后检查是否大于进程可以拥有的虚拟地址，再检查是否小于堆的底部&lt;br &#x2F;&gt;
+（堆的底部是栈，栈只有一页，PGROUNDDOWN(sp)可以很好的计算出堆的底部）&lt;&#x2F;p&gt;
+&lt;p&gt;注：XV6的栈是低地址，堆是高地址&lt;br &#x2F;&gt;
+&lt;code&gt;kernel&#x2F;memlayout.h&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; User memory layout.
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Address zero first:
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;   text
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;   original data and bss
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;   fixed-size stack
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;   expandable heap
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;   ...
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;   TRAPFRAME (p-&amp;gt;trapframe, used by the trampoline)
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;   TRAMPOLINE (the same page as in the kernel)
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;TRAPFRAME &lt;&#x2F;span&gt;&lt;span&gt;(TRAMPOLINE &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE)
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h4 id=&quot;wei-shen-me-wo-yao-yong-liang-ge-han-shu-ni-shuo-jian-dan-dian-jiu-shi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wei-shen-me-wo-yao-yong-liang-ge-han-shu-ni-shuo-jian-dan-dian-jiu-shi&quot; aria-label=&quot;Anchor link for: wei-shen-me-wo-yao-yong-liang-ge-han-shu-ni-shuo-jian-dan-dian-jiu-shi&quot;&gt;为什么我要用两个函数呢？说简单点就是&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
+&lt;p&gt;因为下一个小作业我们又要做一个新的函数了，功能上虽然有些重叠，但是我不想让他们的名字相同。&lt;br &#x2F;&gt;
+我一开始是有合并的，但是我之后想了想，还是拆分成这样了。&lt;br &#x2F;&gt;
+毕竟一个是处理陷阱的，一个是处理读写的，我想让调用方更容易理解代码，并且不让代码很乱或很重复。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;tiao-guo-bu-fen-jian-cha&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#tiao-guo-bu-fen-jian-cha&quot; aria-label=&quot;Anchor link for: tiao-guo-bu-fen-jian-cha&quot;&gt;跳过部分检查&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;因为现在不是以前的传统分配了，所以有一些检查会导致我们失败。&lt;br &#x2F;&gt;
+因为以前的检查是默认大部分用户的虚拟地址是可以直接映射到物理地址的。&lt;br &#x2F;&gt;
+所以我们得跳过一些检查了，这是较为简单的方法。&lt;br &#x2F;&gt;
+&lt;code&gt;vm.c&#x2F;uvmunmap&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; va&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; va &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span&gt; npages&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;PGSIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+=&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE){
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((pte &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;walk&lt;&#x2F;span&gt;&lt;span&gt;(pagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; a&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;continue&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;  panic(&amp;quot;uvmunmap: walk&amp;quot;);
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;pte &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt; PTE_V) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;continue&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;  panic(&amp;quot;uvmunmap: not mapped&amp;quot;);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;vm.c&#x2F;uvmcopy&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; sz&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+=&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE){
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((pte &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;walk&lt;&#x2F;span&gt;&lt;span&gt;(old&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; i&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;continue&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;  panic(&amp;quot;uvmcopy: pte should exist&amp;quot;);
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;pte &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt; PTE_V) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;continue&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;  panic(&amp;quot;uvmcopy: page not present&amp;quot;);
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;现在你输入&lt;code&gt;echo hi&lt;&#x2F;code&gt;时，应该会看到系统输出&lt;code&gt;hi&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;p&gt;最后编辑时间：2025&#x2F;6&#x2F;22&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
     <entry xml:lang="en">
         <title>XV6-2020 LAB4-TRAPS</title>
         <published>2025-06-15T00:00:00+00:00</published>
