@@ -132,4 +132,109 @@ In the following code, what is going to be printed after 'y='? (note: the answer
 几乎随机的数字，是`a2`寄存器当前的值，很难预测。    
 至少我们是很难调整的，除非我们自己改GCC，或者自己写一个奇怪的编译器。
 
-最后编辑时间：2025/6/16
+## backtrace (moderate)
+这个系统调用看着还挺好用的我觉得，不过不如GDB就是了，那是肯定的，毕竟这是内部的调试工具。   
+它的功能的差不多就是打印调用链，不过更麻烦就是了，你得自己用LINUX的`addr2line`命令去查看。    
+
+### 功能预览
+当我们在XV6里运行`bttest`，结果大概会是这样：
+```sh
+backtrace:
+0x0000000080002cda
+0x0000000080002bb6
+0x0000000080002898
+```
+然后我们就要去打开我们自己的LINUX TERMINAL（如：`zsh`、`bash`、`fish`，或者更简单点说，打开你的`konsole`、`terminal`或`kitty`之类的）。   
+运行`addr2line -e kernel/kernel`，然后依次输入那三个地址，你应该会看到类似这样的内容：    
+```sh
+kernel/sysproc.c:74
+kernel/syscall.c:224
+kernel/trap.c:85
+<ctrl-D>退出
+```
+
+### 获取fp值
+首先，我们先练习一下写一个内联函数，顺便学习在`C`里使用`汇编`写一些小东西，这些技能是很有用的。
+`fp`是存储在`s0`寄存器的，所以我们真正要做的是从`s0`寄存器取值。    
+
+```C
+static inline uint64 // inline的意思差不多就是直接插入的意思，性能和define差不多，不过更安全
+r_fp()
+{
+  uint64 x;
+  asm volatile("mv %0, s0" : "=r" (x)); // mv x, s0
+  return x;
+}
+```
+
+#### FP是什么？
+FP是一个在栈帧里的指针，我不知道它具体被放置在什么位置，但是我觉得读者们只需要先知道它附近是什么就可以了。
+- FP - 8：当前栈帧的RA
+- FP - 16：上一级栈帧的FP    
+例子：
+```stack frame
+FOO frame
++---------------------------+
+|return.addr // fp - 8      |
+|to.pr.frame(fp)            |
+|saved.registers            |
+|local.var                  |
+|...                        |
++---------------------------+
+
+BAR frame
++---------------------------+
+|return.addr // fp - 8      |
+|to.pr.frame(fp) // BAR fp  |
+|saved.registers            |
+|local.var                  |
+|...                        |
++---------------------------+
+```
+
+### BACKTRACE函数主要实现
+```C
+void
+backtrace(char* s) // 可以不用有参数，有的话只是更方便调试而已
+{
+  uint64 curfp = r_fp(); // 获取FP地址
+  printf("backtrace: ");
+  printf(s);
+  printf("\n");
+
+  for(uint64 fp = curfp; fp < PGROUNDUP(curfp); fp = *((uint64*)(fp - 16))) // 执行完成后，返回上级栈帧
+    printf("%p\n", *((uint64*)(fp - 8))); // 获取当前RA
+}
+```
+
+你可能会疑惑，这个`for`循环是怎么停下来的？   
+但是很遗憾，我也不是很理解。似乎是跑到`0`的时候就会自己停下来了。   
+
+### 调试标记
+我们写好后，还得放进去系统调用里才行，放进`sysproc.c/sys_sleep`就行了：
+```C
+uint64
+sys_sleep(void)
+{
+  backtrace("sleep"); // 放这里
+  
+  int n;
+  uint ticks0;
+
+  if(argint(0, &n) < 0)
+    return -1;
+  acquire(&tickslock);
+  ticks0 = ticks;
+  while(ticks - ticks0 < n){
+    if(myproc()->killed){
+      release(&tickslock);
+      return -1;
+    }
+    sleep(&ticks, &tickslock);
+  }
+  release(&tickslock);
+  return 0;
+}
+```
+
+最后编辑时间：2025/6/23
