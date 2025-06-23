@@ -239,4 +239,137 @@ sys_sleep(void)
 }
 ```
 
-最后编辑时间：2025/6/23
+## alarm (hard)
+这个小作业要我们做的是一个有点好用的东西。   
+函数原型是这样：`sigalarm(interval, handler)`
+我们可以把一个我们自己做的函数发给系统，然后和它说：我要这个函数每几TICKS就跑一次！    
+如果想要停止的话，就应该输入`sigalarm(0, 0)`。
+
+### 添加系统调用
+和之前的LAB一样，忘了可以去看之前的笔记，我稍微给一些提示，要修改的文件包括但不限于：   
+`syscall.c`、`syscall.h`、`sysproc.c`、`user.h`、`usys.pl`。    
+需要添加的系统调用为：    
+`sys_sigalarm`和`sys_return`。
+
+### 进程新字段
+如果我们希望一个函数每几个TICKS执行一次的话，那我们就一定得有一个记录从上次到当前的TICKS数，对吧？    
+但是它应该放在计时器中断处理函数那里吗？    
+不对，那样的话所有进程都会共享一个计时器，这显然是不合理的。    
+所以我们得在进程里添加新字段。    
+（＾∀＾●）ﾉｼ    
+```C
+int alarm_ticks;                  // 设置间隔
+uint64 alarm_handler_addr;        // 函数地址（要用函数指针也可以，那个更安全，这个更通用）
+uint64 ticks;                     // 进程的总TICKS
+uint64 last_ticks;                // 上一次中断的TICKS
+struct trapframe *alarm_regs;     // 类似TRAPFRAME，保存状态用的
+int alarm_running;                // 状态，正在跑还是没有跑
+```
+
+### 系统调用实现
+`sysproc.c`：
+```C
+uint64
+sys_sigalarm(void)
+{
+  int ticks;
+  uint64 handler_addr;
+
+  if(argint(0, &ticks) < 0 || argaddr(1, &handler_addr) < 0)
+    return -1;
+
+  struct proc* p = myproc();
+  p->alarm_ticks = ticks;
+  p->alarm_handler_addr = handler_addr;
+  p->last_ticks = p->ticks;
+
+  return 0;
+}
+```
+
+### 上下文
+这个我们用TRAPFRAME就好了，没必要弄新的，那样有点麻烦。   
+```C
+struct trapframe *alarm_regs;     // 类似TRAPFRAME，保存状态用的
+```
+就是这样而已，然后我们再给它分配一下内存：
+```C
+// Allocate a trapframe page.
+if((p->trapframe = (struct trapframe *)kalloc()) == 0){
+  release(&p->lock);
+  return 0;
+}
+
+// 添加这个๑•̀ㅂ•́)و✧
+if((p->alarm_regs = (struct trapframe *)kalloc()) == 0){
+  release(&p->lock);
+  return 0;
+}
+```
+
+然后我们还要做两个函数来保存和恢复：    
+`trap.c`
+```C
+void
+save_regs(struct proc* p)
+{
+  *p->alarm_regs = *p->trapframe;
+}
+```
+```C
+void restore_regs(struct proc *p)
+{
+  *p->trapframe = *p->alarm_regs;
+}
+```
+保存就是把当前状态封存起来，恢复就是把封存且还存在的那个东西放到`TRAPFRAME`。
+
+### 计时器中断
+读过XV6-BOOK第五章的都知道XV6里有个叫计时器（时钟？还是计数器？具体什么名字我忘了，我在学校才读那玩意）。   
+然后呢，XV6也有一个处理计时器中断的东西，好像是每纳秒还是每纳秒中断一次？反正就是很快的，我们基本感觉不到。   
+`trap.c/usertrap`：
+```C
+if(which_dev == 2)
+    yield(); // 放弃CPU
+```
+这是原本的，每次中断它就放弃CPU，我想这应该是为了防止某些进程霸占CPU，所以要系统帮忙放弃。    
+
+然后我们现在得改一下这个，我们得让它对进程的那些TICKS增值，然后跑函数！
+```C
+if(which_dev == 2) {
+    p->ticks++;
+
+    // 如果“间隔”为非0，且该函数没有在以时钟中断的方式运行
+    if(p->alarm_ticks != 0 && p->alarm_running == 0) { 
+
+      // 如果上次的“总TICKS”加上“间隔”小于等于“总TICKS”
+      if(p->last_ticks + p->alarm_ticks <= p->ticks) {
+        p->last_ticks = p->ticks; // 更新LAST_TICKS
+        
+        save_regs(p); // 保存当前上下文
+        p->trapframe->epc = p->alarm_handler_addr;  // 中断后执行该函数
+        p->alarm_running = 1;
+      }
+    }
+    yield();
+  }
+```
+#### 执行后返回
+`sysproc.c`：
+```C
+uint64
+sys_sigreturn(void)
+{
+  struct proc* p = myproc();
+  restore_regs(p);
+  p->alarm_running = 0;
+
+  return 0;
+}
+```
+这没什么好说的，就是重置状态而已，还有，它不会改变太多东西，因为进程是运行在内存里（上？）的，而`TRAPFRAME`只是进程的一部分，所以不用担心返回后就会时间回溯。
+
+## 完结撒花 o(*°▽°*)o
+好，之后如果有报错就当作是给读者的练习了，当然，如果这个笔记有任何的问题我也会自己改的，除非没看到。
+
+最后编辑时间：2025/6/24
