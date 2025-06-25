@@ -1183,9 +1183,7 @@
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;da-gai&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#da-gai&quot; aria-label=&quot;Anchor link for: da-gai&quot;&gt;大改！&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
-&lt;p&gt;首先，我们要先创建一个新的内核页表。&lt;br &#x2F;&gt;
-然后把内核栈给挪到新的内核页表！&lt;br &#x2F;&gt;
-理论上，新旧页表应该都是能找到的，毕竟虚拟地址没变，物理地址也没变。&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;kernel&#x2F;exec.c&lt;&#x2F;code&gt;主要是加载程序用的，比如我输入&lt;code&gt;exec(echo, echo hi)&lt;&#x2F;code&gt;（差不多这样，可能错了，但是理解就行了！），那它就会就会进来这里加载&lt;code&gt;echo&lt;&#x2F;code&gt;程序并把参数也放进去。不过我们没必要了解那么多，只要这里主要是更换页表然后同步内存就行了，很简单对吧！ヾ(≧▽≦*)o&lt;&#x2F;p&gt;
 &lt;p&gt;这段的作用是：&lt;&#x2F;p&gt;
 &lt;ul&gt;
 &lt;li&gt;创建新的内核页表&lt;&#x2F;li&gt;
