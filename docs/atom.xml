@@ -5,8 +5,60 @@
     <link rel="self" type="application/atom+xml" href="https://aethernet65535.github.io/atom.xml"/>
     <link rel="alternate" type="text/html" href="https://aethernet65535.github.io"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2025-06-21T00:00:00+00:00</updated>
+    <updated>2025-06-25T00:00:00+00:00</updated>
     <id>https://aethernet65535.github.io/atom.xml</id>
+    <entry xml:lang="en">
+        <title>XV6-2020 LAB6-COW</title>
+        <published>2025-06-25T00:00:00+00:00</published>
+        <updated>2025-06-25T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/xv6-2020-lab6-cow/"/>
+        <id>https://aethernet65535.github.io/posts/xv6-2020-lab6-cow/</id>
+        
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab6-cow/">&lt;h2 id=&quot;qian-yan-fei-hua&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan-fei-hua&quot; aria-label=&quot;Anchor link for: qian-yan-fei-hua&quot;&gt;前言（废话）&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个不算太容易，有个地方困扰了我很久，不过我目前还是没发现为什么就是了，之后可能会去仔细研究（调试？）。&lt;br &#x2F;&gt;
+不过现在的话，我就先整理一些资料给读者们和未来的自己而已。&lt;br &#x2F;&gt;
+我想更多的是整理给未来的自己，毕竟我这垃圾笔记有谁会看呢hhh。&lt;br &#x2F;&gt;
+不过整理给自己也很好就是了，如果屏幕前的读者觉得自己学了但是不理解的话，可以试试写笔记写博客之类的，你要写出你理解的东西，不理解的现在就去学。&lt;br &#x2F;&gt;
+这样的话有助于更好的理解你所学到的，即使之后忘了也没关系，再回来看，努力记住！&lt;&#x2F;p&gt;
+&lt;p&gt;读者们都要加油哦，成为厉害的大人！(๑•̀ㅂ•́)و✧&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;wen-ti&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wen-ti&quot; aria-label=&quot;Anchor link for: wen-ti&quot;&gt;问题&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;strong&gt;XV6&lt;&#x2F;strong&gt;现在的&lt;code&gt;fork()&lt;&#x2F;code&gt;有什么问题呢？&lt;br &#x2F;&gt;
+现在是这样的，当调用&lt;code&gt;fork()&lt;&#x2F;code&gt;时，系统就会复制父进程，然后创建同样多的物理页，全复制给子进程。&lt;br &#x2F;&gt;
+不是映射哦，是完全复制，就像克隆一样呢，完全复制，和我们之前做的那种内核页表映射不同。&lt;&#x2F;p&gt;
+&lt;p&gt;这样做有什么问题吗？&lt;br &#x2F;&gt;
+当然有，问题就是用了太多内存了。&lt;br &#x2F;&gt;
+比如我要创建一个子进程，但是其实它只需要查看父进程的东西而已。&lt;br &#x2F;&gt;
+之后我创建了一个进程，叫&lt;code&gt;foo&lt;&#x2F;code&gt;，然后我在里面放了很多资料，我需要一个子进程帮我查看资料。&lt;br &#x2F;&gt;
+于是我就创建了一个&lt;code&gt;bar&lt;&#x2F;code&gt;子进程，它只需要查看&lt;code&gt;foo&lt;&#x2F;code&gt;进程里的数据，然后条件筛选返回给用户就可以了。&lt;br &#x2F;&gt;
+这样的话，是不是其实它做的&lt;strong&gt;写入&lt;&#x2F;strong&gt;操作是很少很少的呢？对！&lt;br &#x2F;&gt;
+那这样也就是说，我们浪费了很多不该浪费的内存，因为两个进程拥有超级多一样的数据，但是却也有双倍的内存大小！&lt;&#x2F;p&gt;
+&lt;p&gt;读者们也觉得这样很不好，对吧？&lt;br &#x2F;&gt;
+所以&lt;strong&gt;XV6&lt;&#x2F;strong&gt;就要我们学会优化这东西，我们要让那些有父子关系的或者后代在一页内有相同数据时，尽可能让它们使用同一个物理页，以此来节省好多内存！（也有可能很少，但是反正这是好事！）&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;si-lu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#si-lu&quot; aria-label=&quot;Anchor link for: si-lu&quot;&gt;思路&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;所以，我们就需要思考，要怎么优化呢？&lt;br &#x2F;&gt;
+首先我们已经知道了一个东西，就是&lt;strong&gt;物理页&lt;&#x2F;strong&gt;相同的话，就要让它们指向同一个&lt;strong&gt;物理页&lt;&#x2F;strong&gt;，而不是创建多一个。&lt;&#x2F;p&gt;
+&lt;p&gt;但是这样的话，如果某个进程去修改了&lt;strong&gt;那一页&lt;&#x2F;strong&gt;，那么就会影响到那些同样映射着那个&lt;strong&gt;物理页&lt;&#x2F;strong&gt;的进程不是吗？&lt;br &#x2F;&gt;
+我们现在又知道了，如果某个进程要修改的话，就一定不能让它影响其他进程。&lt;br &#x2F;&gt;
+那么应该怎么做，答案就是，当我们知道有某个进程想要修改某个&lt;strong&gt;多进程映射的页&lt;&#x2F;strong&gt;时，就自动创建一个&lt;strong&gt;独立的物理页&lt;&#x2F;strong&gt;给那个某某进程。&lt;&#x2F;p&gt;
+&lt;p&gt;诶，但是，我们要怎么知道进程要对某个&lt;strong&gt;物理页&lt;&#x2F;strong&gt;进行修改，并且及时干涉呢？&lt;br &#x2F;&gt;
+简单，当进程想要修改&lt;strong&gt;页&lt;&#x2F;strong&gt;的时候，它要干什么？&lt;br &#x2F;&gt;
+没错，就是&lt;strong&gt;写入&lt;&#x2F;strong&gt;，进程需要&lt;strong&gt;写入&lt;&#x2F;strong&gt;才可以修改，对吧？&lt;br &#x2F;&gt;
+而且呀，我们上一个&lt;strong&gt;LAB&lt;&#x2F;strong&gt;不就是&lt;strong&gt;LAZYALLOC&lt;&#x2F;strong&gt;吗？&lt;strong&gt;COW&lt;&#x2F;strong&gt;其实也差不多，不过更复杂而已。&lt;&#x2F;p&gt;
+&lt;p&gt;虽然我们知道了可以用&lt;strong&gt;写入&lt;&#x2F;strong&gt;来判断，但是要怎么知道进程要&lt;strong&gt;写入&lt;&#x2F;strong&gt;了呢？每次&lt;strong&gt;写入&lt;&#x2F;strong&gt;都要检查吗？那样对于我们这些初学者就太不方便了（至少我是，读者们可能都是大佬！）。&lt;br &#x2F;&gt;
+所以我们可以这样，当某个进程调用&lt;code&gt;fork()&lt;&#x2F;code&gt;的时候，就去除双方（old和new）所有&lt;strong&gt;物理页的写入权限&lt;&#x2F;strong&gt;，这样它们&lt;strong&gt;写入&lt;&#x2F;strong&gt;的时候就会报&lt;strong&gt;15号错误（STORE）&lt;&#x2F;strong&gt;，这个时候我们就可以给它创建一个&lt;strong&gt;独立的物理页&lt;&#x2F;strong&gt;了，然后它就可以更改且不影响其他进程了。&lt;&#x2F;p&gt;
+&lt;p&gt;但是呀，当某个进程试图对那些&lt;strong&gt;不可写入&lt;&#x2F;strong&gt;的页写入时，我们也得阻止，加个标识符就行了，就叫...PTE_COW吧！这个很容易记得对吧！ヾ(≧▽≦*)o&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
     <entry xml:lang="en">
         <title>XV6-2020 LAB5-LAZY</title>
         <published>2025-06-21T00:00:00+00:00</published>
