@@ -56,6 +56,58 @@
 &lt;p&gt;虽然我们知道了可以用&lt;strong&gt;写入&lt;&#x2F;strong&gt;来判断，但是要怎么知道进程要&lt;strong&gt;写入&lt;&#x2F;strong&gt;了呢？每次&lt;strong&gt;写入&lt;&#x2F;strong&gt;都要检查吗？那样对于我们这些初学者就太不方便了（至少我是，读者们可能都是大佬！）。&lt;br &#x2F;&gt;
 所以我们可以这样，当某个进程调用&lt;code&gt;fork()&lt;&#x2F;code&gt;的时候，就去除双方（old和new）所有&lt;strong&gt;物理页的写入权限&lt;&#x2F;strong&gt;，这样它们&lt;strong&gt;写入&lt;&#x2F;strong&gt;的时候就会报&lt;strong&gt;15号错误（STORE）&lt;&#x2F;strong&gt;，这个时候我们就可以给它创建一个&lt;strong&gt;独立的物理页&lt;&#x2F;strong&gt;了，然后它就可以更改且不影响其他进程了。&lt;&#x2F;p&gt;
 &lt;p&gt;但是呀，当某个进程试图对那些&lt;strong&gt;不可写入&lt;&#x2F;strong&gt;的页写入时，我们也得阻止，加个标识符就行了，就叫...PTE_COW吧！这个很容易记得对吧！ヾ(≧▽≦*)o&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;implement-copy-on-write-hard&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#implement-copy-on-write-hard&quot; aria-label=&quot;Anchor link for: implement-copy-on-write-hard&quot;&gt;implement copy-on-write (hard)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;我重复下&lt;strong&gt;XV6&lt;&#x2F;strong&gt;说过的话，就是要求之类的东西。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;tong-guo-tiao-jian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#tong-guo-tiao-jian&quot; aria-label=&quot;Anchor link for: tong-guo-tiao-jian&quot;&gt;通过条件&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;只要修改后的内核通过了&lt;code&gt;cowtest&lt;&#x2F;code&gt;和&lt;code&gt;usertests&lt;&#x2F;code&gt;程序，那就算你通过了此测试。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;jie-ti-si-lu-ti-shi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#jie-ti-si-lu-ti-shi&quot; aria-label=&quot;Anchor link for: jie-ti-si-lu-ti-shi&quot;&gt;解题思路（提示）&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;修改&lt;code&gt;uvmcopy()&lt;&#x2F;code&gt;，使其不再使用&lt;code&gt;kalloc()&lt;&#x2F;code&gt;分配物理页，而是将父进程的页都映射到子进程的页，并且记得要消除双方的&lt;strong&gt;PTE_W&lt;&#x2F;strong&gt;。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;修改&lt;code&gt;usertrap()&lt;&#x2F;code&gt;，使其对&lt;strong&gt;15号错误有某种特殊处理&lt;&#x2F;strong&gt;，当&lt;strong&gt;COW&lt;&#x2F;strong&gt;页出现错误时，使用&lt;code&gt;kalloc()&lt;&#x2F;code&gt;分配物理页，并将旧页的内容复制到新页，当然也不能忘了添加&lt;strong&gt;PTE_W&lt;&#x2F;strong&gt;权限。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;确保每个物理页，只有在没有任何进程引用时才释放。添加&lt;strong&gt;引用次数&lt;&#x2F;strong&gt;是一种不错的方法。
+使用&lt;code&gt;kalloc()&lt;&#x2F;code&gt;分配物理页时，&lt;strong&gt;设置&lt;&#x2F;strong&gt;其&lt;strong&gt;引用次数为1&lt;&#x2F;strong&gt;（注意是设置，尽量别预设引用次数为0，博主预设了，所以在某个地方卡了很久）。
+当&lt;code&gt;uvmcopy()&lt;&#x2F;code&gt;时，就把&lt;strong&gt;引用次数+1&lt;&#x2F;strong&gt;，相反的，在你的&lt;code&gt;某某函数()&lt;&#x2F;code&gt;给物理页独立出来时，也必须对之前映射的物理页的&lt;strong&gt;引用次数-1&lt;&#x2F;strong&gt;。
+只有在&lt;strong&gt;引用次数==0&lt;&#x2F;strong&gt;时，才可以释放该物理页。
+你可以使用数组来管理&lt;strong&gt;引用次数&lt;&#x2F;strong&gt;，例如&lt;code&gt;uint16 pgrfc[(PHYSTOP - KERNBASE) &#x2F; PGSIZE]&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;你可以使用&lt;strong&gt;自旋锁&lt;&#x2F;strong&gt;来保护该数组的资源。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;修改&lt;code&gt;copyout()&lt;&#x2F;code&gt;，让其与&lt;strong&gt;页错误&lt;&#x2F;strong&gt;使用相同的处理方案。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;这和&lt;code&gt;lazy allocation&lt;&#x2F;code&gt;那个作业差不多，可以参考。但是别基于那个分支做，要遵守规则，用新分支来做哦。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;关于&lt;code&gt;PTE_COW&lt;&#x2F;code&gt;，可以看看&lt;strong&gt;RISC-V&lt;&#x2F;strong&gt;的一些资料，搜搜&lt;strong&gt;RSW&lt;&#x2F;strong&gt;，为软件保留的PTE位，很有用的哦。&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;再给点额外提示，&lt;strong&gt;SV39&lt;&#x2F;strong&gt;的&lt;strong&gt;PTE位&lt;&#x2F;strong&gt;从&lt;strong&gt;0-8&lt;&#x2F;strong&gt;分别是&lt;code&gt;V, R, W, X, U, G, A, D, RSW&lt;&#x2F;code&gt;。哎呀哪个是能存&lt;code&gt;PTE_COW&lt;&#x2F;code&gt;的呢，好难猜呀||ヽ(&lt;em&gt;￣▽￣&lt;&#x2F;em&gt;)ノミ|Ю&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;如果发生&lt;code&gt;COW&lt;&#x2F;code&gt;错误时，内存不足了，就该终止该进程。&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;当进程试图写入不可写入且不是COW的物理页时，那么最简单的方法应该是终止该进程。&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;原因如下：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;内核不该修改或跳过用户的某段指令，这不是内核该做的，而且这一般只会让情况更遭。&lt;&#x2F;li&gt;
+&lt;li&gt;内核可以返回错误信息，但是这是极其复杂的。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;PS: 你看着可能会觉得我说的有点尖锐，不过我绝对没有要故意尖锐的意思哦，只是提醒而已，读者们千万不要想什么终止进程以外的方案。我是说，可以想，但是最好不要尝试在作业中优化这个东西，很复杂的！！（是大佬的话当我没说(￣▽￣)&quot;））&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h3 id=&quot;jie-jue-fang-an-shi-xian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#jie-jue-fang-an-shi-xian&quot; aria-label=&quot;Anchor link for: jie-jue-fang-an-shi-xian&quot;&gt;解决方案（实现）&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 </content>
         
     </entry>
