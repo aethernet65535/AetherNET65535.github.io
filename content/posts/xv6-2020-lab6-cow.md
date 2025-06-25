@@ -83,3 +83,107 @@ comment = true
 	>PS: 你看着可能会觉得我说的有点尖锐，不过我绝对没有要故意尖锐的意思哦，只是提醒而已，读者们千万不要想什么终止进程以外的方案。我是说，可以想，但是最好不要尝试在作业中优化这个东西，很复杂的！！（是大佬的话当我没说(￣▽￣)"））
 
 ### 解决方案（实现）
+首先我们需要先完成两个重要的东西，**引用次数的数组**以及保护其的**自旋锁**（SPINLOCK）。		
+
+#### 引用次数的数组
+我们先来清除一下，我们需要有多少个地方需要存我们的引用次数呢？大概就是所有常用页表都需要，对吧？		
+所以我们就做简单的，只要做`KERNBASE`到`PHYSTOP`这段距离的就行了，我们不弄其他的，这样更简单对吧？		
+
+那么我们就来创建一个数组：`kalloc.c`		
+```C
+static uint16 pgrfc[(PHYSTOP - KERNBASE) / PGSIZE];
+```
+
+顺便做一下一个好用的索引，这个用的有点频繁，所以就做了个，你要自己打也行：
+```C
+#define index_rfc(pa) ((pa - KERNBASE) >> 12) // pa要删也可以，主要是我调试时会用到
+```
+
+#### 自旋锁
+其实我们可以从代码里看到大概是怎么做自旋锁的，很简单，看一眼就会了。		
+
+首先先声明一下这个锁：		
+```C
+struct spinlock rfc_lock;
+```
+
+之后，就直接创建就行了，那个字符串要写引用次数的数组变量名：
+```C
+void
+kinit()
+{
+  initlock(&kmem.lock, "kmem");
+  initlock(&rfc_lock, "pgrfc"); // 这行是新增的
+  freerange(end, (void*)PHYSTOP);
+}
+```
+
+#### 改变引用次数
+我用了三个函数来解决这些问题，说实话，你真想的话，一个函数都不写也没问题，不过你可以考虑优化我的方案，我的肯定不是最好的。
+
+首先，第一个是自增函数（要说是自减也行）：
+```C
+int
+add_pgrfc(uint64 pa, int n)
+{
+  // 这个可以说基本触发不了，内核代码都是自己写的，能报错就有鬼了
+  // 不过以防万一，加一下，安全检查总归不是坏事
+  if((int)pgrfc[index_rfc(pa)] + n < 0 ||
+     (int)pgrfc[index_rfc(pa)] + n > 65535){
+    panic("set_pgrfc: too big or too small");
+    return -1;
+  }
+
+  pgrfc[index_rfc(pa)] += n;
+  return 0;
+}
+```
+
+其次是设置函数，完全根据用户的输入来决定该物理页的引用次数：
+```C
+void
+set_pgrfc(uint64 pa, int n)
+{
+  // 充满血与泪的一行	
+  pgrfc[index_rfc(pa)] = n;
+}
+```
+
+最后就是获取函数，只是返回该物理页的引用次数而已：
+```C
+uint16
+get_pgrfc(uint64 pa)
+{
+  return pgrfc[index_rfc(pa)];
+}
+```
+
+#### 释放与初始化
+在`kalloc.c/kfree`里，我们得添加一个新东西，就是禁止引用次数非0的物理页被释放，我们要做的仅仅只是对引用次数为大于1的物理页，将其的引用次数-1后再检查：
+```C
+if(((uint64)pa % PGSIZE) != 0 || (char*)pa < end || (uint64)pa >= PHYSTOP)
+  panic("kfree");
+
+acquire(&rfc_lock); // 开锁，现在除了我，没有人可以碰引用次数的数组了！
+uint16 rfc = get_pgrfc((uint64)pa);
+if(rfc > 1){
+  add_pgrfc((uint64)pa, -1);
+  release(&rfc_lock); // 好，现在谁都可以碰了
+  return;
+}
+release(&rfc_lock); // 一样，谁都可以碰了
+```
+
+之后，我们要确保`kalloc.c/kalloc`所分配的物理页，引用次数绝对为1，所以要直接设置：
+```C
+if(r){
+    memset((char*)r, 5, PGSIZE); // fill with junk
+    set_pgrfc((uint64)r, 1); // 这里一定得用set，你可能觉得add也一样
+							 // 但是不要默认所有进来freelist的物理页引用次数都为0
+							 // 博主可以说大部分时间都卡在这里了
+							 // 如果你不愿相信的话，可以试试自己printf所有引用次数，看看是不是都为0
+  }
+  return (void*)r;
+```
+
+#### COW & FORK
