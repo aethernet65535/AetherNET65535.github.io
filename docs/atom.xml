@@ -1186,6 +1186,12 @@
 &lt;p&gt;首先，我们要先创建一个新的内核页表。&lt;br &#x2F;&gt;
 然后把内核栈给挪到新的内核页表！&lt;br &#x2F;&gt;
 理论上，新旧页表应该都是能找到的，毕竟虚拟地址没变，物理地址也没变。&lt;&#x2F;p&gt;
+&lt;p&gt;这段的作用是：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;创建新的内核页表&lt;&#x2F;li&gt;
+&lt;li&gt;把内核栈从旧页表中导出&lt;&#x2F;li&gt;
+&lt;li&gt;把内核栈放进新页表&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;pagetable_t pagetable &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; oldpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; proc &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;p &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;myproc&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;
@@ -1198,6 +1204,10 @@
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;begin_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;下面这些的话，就是同步而已，而且原型都变了，不改就肯定报错了呢！&lt;&#x2F;p&gt;
+&lt;p&gt;作用就是：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;把系统对用户页表做的东西同步至进程自己的内核页表&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;uint64 sz1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 修改这行
@@ -1211,6 +1221,13 @@
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;goto&lt;&#x2F;span&gt;&lt;span&gt; bad&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;之前的话，没有内核页表副本嘛，所以exec当然就不用切换到这里，但是现在我们有了，所以就得主动切换到内核页表副本！&lt;&#x2F;p&gt;
+&lt;p&gt;作用就是：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;当前进程的指向从旧内核页表转向新内核页表&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;SATP&lt;&#x2F;code&gt;指向新内核页表&lt;&#x2F;li&gt;
+&lt;li&gt;刷新&lt;code&gt;TLB&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;释放旧内核页表（不然浪费内存）&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;trapframe&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;sp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; sp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; initial stack pointer
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;proc_freepagetable&lt;&#x2F;span&gt;&lt;span&gt;(oldpagetable&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; oldsz)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;
@@ -1278,7 +1295,7 @@ A：因为&lt;code&gt;trampoline&lt;&#x2F;code&gt;用的内核页表似乎是&lt
 发现了个新东西，如果电脑性能不好的话，&lt;code&gt;echo hi&lt;&#x2F;code&gt;会被&lt;code&gt;scheduler&lt;&#x2F;code&gt;断点停下，但是如果好的话就不会。这似乎是因为，时间片还没用完。&lt;br &#x2F;&gt;
 嘛不过，&lt;code&gt;usertrapret&lt;&#x2F;code&gt;还是一定会停下的。&lt;&#x2F;p&gt;
 &lt;p&gt;上次编辑日期：2025&#x2F;6&#x2F;15&lt;br &#x2F;&gt;
-最后编辑时间：2025&#x2F;6&#x2F;17&lt;&#x2F;p&gt;
+最后编辑时间：2025&#x2F;6&#x2F;25&lt;&#x2F;p&gt;
 </content>
         
     </entry>

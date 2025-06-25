@@ -611,7 +611,12 @@ sys_sbrk(void)
 ### 大改！
 首先，我们要先创建一个新的内核页表。    
 然后把内核栈给挪到新的内核页表！    
-理论上，新旧页表应该都是能找到的，毕竟虚拟地址没变，物理地址也没变。
+理论上，新旧页表应该都是能找到的，毕竟虚拟地址没变，物理地址也没变。    
+
+这段的作用是：
+- 创建新的内核页表
+- 把内核栈从旧页表中导出
+- 把内核栈放进新页表
 ```C
 pagetable_t pagetable = 0, oldpagetable;
 struct proc *p = myproc();
@@ -625,7 +630,10 @@ mappages(new_kpagetable, p->kstack, PGSIZE, (uint64)kstack_pa, PTE_R|PTE_W);
 begin_op();
 ```
 
-下面这些的话，就是同步而已，而且原型都变了，不改就肯定报错了呢！    
+下面这些的话，就是同步而已，而且原型都变了，不改就肯定报错了呢！     
+
+作用就是：
+- 把系统对用户页表做的东西同步至进程自己的内核页表    
 ```C
 uint64 sz1;
 
@@ -641,7 +649,13 @@ if((sz1 = uvmalloc(pagetable, new_kpagetable, sz, sz + 2*PGSIZE)) == 0)
   goto bad;
 ```
 
-之前的话，没有内核页表副本嘛，所以exec当然就不用切换到这里，但是现在我们有了，所以就得主动切换到内核页表副本！
+之前的话，没有内核页表副本嘛，所以exec当然就不用切换到这里，但是现在我们有了，所以就得主动切换到内核页表副本！    
+
+作用就是：
+- 当前进程的指向从旧内核页表转向新内核页表
+- `SATP`指向新内核页表
+- 刷新`TLB`
+- 释放旧内核页表（不然浪费内存）
 ```C
 p->trapframe->sp = sp; // initial stack pointer
 proc_freepagetable(oldpagetable, oldsz);
@@ -725,4 +739,4 @@ p->trapframe->kernel_hartid = r_tp();         // hartid for cpuid()
 嘛不过，`usertrapret`还是一定会停下的。
 
 上次编辑日期：2025/6/15   
-最后编辑时间：2025/6/17
+最后编辑时间：2025/6/25
