@@ -278,7 +278,7 @@
 &lt;p&gt;这里的话呢，就算我们处理的物理页不是COW页，也是不会出什么问题的。&lt;br &#x2F;&gt;
 因为呢，我们的&lt;code&gt;cow()&lt;&#x2F;code&gt;会直接跳过所有东西，然后返回-2错误，但是-2错误对这里来说，几乎就是不做任何事的意思了。&lt;br &#x2F;&gt;
 所以结论就是，它很好的保证了安全，也没有让其他东西变的不安全！&lt;&#x2F;p&gt;
-&lt;h3 id=&quot;wan-jie-sa-hua&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wan-jie-sa-hua&quot; aria-label=&quot;Anchor link for: wan-jie-sa-hua&quot;&gt;完结撒花&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;h2 id=&quot;wan-jie-sa-hua&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wan-jie-sa-hua&quot; aria-label=&quot;Anchor link for: wan-jie-sa-hua&quot;&gt;完结撒花&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;还有问题的话，推荐读者们用&lt;code&gt;printf()&lt;&#x2F;code&gt;和&lt;strong&gt;gdb&lt;&#x2F;strong&gt;来调试，不过&lt;code&gt;printf()&lt;&#x2F;code&gt;一般只适合那种无需写入的调试，因为其很容易出问题呢（；´д｀）ゞ。&lt;br &#x2F;&gt;
 读者们可以学一下gdb的用法，很好用的，我目前还没有很熟练，但是也觉得很好用了呢，熟练了想必会更好用！&lt;br &#x2F;&gt;
 (๑•̀ㅂ•́)و✧&lt;&#x2F;p&gt;
@@ -847,7 +847,7 @@
 &lt;p&gt;保存就是把当前状态封存起来，恢复就是把封存且还存在的那个东西放到&lt;code&gt;TRAPFRAME&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;ji-shi-qi-zhong-duan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ji-shi-qi-zhong-duan&quot; aria-label=&quot;Anchor link for: ji-shi-qi-zhong-duan&quot;&gt;计时器中断&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;读过XV6-BOOK第五章的都知道XV6里有个叫计时器（时钟？还是计数器？具体什么名字我忘了，我在学校才读那玩意）。&lt;br &#x2F;&gt;
-然后呢，XV6也有一个处理计时器中断的东西，好像是每纳秒还是每纳秒中断一次？反正就是很快的，我们基本感觉不到。&lt;br &#x2F;&gt;
+然后呢，XV6也有一个处理计时器中断的东西，好像是每纳秒还是每毫秒中断一次？反正就是很快的，我们基本感觉不到。&lt;br &#x2F;&gt;
 &lt;code&gt;trap.c&#x2F;usertrap&lt;&#x2F;code&gt;：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(which_dev &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span&gt;)
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;yield&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 放弃CPU
@@ -884,7 +884,21 @@
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;这没什么好说的，就是重置状态而已，还有，它不会改变太多东西，因为进程是运行在内存里（上？）的，而&lt;code&gt;TRAPFRAME&lt;&#x2F;code&gt;只是进程的一部分，所以不用担心返回后就会时间回溯。&lt;&#x2F;p&gt;
+&lt;p&gt;有的读者可能还是没有那么理解，那我就再解释解释！&lt;br &#x2F;&gt;
+好，首先，读者们可能会想：可以不可以这样呢？我不保存&lt;strong&gt;TRAPFRAME&lt;&#x2F;strong&gt;，我直接开始跑！(｡･∀･)ﾉﾞ&lt;&#x2F;p&gt;
+&lt;p&gt;理论上来说的话，确实可以做到，不过呢，这不是一个好事，因为我们这里存在这一个对&lt;code&gt;trapframe-&amp;gt;epc&lt;&#x2F;code&gt;的修改，相当于进入了另一个&lt;strong&gt;世界&lt;&#x2F;strong&gt;。&lt;br &#x2F;&gt;
+我们暂且把它们叫做&lt;strong&gt;MAIN世界&lt;&#x2F;strong&gt;和&lt;strong&gt;HANDLER世界&lt;&#x2F;strong&gt;吧。&lt;br &#x2F;&gt;
+当我们更换&lt;code&gt;EPC&lt;&#x2F;code&gt;时，相当于从&lt;strong&gt;MAIN&lt;&#x2F;strong&gt;进入了&lt;strong&gt;HANDLER世界&lt;&#x2F;strong&gt;，这时会&lt;strong&gt;开始执行函数&lt;&#x2F;strong&gt;。&lt;br &#x2F;&gt;
+执行完函数后，会跳去哪里呢？&lt;br &#x2F;&gt;
+对，没人知道它会跳去哪里，或者是说，&lt;strong&gt;很难预测&lt;&#x2F;strong&gt;。&lt;br &#x2F;&gt;
+所以我们的方法是，修改世界，回到&lt;strong&gt;MAIN世界&lt;&#x2F;strong&gt;，继续世界的运作。&lt;&#x2F;p&gt;
+&lt;p&gt;那么返回&lt;strong&gt;MAIN世界&lt;&#x2F;strong&gt;后，修改的东西会不会因此消失呢？&lt;br &#x2F;&gt;
+&lt;strong&gt;部分会&lt;&#x2F;strong&gt;，因为&lt;strong&gt;TRAPFRAME&lt;&#x2F;strong&gt;保存了&lt;strong&gt;SP寄存器&lt;&#x2F;strong&gt;和一些其他寄存器，所以毫无疑问的，&lt;strong&gt;栈（STACK）&lt;strong&gt;上的&lt;&#x2F;strong&gt;变量&lt;&#x2F;strong&gt;可能会不一样。&lt;br &#x2F;&gt;
+&lt;strong&gt;部分不会&lt;&#x2F;strong&gt;，因为&lt;strong&gt;全局变量和静态变量&lt;&#x2F;strong&gt;保存在内存上，内存上的变量（除了栈）不会被&lt;strong&gt;TRAPFRAME&lt;&#x2F;strong&gt;的修改影响到。&lt;&#x2F;p&gt;
+&lt;p&gt;啊对了，关于这个系统调用为什么这么奇怪的问题，确实，这无疑是该系统调用&lt;strong&gt;自身的缺陷&lt;&#x2F;strong&gt;。&lt;br &#x2F;&gt;
+毕竟要开发者遵守&lt;strong&gt;隐形规则&lt;&#x2F;strong&gt;的，不遵守就会有预期之外的结果的，自然是一个&lt;strong&gt;不优秀&lt;&#x2F;strong&gt;的系统调用，至少得包装的不容易有预期之外的结果才行。&lt;br &#x2F;&gt;
+但是毕竟我们只是在学习大致上怎么做，所以没必要太纠结于优化这里，最重要的是我们知道了可以怎么做出一个定时执行函数的&lt;strong&gt;PROTOTYPE&lt;&#x2F;strong&gt;。&lt;&#x2F;p&gt;
+&lt;p&gt;读者们明白了对吧( ´･･)ﾉ(._.`)。&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;wan-jie-sa-hua-o-degvdeg-o&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wan-jie-sa-hua-o-degvdeg-o&quot; aria-label=&quot;Anchor link for: wan-jie-sa-hua-o-degvdeg-o&quot;&gt;完结撒花 o(&lt;em&gt;°▽°&lt;&#x2F;em&gt;)o&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;好，之后如果有报错就当作是给读者的练习了，当然，如果这个笔记有任何的问题我也会自己改的，除非没看到。&lt;&#x2F;p&gt;
 &lt;p&gt;最后编辑时间：2025&#x2F;6&#x2F;24&lt;&#x2F;p&gt;
