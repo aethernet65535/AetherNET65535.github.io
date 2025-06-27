@@ -891,7 +891,7 @@
 当我们更换&lt;code&gt;EPC&lt;&#x2F;code&gt;时，相当于从&lt;strong&gt;MAIN&lt;&#x2F;strong&gt;进入了&lt;strong&gt;HANDLER世界&lt;&#x2F;strong&gt;，这时会&lt;strong&gt;开始执行函数&lt;&#x2F;strong&gt;。&lt;br &#x2F;&gt;
 执行完函数后，会跳去哪里呢？&lt;br &#x2F;&gt;
 对，没人知道它会跳去哪里，或者是说，&lt;strong&gt;很难预测&lt;&#x2F;strong&gt;。&lt;br &#x2F;&gt;
-所以我们的方法是，修改世界，回到&lt;strong&gt;MAIN世界&lt;&#x2F;strong&gt;，继续世界的运作。&lt;&#x2F;p&gt;
+所以我们的方法是，修改世界（函数结尾调用&lt;code&gt;sigreturn()&lt;&#x2F;code&gt;），回到&lt;strong&gt;MAIN世界&lt;&#x2F;strong&gt;，继续世界的运作。&lt;&#x2F;p&gt;
 &lt;p&gt;那么返回&lt;strong&gt;MAIN世界&lt;&#x2F;strong&gt;后，修改的东西会不会因此消失呢？&lt;br &#x2F;&gt;
 &lt;strong&gt;部分会&lt;&#x2F;strong&gt;，因为&lt;strong&gt;TRAPFRAME&lt;&#x2F;strong&gt;保存了&lt;strong&gt;SP寄存器&lt;&#x2F;strong&gt;和一些其他寄存器，所以毫无疑问的，&lt;strong&gt;栈（STACK）&lt;strong&gt;上的&lt;&#x2F;strong&gt;变量&lt;&#x2F;strong&gt;可能会不一样。&lt;br &#x2F;&gt;
 &lt;strong&gt;部分不会&lt;&#x2F;strong&gt;，因为&lt;strong&gt;全局变量和静态变量&lt;&#x2F;strong&gt;保存在内存上，内存上的变量（除了栈）不会被&lt;strong&gt;TRAPFRAME&lt;&#x2F;strong&gt;的修改影响到。&lt;&#x2F;p&gt;
