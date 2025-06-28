@@ -5,8 +5,172 @@
     <link rel="self" type="application/atom+xml" href="https://aethernet65535.github.io/atom.xml"/>
     <link rel="alternate" type="text/html" href="https://aethernet65535.github.io"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2025-06-25T00:00:00+00:00</updated>
+    <updated>2025-06-28T00:00:00+00:00</updated>
     <id>https://aethernet65535.github.io/atom.xml</id>
+    <entry xml:lang="en">
+        <title>XV6-2020 LAB7-MULTITHREADING</title>
+        <published>2025-06-28T00:00:00+00:00</published>
+        <updated>2025-06-28T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/"/>
+        <id>https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/</id>
+        
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/">&lt;h1 id=&quot;qian-yan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan&quot; aria-label=&quot;Anchor link for: qian-yan&quot;&gt;前言&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;这个LAB有些特别呢，我们后面两个小作业都是在C标准库做的，就是说，我们不是调用XV6的头文件了，而是像我们刚开始学C那时候一样，用标准库！(ﾉ&amp;gt;ω&amp;lt;)ﾉ&lt;&#x2F;p&gt;
+&lt;p&gt;这个LAB有几个要改的文件，分别是：&lt;code&gt;user&#x2F;uthread.c&lt;&#x2F;code&gt; &lt;code&gt;user&#x2F;uthread_switch.S&lt;&#x2F;code&gt;、&lt;code&gt;notxv6&#x2F;ph.c&lt;&#x2F;code&gt;和&lt;code&gt;notxv6&#x2F;barrier.c&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;uthread-switching-between-threads-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#uthread-switching-between-threads-moderate&quot; aria-label=&quot;Anchor link for: uthread-switching-between-threads-moderate&quot;&gt;uthread: switching between threads (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;第一个小作业呢，是要我们在一个进程内，模拟有好多小进程在跑。(づ′▽`)づ&lt;br &#x2F;&gt;
+这些小进程是有名字的，叫做进程（threads）。&lt;&#x2F;p&gt;
+&lt;p&gt;读者们可能看过内核目录里的&lt;code&gt;swtch()&lt;&#x2F;code&gt; &lt;code&gt;struct context&lt;&#x2F;code&gt;之类的代码，LAB-3（pgtbl）那时候卡着的话，应该是肯定看过这些代码的吧？如果看过的话，这个小作业就很简单了！&lt;em&gt;ଘ(੭&lt;&#x2F;em&gt;ˊᵕˋ)੭* ੈ✩‧₊˚&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;shang-xia-wen-de-ding-yi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shang-xia-wen-de-ding-yi&quot; aria-label=&quot;Anchor link for: shang-xia-wen-de-ding-yi&quot;&gt;上下文的定义&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;首先我们要复制&lt;code&gt;kernel&#x2F;proc.h&lt;&#x2F;code&gt;的&lt;code&gt;struct context&lt;&#x2F;code&gt;结构体！&lt;&#x2F;p&gt;
+&lt;p&gt;然后我们要粘贴到&lt;code&gt;user&#x2F;uthread.c&lt;&#x2F;code&gt;：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;context &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 ra&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 这两个寄存器很重要哦
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 sp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 先记住，要用到的
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; callee-saved
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s5&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s6&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s7&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s8&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s9&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s10&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  uint64 s11&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;之后在我们的结构体里添加一下：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;thread &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char&lt;&#x2F;span&gt;&lt;span&gt;              stack[STACK_SIZE]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* the thread&amp;#39;s stack *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt;               state&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;              &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* FREE, RUNNING, RUNNABLE *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; context    context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* 加上这个，空格要不要对齐都是可以的 *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;qie-huan-shang-xia-wen&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qie-huan-shang-xia-wen&quot; aria-label=&quot;Anchor link for: qie-huan-shang-xia-wen&quot;&gt;切换上下文&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;然后我们现在就去&lt;code&gt;kernel&#x2F;swtch.S&lt;&#x2F;code&gt;复制一下一段代码，然后无脑粘贴进&lt;code&gt;user&#x2F;uthread_switch.S&lt;&#x2F;code&gt;就行了：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;thread_switch&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* YOUR CODE HERE *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;        sd ra&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd sp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;16&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;24&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;32&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;40&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;48&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s5&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;56&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s6&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;64&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s7&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;72&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s8&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;80&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s9&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;88&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s10&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;96&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;        sd s11&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;104&lt;&#x2F;span&gt;&lt;span&gt;(a0)
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        ld ra&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld sp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;8&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;16&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;24&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;32&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s3&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;40&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s4&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;48&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s5&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;56&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s6&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;64&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s7&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;72&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s8&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;80&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s9&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;88&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s10&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;96&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        ld s11&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;104&lt;&#x2F;span&gt;&lt;span&gt;(a1)
+&lt;&#x2F;span&gt;&lt;span&gt;        
+&lt;&#x2F;span&gt;&lt;span&gt;        ret    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* return to ra *&#x2F;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;然后现在，我们把那个&lt;strong&gt;extern&lt;&#x2F;strong&gt;稍微修改一下：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;extern void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;thread_switch&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;xiao-xiu-xiao-bu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiao-xiu-xiao-bu&quot; aria-label=&quot;Anchor link for: xiao-xiu-xiao-bu&quot;&gt;小修小补&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;现在呢，我们得稍微修一些函数，因为XV6故意留空了。&lt;br &#x2F;&gt;
+不会很难的，就一个函数有点难度，读者们看看就懂了！&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;diao-du&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#diao-du&quot; aria-label=&quot;Anchor link for: diao-du&quot;&gt;调度&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;首先是上下文切换：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void 
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;thread_schedule&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;next_thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* Find another runnable thread. *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;  next_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; current_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; MAX_THREAD&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;=&lt;&#x2F;span&gt;&lt;span&gt; all_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span&gt; MAX_THREAD)
+&lt;&#x2F;span&gt;&lt;span&gt;      t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; all_thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;==&lt;&#x2F;span&gt;&lt;span&gt; RUNNABLE) {
+&lt;&#x2F;span&gt;&lt;span&gt;      next_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;break&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(next_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;printf&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;thread_schedule: no runnable threads&lt;&#x2F;span&gt;&lt;span style=&quot;color:#4cbf99;&quot;&gt;\n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;exit&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(current_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!=&lt;&#x2F;span&gt;&lt;span&gt; next_thread) {         &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* switch threads?  *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;    next_thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; RUNNING&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; current_thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    current_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; next_thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* YOUR CODE HERE
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;     * Invoke thread_switch to switch from t to next_thread:
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;     * thread_switch(??, ??);
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;     *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;thread_switch&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;next_thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;context)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else
+&lt;&#x2F;span&gt;&lt;span&gt;    next_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这里调用&lt;code&gt;thread_switch()&lt;&#x2F;code&gt;是什么意思呢？&lt;br &#x2F;&gt;
+其实就是把旧线程保存起来，然后加载新线程而已！&lt;&#x2F;p&gt;
+&lt;p&gt;为什么这个不难呢？&lt;br &#x2F;&gt;
+因为它的提示给的太明显了，都告诉我们要调用什么了！&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;xin-xian-cheng-chuang-jian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xin-xian-cheng-chuang-jian&quot; aria-label=&quot;Anchor link for: xin-xian-cheng-chuang-jian&quot;&gt;新线程创建&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;这个就稍微有点难了，但是我刚刚给了读者们提示！&lt;br &#x2F;&gt;
+就是&lt;strong&gt;ra&lt;&#x2F;strong&gt;和&lt;strong&gt;sp&lt;&#x2F;strong&gt;寄存器，这就是我们为数不多需要修改的东西了！&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void 
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;thread_create&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;func)())
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;(t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; all_thread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; all_thread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span&gt; MAX_THREAD&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;==&lt;&#x2F;span&gt;&lt;span&gt; FREE) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;break&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;state &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; RUNNABLE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; YOUR CODE HERE
+&lt;&#x2F;span&gt;&lt;span&gt;  t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;sp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(uint64)t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;stack &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span&gt; STACK_SIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;ra &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(uint64)func&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;为什么要改&lt;strong&gt;sp&lt;&#x2F;strong&gt;呢？&lt;br &#x2F;&gt;
+因为是新线程，它有独立的栈，然后栈不是高地址的吗？但是！在C里，全局&#x2F;静态结构体的所有字段的初始值都是0，这是超级低地址，所以我们要当然就要把&lt;strong&gt;sp&lt;&#x2F;strong&gt;指向栈低啦，就要+STACK_SIZE，这样就可以指向栈低了！&lt;&#x2F;p&gt;
+&lt;p&gt;那为什么又要修改&lt;strong&gt;ra&lt;&#x2F;strong&gt;呢？这玩意不返回地址嘛？&lt;br &#x2F;&gt;
+确实，&lt;strong&gt;ra&lt;&#x2F;strong&gt;是返回地址，但是在这里有妙用！&lt;br &#x2F;&gt;
+读者想想，当一个代码没有其他代码，只有一个&lt;strong&gt;return&lt;&#x2F;strong&gt;的话，会发生什么？&lt;br &#x2F;&gt;
+呃呃...可能会报错，不过我们不管那个！在这里它的作用是直接前往那里！&lt;br &#x2F;&gt;
+也就是说，线程一创建，制定&lt;strong&gt;ra&lt;&#x2F;strong&gt;后，它就会跑去&lt;code&gt;func()&lt;&#x2F;code&gt;那里了，它就能跑我们给他的函数，很厉害对吧？ヾ(´︶`*)ﾉ♬&lt;&#x2F;p&gt;
+&lt;p&gt;最后编辑时间：2025&#x2F;6&#x2F;28&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
     <entry xml:lang="en">
         <title>XV6-2020 LAB6-COW</title>
         <published>2025-06-25T00:00:00+00:00</published>

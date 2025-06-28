@@ -1,0 +1,114 @@
+<!doctype html><html class="dark light" lang=en><head><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="width=device-width,initial-scale=1.0" name=viewport><meta content=https://aethernet65535.github.io name=base><title>
+            
+                XV6-2020 LAB7-MULTITHREADING
+            
+        </title><meta content="XV6-2020 LAB7-MULTITHREADING" property=og:title><meta content="This is an example description" property=og:description><meta content="This is an example description" name=description><link href=/icon/favicon.png rel=icon type=image/png><link href=https://aethernet65535.github.io/fonts.css rel=stylesheet><script src=https://aethernet65535.github.io/js/codeblock.js></script><script src=https://aethernet65535.github.io/js/toc.js></script><script src=https://aethernet65535.github.io/js/note.js></script><script>MathJax = {
+              tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+              }
+            };</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><link href=https://aethernet65535.github.io/atom.xml rel=alternate title=aethernet-blog type=application/atom+xml><link href=https://aethernet65535.github.io/theme/light.css rel=stylesheet><link href=https://aethernet65535.github.io/theme/dark.css id=darkModeStyle rel=stylesheet><script src=https://aethernet65535.github.io/js/themetoggle.js></script><script>setTheme(getSavedTheme());</script><link href=https://aethernet65535.github.io/main.css media=screen rel=stylesheet><script src="https://aethernet65535.github.io/js/searchElasticlunr.min.js?h=3626c0ef99daa745b31e" defer></script><body><div class=content><header><div class=main><a href=https://aethernet65535.github.io>aethernet-blog</a><div class=socials><a class=social href=https://twitter.com/not_matthias rel=me> <img alt=twitter src=https://aethernet65535.github.io/icons/social/twitter.svg> </a><a class=social href=https://github.com/not-matthias/ rel=me> <img alt=github src=https://aethernet65535.github.io/icons/social/github.svg> </a></div></div><nav><a href=https://aethernet65535.github.io/posts style=margin-left:.25em>/posts</a><a href=https://aethernet65535.github.io/projects style=margin-left:.25em>/projects</a><a href=https://aethernet65535.github.io/about style=margin-left:.25em>/about</a><a href=https://aethernet65535.github.io/tags style=margin-left:.25em>/tags</a><button title="$SHORTCUT to open search" class=search-button id=search-button><img alt=Search class=search-icon src=https://aethernet65535.github.io/icons/search.svg></button><div class="search-modal js" aria-labelledby=modalTitle id=searchModal role=dialog><div id=modal-content><h1 class=page-header id=modalTitle>Search</h1><div id=searchBar><input aria-controls=results-container aria-expanded=false autocomplete=off id=searchInput placeholder=Search... role=combobox spellcheck=false><button title="Clear search" class=clear-button id=clear-search><svg viewbox="0 -960 960 960" xmlns=http://www.w3.org/2000/svg><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button></div><div id=results-container><div id=results-info><span id=zero_results style=display:none>No results</span><span id=one_result style=display:none>1 result</span><span id=many_results style=display:none>$NUMBER results</span></div><div id=results role=listbox></div></div></div></div><a onclick="toggleTheme(); event.preventDefault();" href=# id=dark-mode-toggle> <img alt=Light id=sun-icon src=https://aethernet65535.github.io/icons/sun.svg style=filter:invert()> <img alt=Dark id=moon-icon src=https://aethernet65535.github.io/icons/moon.svg> </a><script>updateItemToggleTheme()</script></nav></header><main><article><div class=title><div class=page-header>XV6-2020 LAB7-MULTITHREADING<span class=primary-color style=font-size:1.6em>.</span></div><div class=meta>Posted on <time>2025-06-28</time> :: 698 Words <span class=tags-label>:: Tags:</span><span class=tags> <a class=post-tag href=https://aethernet65535.github.io/tags/xv6/>xv6</a> </span></div></div><div class=toc-container><h1 class=toc-title>Table of Contents</h1><ul class=toc-list><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/#qian-yan>前言</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/#uthread-switching-between-threads-moderate>uthread: switching between threads (moderate)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/#shang-xia-wen-de-ding-yi>上下文的定义</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/#qie-huan-shang-xia-wen>切换上下文</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/#xiao-xiu-xiao-bu>小修小补</a></li><ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/#diao-du>调度</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/#xin-xian-cheng-chuang-jian>新线程创建</a></ul></ul></ul></div><section class=body><h1 id=qian-yan><a aria-label="Anchor link for: qian-yan" class=zola-anchor href=#qian-yan>前言</a></h1><p>这个LAB有些特别呢，我们后面两个小作业都是在C标准库做的，就是说，我们不是调用XV6的头文件了，而是像我们刚开始学C那时候一样，用标准库！(ﾉ>ω<)ﾉ<p>这个LAB有几个要改的文件，分别是：<code>user/uthread.c</code> <code>user/uthread_switch.S</code>、<code>notxv6/ph.c</code>和<code>notxv6/barrier.c</code>。<h1 id=uthread-switching-between-threads-moderate><a aria-label="Anchor link for: uthread-switching-between-threads-moderate" class=zola-anchor href=#uthread-switching-between-threads-moderate>uthread: switching between threads (moderate)</a></h1><p>第一个小作业呢，是要我们在一个进程内，模拟有好多小进程在跑。(づ′▽`)づ<br> 这些小进程是有名字的，叫做进程（threads）。<p>读者们可能看过内核目录里的<code>swtch()</code> <code>struct context</code>之类的代码，LAB-3（pgtbl）那时候卡着的话，应该是肯定看过这些代码的吧？如果看过的话，这个小作业就很简单了！<em>ଘ(੭</em>ˊᵕˋ)੭* ੈ✩‧₊˚<h2 id=shang-xia-wen-de-ding-yi><a aria-label="Anchor link for: shang-xia-wen-de-ding-yi" class=zola-anchor href=#shang-xia-wen-de-ding-yi>上下文的定义</a></h2><p>首先我们要复制<code>kernel/proc.h</code>的<code>struct context</code>结构体！<p>然后我们要粘贴到<code>user/uthread.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>struct </span><span style=color:#399ee6>context </span><span>{
+</span><span>  uint64 ra</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 这两个寄存器很重要哦
+</span><span>  uint64 sp</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 先记住，要用到的
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// callee-saved
+</span><span>  uint64 s0</span><span style=color:#61676ccc>;
+</span><span>  uint64 s1</span><span style=color:#61676ccc>;
+</span><span>  uint64 s2</span><span style=color:#61676ccc>;
+</span><span>  uint64 s3</span><span style=color:#61676ccc>;
+</span><span>  uint64 s4</span><span style=color:#61676ccc>;
+</span><span>  uint64 s5</span><span style=color:#61676ccc>;
+</span><span>  uint64 s6</span><span style=color:#61676ccc>;
+</span><span>  uint64 s7</span><span style=color:#61676ccc>;
+</span><span>  uint64 s8</span><span style=color:#61676ccc>;
+</span><span>  uint64 s9</span><span style=color:#61676ccc>;
+</span><span>  uint64 s10</span><span style=color:#61676ccc>;
+</span><span>  uint64 s11</span><span style=color:#61676ccc>;
+</span><span>}</span><span style=color:#61676ccc>;
+</span></code></pre><p>之后在我们的结构体里添加一下：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>struct </span><span style=color:#399ee6>thread </span><span>{
+</span><span>  </span><span style=color:#fa6e32>char</span><span>              stack[STACK_SIZE]</span><span style=color:#61676ccc>;  </span><span style=color:#abb0b6;font-style:italic>/* the thread's stack */
+</span><span>  </span><span style=color:#fa6e32>int</span><span>               state</span><span style=color:#61676ccc>;              </span><span style=color:#abb0b6;font-style:italic>/* FREE, RUNNING, RUNNABLE */
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> context    context</span><span style=color:#61676ccc>;            </span><span style=color:#abb0b6;font-style:italic>/* 加上这个，空格要不要对齐都是可以的 */
+</span><span>}</span><span style=color:#61676ccc>;
+</span></code></pre><h2 id=qie-huan-shang-xia-wen><a aria-label="Anchor link for: qie-huan-shang-xia-wen" class=zola-anchor href=#qie-huan-shang-xia-wen>切换上下文</a></h2><p>然后我们现在就去<code>kernel/swtch.S</code>复制一下一段代码，然后无脑粘贴进<code>user/uthread_switch.S</code>就行了：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>thread_switch</span><span style=color:#ed9366>:
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>/* YOUR CODE HERE */
+</span><span>        sd ra</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>(a0)
+</span><span>        sd sp</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>8</span><span>(a0)
+</span><span>        sd s0</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>16</span><span>(a0)
+</span><span>        sd s1</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>24</span><span>(a0)
+</span><span>        sd s2</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>32</span><span>(a0)
+</span><span>        sd s3</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>40</span><span>(a0)
+</span><span>        sd s4</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>48</span><span>(a0)
+</span><span>        sd s5</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>56</span><span>(a0)
+</span><span>        sd s6</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>64</span><span>(a0)
+</span><span>        sd s7</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>72</span><span>(a0)
+</span><span>        sd s8</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>80</span><span>(a0)
+</span><span>        sd s9</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>88</span><span>(a0)
+</span><span>        sd s10</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>96</span><span>(a0)
+</span><span>        sd s11</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>104</span><span>(a0)
+</span><span>
+</span><span>        ld ra</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>(a1)
+</span><span>        ld sp</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>8</span><span>(a1)
+</span><span>        ld s0</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>16</span><span>(a1)
+</span><span>        ld s1</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>24</span><span>(a1)
+</span><span>        ld s2</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>32</span><span>(a1)
+</span><span>        ld s3</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>40</span><span>(a1)
+</span><span>        ld s4</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>48</span><span>(a1)
+</span><span>        ld s5</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>56</span><span>(a1)
+</span><span>        ld s6</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>64</span><span>(a1)
+</span><span>        ld s7</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>72</span><span>(a1)
+</span><span>        ld s8</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>80</span><span>(a1)
+</span><span>        ld s9</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>88</span><span>(a1)
+</span><span>        ld s10</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>96</span><span>(a1)
+</span><span>        ld s11</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>104</span><span>(a1)
+</span><span>        
+</span><span>        ret    </span><span style=color:#abb0b6;font-style:italic>/* return to ra */
+</span></code></pre><p>然后现在，我们把那个<strong>extern</strong>稍微修改一下：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>extern void </span><span style=color:#f29718>thread_switch</span><span>(</span><span style=color:#fa6e32>struct</span><span> context</span><span style=color:#ed9366>*</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> context</span><span style=color:#ed9366>*</span><span>)</span><span style=color:#61676ccc>;
+</span></code></pre><h2 id=xiao-xiu-xiao-bu><a aria-label="Anchor link for: xiao-xiu-xiao-bu" class=zola-anchor href=#xiao-xiu-xiao-bu>小修小补</a></h2><p>现在呢，我们得稍微修一些函数，因为XV6故意留空了。<br> 不会很难的，就一个函数有点难度，读者们看看就懂了！<h3 id=diao-du><a aria-label="Anchor link for: diao-du" class=zola-anchor href=#diao-du>调度</a></h3><p>首先是上下文切换：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void 
+</span><span style=color:#f29718>thread_schedule</span><span>(</span><span style=color:#fa6e32>void</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> thread </span><span style=color:#ed9366>*</span><span>t</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>*</span><span>next_thread</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>/* Find another runnable thread. */
+</span><span>  next_thread </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  t </span><span style=color:#ed9366>=</span><span> current_thread </span><span style=color:#ed9366>+ </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366><</span><span> MAX_THREAD</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(t </span><span style=color:#ed9366>>=</span><span> all_thread </span><span style=color:#ed9366>+</span><span> MAX_THREAD)
+</span><span>      t </span><span style=color:#ed9366>=</span><span> all_thread</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(t</span><span style=color:#ed9366>-></span><span>state </span><span style=color:#ed9366>==</span><span> RUNNABLE) {
+</span><span>      next_thread </span><span style=color:#ed9366>=</span><span> t</span><span style=color:#61676ccc>;
+</span><span>      </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>    }
+</span><span>    t </span><span style=color:#ed9366>=</span><span> t </span><span style=color:#ed9366>+ </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if </span><span>(next_thread </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>) {
+</span><span>    </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"thread_schedule: no runnable threads</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if </span><span>(current_thread </span><span style=color:#ed9366>!=</span><span> next_thread) {         </span><span style=color:#abb0b6;font-style:italic>/* switch threads?  */
+</span><span>    next_thread</span><span style=color:#ed9366>-></span><span>state </span><span style=color:#ed9366>=</span><span> RUNNING</span><span style=color:#61676ccc>;
+</span><span>    t </span><span style=color:#ed9366>=</span><span> current_thread</span><span style=color:#61676ccc>;
+</span><span>    current_thread </span><span style=color:#ed9366>=</span><span> next_thread</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>/* YOUR CODE HERE
+</span><span style=color:#abb0b6;font-style:italic>     * Invoke thread_switch to switch from t to next_thread:
+</span><span style=color:#abb0b6;font-style:italic>     * thread_switch(??, ??);
+</span><span style=color:#abb0b6;font-style:italic>     */
+</span><span>    </span><span style=color:#f29718>thread_switch</span><span>(</span><span style=color:#ed9366>&</span><span>t</span><span style=color:#ed9366>-></span><span>context</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>next_thread</span><span style=color:#ed9366>-></span><span>context)</span><span style=color:#61676ccc>;
+</span><span>  } </span><span style=color:#fa6e32>else
+</span><span>    next_thread </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这里调用<code>thread_switch()</code>是什么意思呢？<br> 其实就是把旧线程保存起来，然后加载新线程而已！<p>为什么这个不难呢？<br> 因为它的提示给的太明显了，都告诉我们要调用什么了！<h3 id=xin-xian-cheng-chuang-jian><a aria-label="Anchor link for: xin-xian-cheng-chuang-jian" class=zola-anchor href=#xin-xian-cheng-chuang-jian>新线程创建</a></h3><p>这个就稍微有点难了，但是我刚刚给了读者们提示！<br> 就是<strong>ra</strong>和<strong>sp</strong>寄存器，这就是我们为数不多需要修改的东西了！<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void 
+</span><span style=color:#f29718>thread_create</span><span>(</span><span style=color:#fa6e32>void </span><span>(</span><span style=color:#ed9366>*</span><span>func)())
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> thread </span><span style=color:#ed9366>*</span><span>t</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>for </span><span>(t </span><span style=color:#ed9366>=</span><span> all_thread</span><span style=color:#61676ccc>;</span><span> t </span><span style=color:#ed9366><</span><span> all_thread </span><span style=color:#ed9366>+</span><span> MAX_THREAD</span><span style=color:#61676ccc>;</span><span> t</span><span style=color:#ed9366>++</span><span>) {
+</span><span>    </span><span style=color:#fa6e32>if </span><span>(t</span><span style=color:#ed9366>-></span><span>state </span><span style=color:#ed9366>==</span><span> FREE) </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>  t</span><span style=color:#ed9366>-></span><span>state </span><span style=color:#ed9366>=</span><span> RUNNABLE</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// YOUR CODE HERE
+</span><span>  t</span><span style=color:#ed9366>-></span><span>context</span><span style=color:#ed9366>.</span><span>sp </span><span style=color:#ed9366>= </span><span>(uint64)t</span><span style=color:#ed9366>-></span><span>stack </span><span style=color:#ed9366>+</span><span> STACK_SIZE</span><span style=color:#61676ccc>;
+</span><span>  t</span><span style=color:#ed9366>-></span><span>context</span><span style=color:#ed9366>.</span><span>ra </span><span style=color:#ed9366>= </span><span>(uint64)func</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>为什么要改<strong>sp</strong>呢？<br> 因为是新线程，它有独立的栈，然后栈不是高地址的吗？但是！在C里，全局/静态结构体的所有字段的初始值都是0，这是超级低地址，所以我们要当然就要把<strong>sp</strong>指向栈低啦，就要+STACK_SIZE，这样就可以指向栈低了！<p>那为什么又要修改<strong>ra</strong>呢？这玩意不返回地址嘛？<br> 确实，<strong>ra</strong>是返回地址，但是在这里有妙用！<br> 读者想想，当一个代码没有其他代码，只有一个<strong>return</strong>的话，会发生什么？<br> 呃呃...可能会报错，不过我们不管那个！在这里它的作用是直接前往那里！<br> 也就是说，线程一创建，制定<strong>ra</strong>后，它就会跑去<code>func()</code>那里了，它就能跑我们给他的函数，很厉害对吧？ヾ(´︶`*)ﾉ♬<p>最后编辑时间：2025/6/28</section></article></main><div class=giscus></div><script async crossorigin issue-term=pathname repo=YOUR_NAME/YOUR_REPO src=https://utteranc.es/client.js theme=github-light></script></div>
