@@ -24,11 +24,11 @@
         <id>https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/</id>
         
         <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab7-multithread/">&lt;h1 id=&quot;qian-yan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan&quot; aria-label=&quot;Anchor link for: qian-yan&quot;&gt;前言&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
-&lt;p&gt;这个LAB有些特别呢，我们后面两个小作业都是在C标准库做的，就是说，我们不是调用XV6的头文件了，而是像我们刚开始学C那时候一样，用标准库！(ﾉ&amp;gt;ω&amp;lt;)ﾉ&lt;&#x2F;p&gt;
+&lt;p&gt;这个LAB有些特别呢，我们后面两个小作业都是在C标准库做的。就是说，这次我们不再用XV6的头文件，而是像学C初期时那样，直接用标准库哦！(ﾉ&amp;gt;ω&amp;lt;)ﾉ&lt;&#x2F;p&gt;
 &lt;p&gt;这个LAB有几个要改的文件，分别是：&lt;code&gt;user&#x2F;uthread.c&lt;&#x2F;code&gt; &lt;code&gt;user&#x2F;uthread_switch.S&lt;&#x2F;code&gt;、&lt;code&gt;notxv6&#x2F;ph.c&lt;&#x2F;code&gt;和&lt;code&gt;notxv6&#x2F;barrier.c&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
 &lt;h1 id=&quot;uthread-switching-between-threads-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#uthread-switching-between-threads-moderate&quot; aria-label=&quot;Anchor link for: uthread-switching-between-threads-moderate&quot;&gt;uthread: switching between threads (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
 &lt;p&gt;第一个小作业呢，是要我们在一个进程内，模拟有好多小进程在跑。(づ′▽`)づ&lt;br &#x2F;&gt;
-这些小进程是有名字的，叫做进程（threads）。&lt;&#x2F;p&gt;
+这些小进程是有名字的，叫做线程（threads）。&lt;&#x2F;p&gt;
 &lt;p&gt;读者们可能看过内核目录里的&lt;code&gt;swtch()&lt;&#x2F;code&gt; &lt;code&gt;struct context&lt;&#x2F;code&gt;之类的代码，LAB-3（pgtbl）那时候卡着的话，应该是肯定看过这些代码的吧？如果看过的话，这个小作业就很简单了！&lt;em&gt;ଘ(੭&lt;&#x2F;em&gt;ˊᵕˋ)੭* ੈ✩‧₊˚&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;shang-xia-wen-de-ding-yi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shang-xia-wen-de-ding-yi&quot; aria-label=&quot;Anchor link for: shang-xia-wen-de-ding-yi&quot;&gt;上下文的定义&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;首先我们要复制&lt;code&gt;kernel&#x2F;proc.h&lt;&#x2F;code&gt;的&lt;code&gt;struct context&lt;&#x2F;code&gt;结构体！&lt;&#x2F;p&gt;
@@ -59,6 +59,12 @@
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; context    context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* 加上这个，空格要不要对齐都是可以的 *&#x2F;
 &lt;&#x2F;span&gt;&lt;span&gt;}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这里表示，每个线程都有：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;栈（独立于进程的）&lt;&#x2F;li&gt;
+&lt;li&gt;状态（看它是否空闲、在运行、可运行）&lt;&#x2F;li&gt;
+&lt;li&gt;上下文（就是一些比较重要的寄存器）&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
 &lt;h2 id=&quot;qie-huan-shang-xia-wen&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qie-huan-shang-xia-wen&quot; aria-label=&quot;Anchor link for: qie-huan-shang-xia-wen&quot;&gt;切换上下文&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;然后我们现在就去&lt;code&gt;kernel&#x2F;swtch.S&lt;&#x2F;code&gt;复制一下一段代码，然后无脑粘贴进&lt;code&gt;user&#x2F;uthread_switch.S&lt;&#x2F;code&gt;就行了：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;thread_switch&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;:
@@ -95,6 +101,8 @@
 &lt;&#x2F;span&gt;&lt;span&gt;        
 &lt;&#x2F;span&gt;&lt;span&gt;        ret    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* return to ra *&#x2F;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这段代码的作用是：&lt;br &#x2F;&gt;
+把旧线程的所有上下文保存起来，然后加载新线程的上下文。&lt;&#x2F;p&gt;
 &lt;p&gt;然后现在，我们把那个&lt;strong&gt;extern&lt;&#x2F;strong&gt;稍微修改一下：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;extern void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;thread_switch&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
@@ -140,7 +148,9 @@
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;这里调用&lt;code&gt;thread_switch()&lt;&#x2F;code&gt;是什么意思呢？&lt;br &#x2F;&gt;
-其实就是把旧线程保存起来，然后加载新线程而已！&lt;&#x2F;p&gt;
+其实就是把旧线程保存起来，然后加载新线程而已！&lt;br &#x2F;&gt;
+就像&lt;code&gt;proc.c&#x2F;scheduler&lt;&#x2F;code&gt;里的&lt;code&gt;swtch()&lt;&#x2F;code&gt;一样，只不过这个是用户态的，不过结构基本一模一样就是了&lt;br &#x2F;&gt;
+ヾ(^▽^*)&lt;&#x2F;p&gt;
 &lt;p&gt;为什么这个不难呢？&lt;br &#x2F;&gt;
 因为它的提示给的太明显了，都告诉我们要调用什么了！&lt;&#x2F;p&gt;
 &lt;h3 id=&quot;xin-xian-cheng-chuang-jian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xin-xian-cheng-chuang-jian&quot; aria-label=&quot;Anchor link for: xin-xian-cheng-chuang-jian&quot;&gt;新线程创建&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
@@ -161,13 +171,203 @@
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;为什么要改&lt;strong&gt;sp&lt;&#x2F;strong&gt;呢？&lt;br &#x2F;&gt;
-因为是新线程，它有独立的栈，然后栈不是高地址的吗？但是！在C里，全局&#x2F;静态结构体的所有字段的初始值都是0，这是超级低地址，所以我们要当然就要把&lt;strong&gt;sp&lt;&#x2F;strong&gt;指向栈低啦，就要+STACK_SIZE，这样就可以指向栈低了！&lt;&#x2F;p&gt;
+因为每个&lt;strong&gt;线程&lt;&#x2F;strong&gt;都有自己的一块栈空间：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char&lt;&#x2F;span&gt;&lt;span&gt; stack[STACK_SIZE]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* the thread&amp;#39;s stack *&#x2F;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;在RISC-V和大部分其他主流架构中，栈都是从高地址往低地址增长的。&lt;br &#x2F;&gt;
+而&lt;code&gt;stack&lt;&#x2F;code&gt;是一个数组，它的起始地址&lt;code&gt;&amp;amp;stack[0]&lt;&#x2F;code&gt;就是低地址，末尾&lt;code&gt;&amp;amp;stack[STACK-SIZE - 1]&lt;&#x2F;code&gt;就是高地址。&lt;br &#x2F;&gt;
+所以我们要设置&lt;code&gt;sp&lt;&#x2F;code&gt;指向栈底（也就是高地址）：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;sp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(uint64)t&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;stack &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span&gt; STACK_SIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这样&lt;code&gt;sp&lt;&#x2F;code&gt;就指向栈底了！&lt;&#x2F;p&gt;
 &lt;p&gt;那为什么又要修改&lt;strong&gt;ra&lt;&#x2F;strong&gt;呢？这玩意不返回地址嘛？&lt;br &#x2F;&gt;
 确实，&lt;strong&gt;ra&lt;&#x2F;strong&gt;是返回地址，但是在这里有妙用！&lt;br &#x2F;&gt;
 读者想想，当一个代码没有其他代码，只有一个&lt;strong&gt;return&lt;&#x2F;strong&gt;的话，会发生什么？&lt;br &#x2F;&gt;
 呃呃...可能会报错，不过我们不管那个！在这里它的作用是直接前往那里！&lt;br &#x2F;&gt;
-也就是说，线程一创建，制定&lt;strong&gt;ra&lt;&#x2F;strong&gt;后，它就会跑去&lt;code&gt;func()&lt;&#x2F;code&gt;那里了，它就能跑我们给他的函数，很厉害对吧？ヾ(´︶`*)ﾉ♬&lt;&#x2F;p&gt;
-&lt;p&gt;最后编辑时间：2025&#x2F;6&#x2F;28&lt;&#x2F;p&gt;
+也就是说，线程一创建，指定&lt;strong&gt;ra&lt;&#x2F;strong&gt;后，它就会跑去&lt;code&gt;func()&lt;&#x2F;code&gt;那里了，它就能跑我们给他的函数，很厉害对吧？ヾ(´︶`*)ﾉ♬&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;using-thread-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#using-thread-moderate&quot; aria-label=&quot;Anchor link for: using-thread-moderate&quot;&gt;using thread (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;这个小作业是要修复BUG，做了刚刚的那道小作业，相信读者们已经对线程有个初步的认知了（没有的话现在学习去！( っ`-´c)ﾏ）。&lt;&#x2F;p&gt;
+&lt;p&gt;现在这个小作业，是要我们解决RACE CONDITION，因为某个变量可能被同时修改，或者修改前后读取之类的，这些是开发者不能完全控制的，即使可以，也不能保证其他人同样能控制，所以我们得用一个东西，叫锁（LOCK）。&lt;br &#x2F;&gt;
+大概是有什么问题呢？&lt;br &#x2F;&gt;
+就是当程序只有单线程时，那么程序就可以很好的运行。但是如果启用了多线程（比如2、4、8、10线程），就会报错，因为某些东西在错误的时间被错误的修改了。&lt;&#x2F;p&gt;
+&lt;p&gt;这个小作业可能会需要你有这些知识：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;哈希表&lt;&#x2F;li&gt;
+&lt;li&gt;哈希表冲突的链式解决方案&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;jie-jue-fang-an&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#jie-jue-fang-an&quot; aria-label=&quot;Anchor link for: jie-jue-fang-an&quot;&gt;解决方案&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个小作业是有两种解决方案的，第一种是性能至上，第二种是安全至上，博主选的是后者，前者是博主找SOLUTION时发现的可行方案（毕竟博主自己也没怎么用过&lt;code&gt;pthread.h&lt;&#x2F;code&gt;，所以还得查）。&lt;br &#x2F;&gt;
+不过如果真要说的话，性能至上方案应该才是XV6希望我们用的，所以我会先教第一种。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;xing-neng-zhi-shang-fang-an&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xing-neng-zhi-shang-fang-an&quot; aria-label=&quot;Anchor link for: xing-neng-zhi-shang-fang-an&quot;&gt;性能至上方案&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;读者们阅读代码后，应该会知道，&lt;code&gt;insert()&lt;&#x2F;code&gt;函数可能会大量的修改数据，毕竟只有它&lt;code&gt;malloc()&lt;&#x2F;code&gt;了：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;static void 
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;insert&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; entry &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;**&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; entry &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;n&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; entry &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;malloc&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;sizeof&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; entry))&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;key &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; key&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;value &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; value&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;next &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; n&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;p &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这样的话，我们只需要对调用&lt;code&gt;insert()&lt;&#x2F;code&gt;的地方进行就该就行了，就是同时只能有一个进程调用&lt;code&gt;insert()&lt;&#x2F;code&gt;。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;ding-yi-yu-shi-xian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ding-yi-yu-shi-xian&quot; aria-label=&quot;Anchor link for: ding-yi-yu-shi-xian&quot;&gt;定义与实现&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;根据官方提示的话，我们可以用互斥锁（mutex），首先我们先定义锁，然后初始化它：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 全局变量
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;pthread_mutex_t&lt;&#x2F;span&gt;&lt;span&gt; lock&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; main函数
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_mutex_init&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;NULL&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;shang-suo&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shang-suo&quot; aria-label=&quot;Anchor link for: shang-suo&quot;&gt;上锁&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;然后我们在调用&lt;code&gt;insert()&lt;&#x2F;code&gt;之前上锁，返回之后解锁（真正叫做释放锁）就行了：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;static 
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;put&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; key &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;%&lt;&#x2F;span&gt;&lt;span&gt; NBUCKET&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; is the key already present?
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; entry &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;(e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; table[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;next) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;key &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;==&lt;&#x2F;span&gt;&lt;span&gt; key)
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;break&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(e){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; update the existing key.
+&lt;&#x2F;span&gt;&lt;span&gt;    e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;value &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; value&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; the new is new.
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_mutex_lock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 上锁，这样就只有当前线程可以执行中间的指令了
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;insert&lt;&#x2F;span&gt;&lt;span&gt;(key&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; value&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;table[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; table[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_mutex_unlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 释放锁
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这个方案很简单，而且在这里完全不会出错，可以说是完美方案了。（那当然，我大部分笔记也都是模仿这位whileskies大佬的，他实力还是很强的我觉得）&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;an-quan-zhi-shang-fang-an&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#an-quan-zhi-shang-fang-an&quot; aria-label=&quot;Anchor link for: an-quan-zhi-shang-fang-an&quot;&gt;安全至上方案&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个是博主自己优化的（也可能是劣化？），说实话，不比上面的方案好多少就是了，不过如果想要额外学习读写锁的话，可以试试ヾ(•ω•`)o&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;ding-yi-yu-shi-xian-1&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ding-yi-yu-shi-xian-1&quot; aria-label=&quot;Anchor link for: ding-yi-yu-shi-xian-1&quot;&gt;定义与实现&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;和之前的差不多，不过博主的方案得&lt;code&gt;for&lt;&#x2F;code&gt;循环：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 全局变量
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;pthread_rwlock_t&lt;&#x2F;span&gt;&lt;span&gt; lock[NBUCKET]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; main函数
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; NBUCKET&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_init&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;NULL&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;shang-suo-1&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shang-suo-1&quot; aria-label=&quot;Anchor link for: shang-suo-1&quot;&gt;上锁&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;博主自己上的锁比较多，这也是博主选择读写锁而不是互斥锁的原因，因为互斥锁禁止任何其他线程的读写，而读写锁可以只锁任意一个权限：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;static 
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;put&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;value&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; key &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;%&lt;&#x2F;span&gt;&lt;span&gt; NBUCKET&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; is the key already present?
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; entry &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_rdlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;(e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; table[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;next) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;key &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;==&lt;&#x2F;span&gt;&lt;span&gt; key)
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;break&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_unlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(e){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; update the existing key.
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_wrlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;value &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; value&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_unlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; the new is new.
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_wrlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;insert&lt;&#x2F;span&gt;&lt;span&gt;(key&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; value&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;table[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; table[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_unlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;static struct&lt;&#x2F;span&gt;&lt;span&gt; entry&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;get&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;key&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; key &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;%&lt;&#x2F;span&gt;&lt;span&gt; NBUCKET&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; entry &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_rdlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for &lt;&#x2F;span&gt;&lt;span&gt;(e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; table[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; e &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;next) {
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if &lt;&#x2F;span&gt;&lt;span&gt;(e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;key &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;==&lt;&#x2F;span&gt;&lt;span&gt; key) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;break&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_unlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span&gt; e&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;yi-wai-fa-xian-fei-hua-xiao-pian-zhang&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#yi-wai-fa-xian-fei-hua-xiao-pian-zhang&quot; aria-label=&quot;Anchor link for: yi-wai-fa-xian-fei-hua-xiao-pian-zhang&quot;&gt;意外发现（废话小篇章）&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;博主发现呢，在LINUX上，对错误代码似乎更为宽容呢，一开始博主的初始化是这样写的：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_rwlock_init&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;lock[NBUCKET]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;NULL&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这个初始化毫无疑问就是错的，它只会初始化一个锁，而且理论上来说都内存越界了，我也不知道当初怎么跑的通的。&lt;br &#x2F;&gt;
+反正，这个初始化在博主的ARCH LINUX上是可以跑通的。&lt;br &#x2F;&gt;
+但是由于博主的电脑最高就4核了（远古CPU i5-2520m），所以博主就和大哥借电脑，大哥的电脑是M4（苹果的那个SOC）的，可以跑10核。&lt;br &#x2F;&gt;
+博主去自己的GitHub主页复制代码，用大哥的GCC（一开始是CLANG，大哥帮我换成GCC的）跑了，结果报SEGFAULT了，就是因为博主初始化错误的原因。&lt;&#x2F;p&gt;
+&lt;p&gt;还是好奇怪呀，怎么ARCH LINUX能正常运行呢....&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;barrier-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#barrier-moderate&quot; aria-label=&quot;Anchor link for: barrier-moderate&quot;&gt;barrier (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;这个小作业要做的是：&lt;br &#x2F;&gt;
+用一个名为&lt;code&gt;barrier()&lt;&#x2F;code&gt;的函数，拦截所有线程。&lt;br &#x2F;&gt;
+直到所有线程到达时，才能继续跑。&lt;&#x2F;p&gt;
+&lt;p&gt;难度的话，没多难，毕竟只要写一个函数，读者们一看就懂！（我会解释的）&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;static void 
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;barrier&lt;&#x2F;span&gt;&lt;span&gt;()
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; YOUR CODE HERE
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Block until all threads have called barrier() and
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; then increment bstate.round.
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_mutex_lock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;barrier_mutex)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;nthread&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;nthread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; nthread)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_cond_wait&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;barrier_cond&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;barrier_mutex)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_cond_broadcast&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;barrier_cond)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;round&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;nthread &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pthread_mutex_unlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;bstate&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;barrier_mutex)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这个代码的作用是：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;线程进来时，先获取锁，防止过多的流量同时修改&lt;&#x2F;li&gt;
+&lt;li&gt;记录这里有多一个受控的线程进来了&lt;&#x2F;li&gt;
+&lt;li&gt;如果线程还没到齐：
+&lt;ul&gt;
+&lt;li&gt;继续等，并释放锁（唤醒条件为*barrier_cond**，释放的锁为&lt;strong&gt;barrier_mutex&lt;&#x2F;strong&gt;）&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;如果线程全到齐了：
+&lt;ul&gt;
+&lt;li&gt;唤醒所有条件为&lt;strong&gt;barrier_cond&lt;&#x2F;strong&gt;的线程&lt;&#x2F;li&gt;
+&lt;li&gt;被唤醒的线程重新获取锁&lt;&#x2F;li&gt;
+&lt;li&gt;记录跑了多一回合&lt;&#x2F;li&gt;
+&lt;li&gt;记录现在没有受控的线程了&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;之后，这些线程会依次释放锁&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;注：&lt;strong&gt;broadcast&lt;&#x2F;strong&gt;后，线程是依次执行的，谁快谁来，比较玄学，博主没怎么学过，了解不深。（；´д｀）ゞ&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;wan-jie-sa-hua&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wan-jie-sa-hua&quot; aria-label=&quot;Anchor link for: wan-jie-sa-hua&quot;&gt;完结撒花！&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;这个LAB的呀，博主觉得真的很有趣呢！&lt;br &#x2F;&gt;
+因为是第一次在MIT6.S081用标准库做东西，和之前一直和&lt;code&gt;kernel&#x2F;&lt;&#x2F;code&gt;打交道很不一样呢~&lt;br &#x2F;&gt;
+这个LAB也让博主学到了好多关于线程的东西，比如RACE CONDITION、线程拦截等等(๑•̀ㅂ•́)و✧&lt;&#x2F;p&gt;
+&lt;p&gt;然后呢，博主的大哥和博主聊了一些关于RACE CONDITION的问题。&lt;br &#x2F;&gt;
+大哥说：“有可能会出现多个线程同时拥有锁的情况，解决RACE CONDITION就是为了解决这个问题！”&lt;br &#x2F;&gt;
+博主一开始吓了一跳呢！&lt;br &#x2F;&gt;
+心想：诶？我们这个 LAB 难度有这么高吗？！Σ(っ °Д °;)っ&lt;br &#x2F;&gt;
+后来查资料发现，那种“多个线程同时持有锁”的情况，一般只有分布式系统上才会出现。
+至少我们这种“单机”的环境内，一般是不会发生这种事情的！ˋ( ° ▽、° )&lt;&#x2F;p&gt;
+&lt;p&gt;而且&lt;code&gt;pthread&lt;&#x2F;code&gt;也很靠谱，只要我们好好写代码，就不会遇到那种高难BUG（后面的就不确定了，但是博主相信应该...也不会，博主还没看）&lt;&#x2F;p&gt;
+&lt;p&gt;大哥可能是以为所有RACE CONDITION都是分布式系统那样的呢，不过那样和博主说的话，博主就自己把问题复杂化了，但是最后博主还是先去查了查才做LAB，这样就能提前知道这种环境是没有那种问题的了！（大哥坏）&lt;&#x2F;p&gt;
+&lt;p&gt;总之呢，这次大哥说的话让博主一度以为自己要写分布式系统啦，结果白吓一跳 (*ﾉωﾉ)
+不过博主还是谢谢大哥，因为这样提前查资料也挺有收获的～嗯...虽然他差点把我带沟里，但他刚好前几天送了我一本原版 K&amp;amp;R 第二版（C语言圣经！），就原谅他啦！(〃´∀｀〃)ゞ&lt;&#x2F;p&gt;
+&lt;p&gt;博主代码链接：https:&#x2F;&#x2F;github.com&#x2F;aethernet65535&#x2F;DOCKER-XV6_2020&#x2F;tree&#x2F;thread&lt;br &#x2F;&gt;
+最后编辑时间：2025&#x2F;6&#x2F;30&lt;&#x2F;p&gt;
 </content>
         
     </entry>
