@@ -5,8 +5,144 @@
     <link rel="self" type="application/atom+xml" href="https://aethernet65535.github.io/atom.xml"/>
     <link rel="alternate" type="text/html" href="https://aethernet65535.github.io"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2025-06-28T00:00:00+00:00</updated>
+    <updated>2025-07-06T00:00:00+00:00</updated>
     <id>https://aethernet65535.github.io/atom.xml</id>
+    <entry xml:lang="en">
+        <title>XV6-2020 LAB8-LOCK</title>
+        <published>2025-07-06T00:00:00+00:00</published>
+        <updated>2025-07-06T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/"/>
+        <id>https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/</id>
+        
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/">&lt;h1 id=&quot;qian-yan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan&quot; aria-label=&quot;Anchor link for: qian-yan&quot;&gt;前言&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;这个LAB...第一个和第二个的难度差距有点大，第一个挺简单，第二个难的离谱（；´д｀）ゞ&lt;&#x2F;p&gt;
+&lt;p&gt;这个LAB主要是让我们学习到了锁与性能的关系，降低锁的粒度，以此获得更好的性能。&lt;br &#x2F;&gt;
+学到的东西也不算少，可以说这LAB和我们上一个LAB的关系还挺大的，都挺好玩的，不过不这个难度确实大不少呢。&lt;br &#x2F;&gt;
+简单点来说的话，就是增加程序的并行性，使其的串行性更低，以此获得更好的多核&#x2F;多线程（这LAB倒是没多线程）性能，虽然现在的CPU单核也很强（我记得苹果的SOC单核超级强），但是多核性能也是可以大大增加使用体验的，相信读者们使用pthread.h时也能很明显的感觉到。&lt;&#x2F;p&gt;
+&lt;p&gt;这个LAB还有一部分是为下一个LAB（FILE SYSTEM）做热身，我目前还没怎么读，估计明天就会开始读了，不然我压根理解不了呢我觉得。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;memory-allocator-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#memory-allocator-moderate&quot; aria-label=&quot;Anchor link for: memory-allocator-moderate&quot;&gt;memory allocator (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;第一个要改的是&lt;code&gt;kalloc.c&lt;&#x2F;code&gt;，这个相对简单，可以说和上一个LAB的某个小作业差不多。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;wen-ti&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wen-ti&quot; aria-label=&quot;Anchor link for: wen-ti&quot;&gt;问题&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;首先我们先来看看“为什么要改”：
+现在&lt;code&gt;kalloc()&lt;&#x2F;code&gt;和&lt;code&gt;kfree()&lt;&#x2F;code&gt;有一些问题，就是在多核情况下，会有锁竞争问题，倒不是会影响结果，只是会大幅影响性能。&lt;br &#x2F;&gt;
+就是同时只能有一个CPU调用这些函数，我们需要改一下，让这些函数可以同时被多个CPU调用和运行。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;gong-zuo&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#gong-zuo&quot; aria-label=&quot;Anchor link for: gong-zuo&quot;&gt;工作&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;我们的工作是要让每个CPU都有自己的freelist，并且在自己的freelist为空时，窃取其他CPU的空闲页。&lt;br &#x2F;&gt;
+自然的，锁的数量也得增加，官方有个规定：锁的名字必须以“kmem”开头。&lt;br &#x2F;&gt;
+只要&lt;code&gt;kalloctest&lt;&#x2F;code&gt;能完美通过，那就是通过此测试！(｡･∀･)ﾉﾞ&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;ti-shi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ti-shi&quot; aria-label=&quot;Anchor link for: ti-shi&quot;&gt;提示&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;官方倒是有给些提示，我总结了一些较为重要的提示：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;关于&lt;strong&gt;CPU&lt;&#x2F;strong&gt;有多少个的问题，其实用&lt;code&gt;kernel&#x2F;param.h&lt;&#x2F;code&gt;的&lt;strong&gt;NCPU&lt;&#x2F;strong&gt;就好了，不用太在意XV6上有多少CPU&lt;&#x2F;li&gt;
+&lt;li&gt;让&lt;code&gt;freerange()&lt;&#x2F;code&gt;把所有空闲页分配给正在运行的CPU（博主猜测大概率是&lt;strong&gt;CPU 0&lt;&#x2F;strong&gt;，不过这种技术细节先不用太在意）&lt;&#x2F;li&gt;
+&lt;li&gt;你可以使用&lt;code&gt;pop_off()&lt;&#x2F;code&gt;和&lt;code&gt;push_off()&lt;&#x2F;code&gt;来控制中断的&lt;strong&gt;开关&lt;&#x2F;strong&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;cpuid()&lt;&#x2F;code&gt;会返回当前CPU核心编号&lt;&#x2F;li&gt;
+&lt;li&gt;可以试试&lt;code&gt;snprintf()&lt;&#x2F;code&gt;来对每个锁命名，不过要每个都叫&lt;strong&gt;kmem&lt;&#x2F;strong&gt;也不是不行&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h2 id=&quot;shi-xian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shi-xian&quot; aria-label=&quot;Anchor link for: shi-xian&quot;&gt;实现&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;首先，我们要先升级一下freelist，从本来的全局版升级为多核独立版。&lt;br &#x2F;&gt;
+锁也要对应的增加一下，然后别忘了给锁命名。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;LOCKLEN &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;6 &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 锁名长度限制
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;run &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;run&lt;&#x2F;span&gt;&lt;span&gt; *next&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; spinlock lock&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char&lt;&#x2F;span&gt;&lt;span&gt; lock_name[LOCKLEN]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; 
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;run&lt;&#x2F;span&gt;&lt;span&gt; *freelist&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;} kmem[NCPU]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kinit&lt;&#x2F;span&gt;&lt;span&gt;()
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; NCPU&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;){ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 循环锁的初始化
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;snprintf&lt;&#x2F;span&gt;&lt;span&gt;(kmem[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock_name&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; LOCKLEN&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;kmem &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;%d&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; i)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;initlock&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; kmem[i]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock_name)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;freerange&lt;&#x2F;span&gt;&lt;span&gt;(end&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)PHYSTOP)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这个小作业最难的就是这里的，因为我们要在原版的基础上加上一个窃取机制。&lt;br &#x2F;&gt;
+要注意的是，我们得关闭中断，以确保我们获得的CPUID在执行时是正确的。&lt;br &#x2F;&gt;
+然后我们还得把freelist改为对应的CPU核心编号。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kalloc&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; run &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;r&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;push_off&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 关闭中断
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; cpu &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;cpuid&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;acquire&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  r &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;freelist&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(r){
+&lt;&#x2F;span&gt;&lt;span&gt;    kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;freelist &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; r&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;next&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;release&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 本地没空闲页也得释放，避免死锁
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;release&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 窃取空闲页（遍历法）
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 从其他CPU的FREELIST
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; nextid &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; nextid &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; NCPU&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; nextid&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(cpu &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!=&lt;&#x2F;span&gt;&lt;span&gt; nextid){
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;acquire&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[nextid]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        r &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; kmem[nextid]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;freelist&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(r){
+&lt;&#x2F;span&gt;&lt;span&gt;          kmem[nextid]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;freelist &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; r&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;next&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;release&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[nextid]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;break&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;        }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;release&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[nextid]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      }
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pop_off&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 开启（也有可能不开启，具体去看源代码）中断
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(r)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;memset&lt;&#x2F;span&gt;&lt;span&gt;((&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)r&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;5&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; fill with junk
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)r&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;这个的话相对简单，只要把释放的空闲页插到对应CPU的链表头就好了，这玩意的不严谨性应该给窃取机制的使用次数降低了不少呢（＞人＜；）。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kfree&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;pa&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; run &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;r&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(((uint64)pa &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;%&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|| &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)pa &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; end &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|| &lt;&#x2F;span&gt;&lt;span&gt;(uint64)pa &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;=&lt;&#x2F;span&gt;&lt;span&gt; PHYSTOP)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;panic&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;kfree&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Fill with junk to catch dangling refs.
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;memset&lt;&#x2F;span&gt;&lt;span&gt;(pa&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; PGSIZE)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  r &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; run&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)pa&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;push_off&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; cpu &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;cpuid&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;acquire&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  r&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;next &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;freelist&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;freelist &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;=&lt;&#x2F;span&gt;&lt;span&gt; r&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;release&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;kmem[cpu]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;.&lt;&#x2F;span&gt;&lt;span&gt;lock)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;pop_off&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;最后编辑时间：2025&#x2F;7&#x2F;6&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
     <entry xml:lang="en">
         <title>XV6-2020 LAB7-MULTITHREADING</title>
         <published>2025-06-28T00:00:00+00:00</published>

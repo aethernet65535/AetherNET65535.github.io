@@ -1,0 +1,90 @@
+<!doctype html><html class="dark light" lang=en><head><meta charset=UTF-8><meta content="IE=edge" http-equiv=X-UA-Compatible><meta content="width=device-width,initial-scale=1.0" name=viewport><meta content=https://aethernet65535.github.io name=base><title>
+            
+                XV6-2020 LAB8-LOCK
+            
+        </title><meta content="XV6-2020 LAB8-LOCK" property=og:title><meta content="This is an example description" property=og:description><meta content="This is an example description" name=description><link href=/icon/favicon.png rel=icon type=image/png><link href=https://aethernet65535.github.io/fonts.css rel=stylesheet><script src=https://aethernet65535.github.io/js/codeblock.js></script><script src=https://aethernet65535.github.io/js/toc.js></script><script src=https://aethernet65535.github.io/js/note.js></script><script>MathJax = {
+              tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+              }
+            };</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><link href=https://aethernet65535.github.io/atom.xml rel=alternate title=aethernet-blog type=application/atom+xml><link href=https://aethernet65535.github.io/theme/light.css rel=stylesheet><link href=https://aethernet65535.github.io/theme/dark.css id=darkModeStyle rel=stylesheet><script src=https://aethernet65535.github.io/js/themetoggle.js></script><script>setTheme(getSavedTheme());</script><link href=https://aethernet65535.github.io/main.css media=screen rel=stylesheet><script src="https://aethernet65535.github.io/js/searchElasticlunr.min.js?h=3626c0ef99daa745b31e" defer></script><body><div class=content><header><div class=main><a href=https://aethernet65535.github.io>aethernet-blog</a><div class=socials><a class=social href=https://twitter.com/not_matthias rel=me> <img alt=twitter src=https://aethernet65535.github.io/icons/social/twitter.svg> </a><a class=social href=https://github.com/not-matthias/ rel=me> <img alt=github src=https://aethernet65535.github.io/icons/social/github.svg> </a></div></div><nav><a href=https://aethernet65535.github.io/posts style=margin-left:.25em>/posts</a><a href=https://aethernet65535.github.io/projects style=margin-left:.25em>/projects</a><a href=https://aethernet65535.github.io/about style=margin-left:.25em>/about</a><a href=https://aethernet65535.github.io/tags style=margin-left:.25em>/tags</a><button title="$SHORTCUT to open search" class=search-button id=search-button><img alt=Search class=search-icon src=https://aethernet65535.github.io/icons/search.svg></button><div class="search-modal js" aria-labelledby=modalTitle id=searchModal role=dialog><div id=modal-content><h1 class=page-header id=modalTitle>Search</h1><div id=searchBar><input aria-controls=results-container aria-expanded=false autocomplete=off id=searchInput placeholder=Search... role=combobox spellcheck=false><button title="Clear search" class=clear-button id=clear-search><svg viewbox="0 -960 960 960" xmlns=http://www.w3.org/2000/svg><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button></div><div id=results-container><div id=results-info><span id=zero_results style=display:none>No results</span><span id=one_result style=display:none>1 result</span><span id=many_results style=display:none>$NUMBER results</span></div><div id=results role=listbox></div></div></div></div><a onclick="toggleTheme(); event.preventDefault();" href=# id=dark-mode-toggle> <img alt=Light id=sun-icon src=https://aethernet65535.github.io/icons/sun.svg style=filter:invert()> <img alt=Dark id=moon-icon src=https://aethernet65535.github.io/icons/moon.svg> </a><script>updateItemToggleTheme()</script></nav></header><main><article><div class=title><div class=page-header>XV6-2020 LAB8-LOCK<span class=primary-color style=font-size:1.6em>.</span></div><div class=meta>Posted on <time>2025-07-06</time> :: 827 Words <span class=tags-label>:: Tags:</span><span class=tags> <a class=post-tag href=https://aethernet65535.github.io/tags/xv6/>xv6</a> </span></div></div><div class=toc-container><h1 class=toc-title>Table of Contents</h1><ul class=toc-list><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/#qian-yan>前言</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/#memory-allocator-moderate>memory allocator (moderate)</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/#wen-ti>问题</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/#gong-zuo>工作</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/#ti-shi>提示</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/#shi-xian>实现</a></ul></ul></div><section class=body><h1 id=qian-yan><a aria-label="Anchor link for: qian-yan" class=zola-anchor href=#qian-yan>前言</a></h1><p>这个LAB...第一个和第二个的难度差距有点大，第一个挺简单，第二个难的离谱（；´д｀）ゞ<p>这个LAB主要是让我们学习到了锁与性能的关系，降低锁的粒度，以此获得更好的性能。<br> 学到的东西也不算少，可以说这LAB和我们上一个LAB的关系还挺大的，都挺好玩的，不过不这个难度确实大不少呢。<br> 简单点来说的话，就是增加程序的并行性，使其的串行性更低，以此获得更好的多核/多线程（这LAB倒是没多线程）性能，虽然现在的CPU单核也很强（我记得苹果的SOC单核超级强），但是多核性能也是可以大大增加使用体验的，相信读者们使用pthread.h时也能很明显的感觉到。<p>这个LAB还有一部分是为下一个LAB（FILE SYSTEM）做热身，我目前还没怎么读，估计明天就会开始读了，不然我压根理解不了呢我觉得。<h1 id=memory-allocator-moderate><a aria-label="Anchor link for: memory-allocator-moderate" class=zola-anchor href=#memory-allocator-moderate>memory allocator (moderate)</a></h1><p>第一个要改的是<code>kalloc.c</code>，这个相对简单，可以说和上一个LAB的某个小作业差不多。<h2 id=wen-ti><a aria-label="Anchor link for: wen-ti" class=zola-anchor href=#wen-ti>问题</a></h2><p>首先我们先来看看“为什么要改”： 现在<code>kalloc()</code>和<code>kfree()</code>有一些问题，就是在多核情况下，会有锁竞争问题，倒不是会影响结果，只是会大幅影响性能。<br> 就是同时只能有一个CPU调用这些函数，我们需要改一下，让这些函数可以同时被多个CPU调用和运行。<h2 id=gong-zuo><a aria-label="Anchor link for: gong-zuo" class=zola-anchor href=#gong-zuo>工作</a></h2><p>我们的工作是要让每个CPU都有自己的freelist，并且在自己的freelist为空时，窃取其他CPU的空闲页。<br> 自然的，锁的数量也得增加，官方有个规定：锁的名字必须以“kmem”开头。<br> 只要<code>kalloctest</code>能完美通过，那就是通过此测试！(｡･∀･)ﾉﾞ<h2 id=ti-shi><a aria-label="Anchor link for: ti-shi" class=zola-anchor href=#ti-shi>提示</a></h2><p>官方倒是有给些提示，我总结了一些较为重要的提示：<ul><li>关于<strong>CPU</strong>有多少个的问题，其实用<code>kernel/param.h</code>的<strong>NCPU</strong>就好了，不用太在意XV6上有多少CPU<li>让<code>freerange()</code>把所有空闲页分配给正在运行的CPU（博主猜测大概率是<strong>CPU 0</strong>，不过这种技术细节先不用太在意）<li>你可以使用<code>pop_off()</code>和<code>push_off()</code>来控制中断的<strong>开关</strong><li><code>cpuid()</code>会返回当前CPU核心编号<li>可以试试<code>snprintf()</code>来对每个锁命名，不过要每个都叫<strong>kmem</strong>也不是不行</ul><h2 id=shi-xian><a aria-label="Anchor link for: shi-xian" class=zola-anchor href=#shi-xian>实现</a></h2><p>首先，我们要先升级一下freelist，从本来的全局版升级为多核独立版。<br> 锁也要对应的增加一下，然后别忘了给锁命名。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>#define </span><span style=color:#399ee6>LOCKLEN </span><span style=color:#ff8f40>6 </span><span style=color:#abb0b6;font-style:italic>// 锁名长度限制
+</span><span>
+</span><span style=color:#fa6e32>struct </span><span style=color:#399ee6>run </span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct </span><span style=color:#399ee6>run</span><span> *next</span><span style=color:#61676ccc>;
+</span><span>}</span><span style=color:#61676ccc>;
+</span><span>
+</span><span style=color:#fa6e32>struct </span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> spinlock lock</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>char</span><span> lock_name[LOCKLEN]</span><span style=color:#61676ccc>; 
+</span><span>  </span><span style=color:#fa6e32>struct </span><span style=color:#399ee6>run</span><span> *freelist</span><span style=color:#61676ccc>;
+</span><span>} kmem[NCPU]</span><span style=color:#61676ccc>;
+</span><span>
+</span><span style=color:#fa6e32>void
+</span><span style=color:#f29718>kinit</span><span>()
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366><</span><span> NCPU</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){ </span><span style=color:#abb0b6;font-style:italic>// 循环锁的初始化
+</span><span>    </span><span style=color:#f07171>snprintf</span><span>(kmem[i]</span><span style=color:#ed9366>.</span><span>lock_name</span><span style=color:#61676ccc>,</span><span> LOCKLEN</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"kmem </span><span style=color:#ff8f40>%d</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> i)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f29718>initlock</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[i]</span><span style=color:#ed9366>.</span><span>lock</span><span style=color:#61676ccc>,</span><span> kmem[i]</span><span style=color:#ed9366>.</span><span>lock_name)</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>  </span><span style=color:#f29718>freerange</span><span>(end</span><span style=color:#61676ccc>, </span><span>(</span><span style=color:#fa6e32>void</span><span style=color:#ed9366>*</span><span>)PHYSTOP)</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这个小作业最难的就是这里的，因为我们要在原版的基础上加上一个窃取机制。<br> 要注意的是，我们得关闭中断，以确保我们获得的CPUID在执行时是正确的。<br> 然后我们还得把freelist改为对应的CPU核心编号。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void </span><span style=color:#ed9366>*
+</span><span style=color:#f29718>kalloc</span><span>(</span><span style=color:#fa6e32>void</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> run </span><span style=color:#ed9366>*</span><span>r</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#f29718>push_off</span><span>()</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 关闭中断
+</span><span>  </span><span style=color:#fa6e32>int</span><span> cpu </span><span style=color:#ed9366>= </span><span style=color:#f29718>cpuid</span><span>()</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f29718>acquire</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[cpu]</span><span style=color:#ed9366>.</span><span>lock)</span><span style=color:#61676ccc>;
+</span><span>  r </span><span style=color:#ed9366>=</span><span> kmem[cpu]</span><span style=color:#ed9366>.</span><span>freelist</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(r){
+</span><span>    kmem[cpu]</span><span style=color:#ed9366>.</span><span>freelist </span><span style=color:#ed9366>=</span><span> r</span><span style=color:#ed9366>-></span><span>next</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f29718>release</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[cpu]</span><span style=color:#ed9366>.</span><span>lock)</span><span style=color:#61676ccc>;
+</span><span>  }</span><span style=color:#fa6e32>else</span><span>{
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 本地没空闲页也得释放，避免死锁
+</span><span>    </span><span style=color:#f29718>release</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[cpu]</span><span style=color:#ed9366>.</span><span>lock)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 窃取空闲页（遍历法）
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 从其他CPU的FREELIST
+</span><span>    </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> nextid </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> nextid </span><span style=color:#ed9366><</span><span> NCPU</span><span style=color:#61676ccc>;</span><span> nextid</span><span style=color:#ed9366>++</span><span>){
+</span><span>      </span><span style=color:#fa6e32>if</span><span>(cpu </span><span style=color:#ed9366>!=</span><span> nextid){
+</span><span>        </span><span style=color:#f29718>acquire</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[nextid]</span><span style=color:#ed9366>.</span><span>lock)</span><span style=color:#61676ccc>;
+</span><span>        r </span><span style=color:#ed9366>=</span><span> kmem[nextid]</span><span style=color:#ed9366>.</span><span>freelist</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>        </span><span style=color:#fa6e32>if</span><span>(r){
+</span><span>          kmem[nextid]</span><span style=color:#ed9366>.</span><span>freelist </span><span style=color:#ed9366>=</span><span> r</span><span style=color:#ed9366>-></span><span>next</span><span style=color:#61676ccc>;
+</span><span>          </span><span style=color:#f29718>release</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[nextid]</span><span style=color:#ed9366>.</span><span>lock)</span><span style=color:#61676ccc>;
+</span><span>          </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>        }
+</span><span>
+</span><span>        </span><span style=color:#f29718>release</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[nextid]</span><span style=color:#ed9366>.</span><span>lock)</span><span style=color:#61676ccc>;
+</span><span>      }
+</span><span>    }
+</span><span>  }
+</span><span>  </span><span style=color:#f29718>pop_off</span><span>()</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 开启（也有可能不开启，具体去看源代码）中断
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(r)
+</span><span>    </span><span style=color:#f07171>memset</span><span>((</span><span style=color:#fa6e32>char</span><span style=color:#ed9366>*</span><span>)r</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>5</span><span style=color:#61676ccc>,</span><span> PGSIZE)</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// fill with junk
+</span><span>  </span><span style=color:#fa6e32>return </span><span>(</span><span style=color:#fa6e32>void</span><span style=color:#ed9366>*</span><span>)r</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这个的话相对简单，只要把释放的空闲页插到对应CPU的链表头就好了，这玩意的不严谨性应该给窃取机制的使用次数降低了不少呢（＞人＜；）。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void
+</span><span style=color:#f29718>kfree</span><span>(</span><span style=color:#fa6e32>void </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>pa</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> run </span><span style=color:#ed9366>*</span><span>r</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(((uint64)pa </span><span style=color:#ed9366>%</span><span> PGSIZE) </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>|| </span><span>(</span><span style=color:#fa6e32>char</span><span style=color:#ed9366>*</span><span>)pa </span><span style=color:#ed9366><</span><span> end </span><span style=color:#ed9366>|| </span><span>(uint64)pa </span><span style=color:#ed9366>>=</span><span> PHYSTOP)
+</span><span>    </span><span style=color:#f29718>panic</span><span>(</span><span style=color:#86b300>"kfree"</span><span>)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// Fill with junk to catch dangling refs.
+</span><span>  </span><span style=color:#f07171>memset</span><span>(pa</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>,</span><span> PGSIZE)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  r </span><span style=color:#ed9366>= </span><span>(</span><span style=color:#fa6e32>struct</span><span> run</span><span style=color:#ed9366>*</span><span>)pa</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#f29718>push_off</span><span>()</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> cpu </span><span style=color:#ed9366>= </span><span style=color:#f29718>cpuid</span><span>()</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f29718>acquire</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[cpu]</span><span style=color:#ed9366>.</span><span>lock)</span><span style=color:#61676ccc>;
+</span><span>  r</span><span style=color:#ed9366>-></span><span>next </span><span style=color:#ed9366>=</span><span> kmem[cpu]</span><span style=color:#ed9366>.</span><span>freelist</span><span style=color:#61676ccc>;
+</span><span>  kmem[cpu]</span><span style=color:#ed9366>.</span><span>freelist </span><span style=color:#ed9366>=</span><span> r</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f29718>release</span><span>(</span><span style=color:#ed9366>&</span><span>kmem[cpu]</span><span style=color:#ed9366>.</span><span>lock)</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f29718>pop_off</span><span>()</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>最后编辑时间：2025/7/6</section></article></main><div class=giscus></div><script async crossorigin issue-term=pathname repo=YOUR_NAME/YOUR_REPO src=https://utteranc.es/client.js theme=github-light></script></div>
