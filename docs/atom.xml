@@ -600,7 +600,7 @@ A：会，不过&lt;strong&gt;有点&lt;&#x2F;strong&gt;慢，大概要13年左�
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;ha-xi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ha-xi&quot; aria-label=&quot;Anchor link for: ha-xi&quot;&gt;哈希&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;先定义一下我们要多少个哈希桶，我选的16，因为是2的幂次方。&lt;br &#x2F;&gt;
-13、17之类的也是个不错的选择，由于是质数，所以可以降低哈希冲突的概率。
+13、17之类的也是个不错的选择，由于是质数，所以可以降低哈希冲突的概率。&lt;br &#x2F;&gt;
 定义在哪的话...在&lt;code&gt;bio.c&lt;&#x2F;code&gt;或&lt;code&gt;param.h&lt;&#x2F;code&gt;，甚至是其他奇怪的地方，基本都是可以的：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;NBUC &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;16
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;

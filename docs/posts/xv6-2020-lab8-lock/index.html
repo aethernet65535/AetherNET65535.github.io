@@ -100,7 +100,7 @@
 </span><span>
 </span><span>  </span><span style=color:#55b4d4;font-style:italic>uint</span><span> ticks</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 添加这个
 </span><span>}</span><span style=color:#61676ccc>;
-</span></code></pre><h3 id=ha-xi><a aria-label="Anchor link for: ha-xi" class=zola-anchor href=#ha-xi>哈希</a></h3><p>先定义一下我们要多少个哈希桶，我选的16，因为是2的幂次方。<br> 13、17之类的也是个不错的选择，由于是质数，所以可以降低哈希冲突的概率。 定义在哪的话...在<code>bio.c</code>或<code>param.h</code>，甚至是其他奇怪的地方，基本都是可以的：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>#define </span><span style=color:#399ee6>NBUC </span><span style=color:#ff8f40>16
+</span></code></pre><h3 id=ha-xi><a aria-label="Anchor link for: ha-xi" class=zola-anchor href=#ha-xi>哈希</a></h3><p>先定义一下我们要多少个哈希桶，我选的16，因为是2的幂次方。<br> 13、17之类的也是个不错的选择，由于是质数，所以可以降低哈希冲突的概率。<br> 定义在哪的话...在<code>bio.c</code>或<code>param.h</code>，甚至是其他奇怪的地方，基本都是可以的：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>#define </span><span style=color:#399ee6>NBUC </span><span style=color:#ff8f40>16
 </span></code></pre><p>现在，我们要把原本的数据结构改为哈希表，因为这样就能降低锁的力度，进而降低竞争的激烈性。 用不到的字段删了就行，这样用了就会在编译时报错，编译时报错会更好：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>struct </span><span>{
 </span><span>  
 </span><span>  </span><span style=color:#abb0b6;font-style:italic>// 在这LAB用不到这些字段了
