@@ -10,6 +10,10 @@
         <loc>https://aethernet65535.github.io/posts/</loc>
     </url>
     <url>
+        <loc>https://aethernet65535.github.io/posts/.stversions/xv6-2020-lab8-lock/</loc>
+        <lastmod>2025-07-06</lastmod>
+    </url>
+    <url>
         <loc>https://aethernet65535.github.io/posts/configuration/</loc>
         <lastmod>2024-07-09</lastmod>
     </url>
@@ -66,6 +70,10 @@
     <url>
         <loc>https://aethernet65535.github.io/posts/xv6-2020-lab8-lock/</loc>
         <lastmod>2025-07-06</lastmod>
+    </url>
+    <url>
+        <loc>https://aethernet65535.github.io/posts/xv6-2020-lab9-fs/</loc>
+        <lastmod>2025-07-21</lastmod>
     </url>
     <url>
         <loc>https://aethernet65535.github.io/projects/</loc>

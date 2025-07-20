@@ -21,10 +21,10 @@
 </span><span>
 </span><span style=color:#fa6e32>int </span><span style=color:#f29718>main </span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>argc</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>argv</span><span>[])
 </span><span>{
-</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 检查用户输入的参数是不是只有两个 (sleep &LTticks>)
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 检查用户输入的参数是不是只有两个 (sleep &lt;ticks>)
 </span><span>    </span><span style=color:#fa6e32>if </span><span>(argc </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>2</span><span>)
 </span><span>    {
-</span><span>        </span><span style=color:#f07171>fprintf </span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"usage: sleep &LTticks></span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#f07171>fprintf </span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"usage: sleep &lt;ticks></span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    }
 </span><span>    
@@ -32,7 +32,7 @@
 </span><span>    </span><span style=color:#fa6e32>int</span><span> ticks </span><span style=color:#ed9366>= </span><span style=color:#f07171>atoi</span><span>(argv[</span><span style=color:#ff8f40>1</span><span>])</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>    </span><span style=color:#abb0b6;font-style:italic>// 防止用户不知道自己不能让时间倒流（悲）
-</span><span>    </span><span style=color:#fa6e32>if </span><span>(ticks </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>if </span><span>(ticks </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    {
 </span><span>        </span><span style=color:#f07171>fprintf </span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"ticks must be a positive integer</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
@@ -216,7 +216,7 @@
 </span><span>        </span><span style=color:#f29718>close</span><span>(p[READ])</span><span style=color:#61676ccc>;
 </span><span>        
 </span><span>        </span><span style=color:#abb0b6;font-style:italic>// 把2到35全写入管道
-</span><span>        </span><span style=color:#fa6e32>for </span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366><= </span><span style=color:#ff8f40>35</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>)
+</span><span>        </span><span style=color:#fa6e32>for </span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;= </span><span style=color:#ff8f40>35</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>)
 </span><span>        {
 </span><span>            </span><span style=color:#f29718>write</span><span>(p[WRITE]</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>i</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof</span><span>(</span><span style=color:#fa6e32>int</span><span>))</span><span style=color:#61676ccc>;
 </span><span>        }
@@ -264,14 +264,14 @@
 </span><span>  </span><span style=color:#fa6e32>struct</span><span> dirent de</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>  </span><span style=color:#abb0b6;font-style:italic>// 获取文件描述符
-</span><span>  </span><span style=color:#fa6e32>if</span><span>((fd </span><span style=color:#ed9366>= </span><span style=color:#f29718>open </span><span>(path</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((fd </span><span style=color:#ed9366>= </span><span style=color:#f29718>open </span><span>(path</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span><span>  {
 </span><span>    </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"find: cannot open </span><span style=color:#ff8f40>%s</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>return</span><span style=color:#61676ccc>;
 </span><span>  }
 </span><span>
 </span><span>  </span><span style=color:#abb0b6;font-style:italic>// 获取该文件的更多资料（比如它是文件还是目录）
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>fstat </span><span>(fd</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>st) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>fstat </span><span>(fd</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>st) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span><span>  {
 </span><span>    </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"find: cannot stat </span><span style=color:#ff8f40>%s</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> path)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#f29718>close</span><span>(fd)</span><span style=color:#61676ccc>;
@@ -315,9 +315,9 @@
 </span><span style=color:#fa6e32>int
 </span><span style=color:#f29718>main</span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>argc</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>argv</span><span>[])
 </span><span>{
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(argc </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>3</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(argc </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>3</span><span>)
 </span><span>  {
-</span><span>    </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"usage: find &LTstart_path> &LTfile_name></span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"usage: find &lt;start_path> &lt;file_name></span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>  }
 </span><span>  </span><span style=color:#f29718>find</span><span>(argv[</span><span style=color:#ff8f40>1</span><span>]</span><span style=color:#61676ccc>,</span><span> argv[</span><span style=color:#ff8f40>2</span><span>])</span><span style=color:#61676ccc>;
@@ -334,7 +334,7 @@
 </span><span>
 </span><span style=color:#fa6e32>int </span><span style=color:#f29718>main</span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>argc</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>argv</span><span>[])
 </span><span>{
-</span><span>    </span><span style=color:#fa6e32>if </span><span>(argc </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>2</span><span>) 
+</span><span>    </span><span style=color:#fa6e32>if </span><span>(argc </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>2</span><span>) 
 </span><span>    {
 </span><span>        </span><span style=color:#f07171>fprintf</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#86b300>"missing command</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>        </span><span style=color:#f07171>exit</span><span>(</span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
@@ -354,7 +354,7 @@
 </span><span>            
 </span><span>            </span><span style=color:#abb0b6;font-style:italic>// 给每个argv分配内存
 </span><span>            </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span>cmd_argv[MAXARG]</span><span style=color:#61676ccc>;
-</span><span>            </span><span style=color:#fa6e32>for </span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366><</span><span> argc </span><span style=color:#ed9366>- </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>) 
+</span><span>            </span><span style=color:#fa6e32>for </span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> argc </span><span style=color:#ed9366>- </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>) 
 </span><span>            {
 </span><span>                cmd_argv[i] </span><span style=color:#ed9366>= </span><span style=color:#f07171>malloc</span><span>(</span><span style=color:#f07171>strlen</span><span>(argv[i</span><span style=color:#ed9366>+</span><span style=color:#ff8f40>1</span><span>]) </span><span style=color:#ed9366>+ </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
 </span><span>                </span><span style=color:#f07171>strcpy</span><span>(cmd_argv[i]</span><span style=color:#61676ccc>,</span><span> argv[i</span><span style=color:#ed9366>+</span><span style=color:#ff8f40>1</span><span>])</span><span style=color:#61676ccc>; 
@@ -379,7 +379,7 @@
 </span><span>                </span><span style=color:#f29718>wait</span><span>(</span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>                
 </span><span>                </span><span style=color:#abb0b6;font-style:italic>// 子进程结束后，就释放所有内存，避免下次的意外输出
-</span><span>                </span><span style=color:#fa6e32>for </span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366><</span><span> argc</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>) 
+</span><span>                </span><span style=color:#fa6e32>for </span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> argc</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>) 
 </span><span>                {
 </span><span>                    </span><span style=color:#f07171>free</span><span>(cmd_argv[i])</span><span style=color:#61676ccc>;
 </span><span>                }
@@ -394,7 +394,7 @@
 </span><span>        </span><span style=color:#fa6e32>else </span><span style=color:#abb0b6;font-style:italic>// 普通字符就来这里
 </span><span>        {
 </span><span>            </span><span style=color:#abb0b6;font-style:italic>// 检查用户输入的字符长度是否过长
-</span><span>            </span><span style=color:#fa6e32>if </span><span>(index </span><span style=color:#ed9366><</span><span> MAX_ARG_LEN </span><span style=color:#ed9366>- </span><span style=color:#ff8f40>1</span><span>) 
+</span><span>            </span><span style=color:#fa6e32>if </span><span>(index </span><span style=color:#ed9366>&lt;</span><span> MAX_ARG_LEN </span><span style=color:#ed9366>- </span><span style=color:#ff8f40>1</span><span>) 
 </span><span>            {
 </span><span>                line[index</span><span style=color:#ed9366>++</span><span>] </span><span style=color:#ed9366>=</span><span> ch</span><span style=color:#61676ccc>;
 </span><span>            } 

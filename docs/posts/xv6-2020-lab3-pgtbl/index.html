@@ -30,7 +30,7 @@
 </span><span style=color:#f29718>freewalk</span><span>(pagetable_t </span><span style=color:#ff8f40>pagetable</span><span>)
 </span><span>{
 </span><span>  </span><span style=color:#abb0b6;font-style:italic>// there are 2^9 = 512 PTEs in a page table.
-</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>512</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>512</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
 </span><span>    pte_t pte </span><span style=color:#ed9366>=</span><span> pagetable[i]</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>if</span><span>((pte </span><span style=color:#ed9366>&</span><span> PTE_V) </span><span style=color:#ed9366>&& </span><span>(pte </span><span style=color:#ed9366>& </span><span>(PTE_R</span><span style=color:#ed9366>|</span><span>PTE_W</span><span style=color:#ed9366>|</span><span>PTE_X)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>){
 </span><span>      </span><span style=color:#abb0b6;font-style:italic>// this PTE points to a lower-level page table.
@@ -43,7 +43,7 @@
 </span><span>  }
 </span><span>  </span><span style=color:#f29718>kfree</span><span>((</span><span style=color:#fa6e32>void</span><span style=color:#ed9366>*</span><span>)pagetable)</span><span style=color:#61676ccc>;
 </span><span>}
-</span></code></pre><p>他的作用就是：<ol><li>遍历512个PTE：</ol><pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>512</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span></code></pre><p>他的作用就是：<ol><li>遍历512个PTE：</ol><pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>512</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
 </span><span>    pte_t pte </span><span style=color:#ed9366>=</span><span> pagetable[i]</span><span style=color:#61676ccc>;
 </span></code></pre><ol start=2><li>处理中间页表： 检查<code>PTE</code>是否为<code>VALID</code>，并且没有<code>READ</code>、<code>WRITE</code>、<code>EXECUTE</code>权限。如果是的话说明这是中间页表，如果有那三个权限中的任意一个的话，就是叶子节点了。（指向物理内存的页表） 通过<code>PTE2PA</code>获得下一个页表的地址然后递归调用：</ol><pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>if</span><span>((pte </span><span style=color:#ed9366>&</span><span> PTE_V) </span><span style=color:#ed9366>&& </span><span>(pte </span><span style=color:#ed9366>& </span><span>(PTE_R</span><span style=color:#ed9366>|</span><span>PTE_W</span><span style=color:#ed9366>|</span><span>PTE_X)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>){
 </span><span>      uint64 child </span><span style=color:#ed9366>= </span><span style=color:#f29718>PTE2PA</span><span>(pte)</span><span style=color:#61676ccc>;
@@ -54,7 +54,7 @@
 </span></code></pre><p>这之后，你的页表们都会被放进<code>freelist</code>。<h3 id=ye-sheng-de-zai-jia-gong><a aria-label="Anchor link for: ye-sheng-de-zai-jia-gong" class=zola-anchor href=#ye-sheng-de-zai-jia-gong>野生的再加工！</a></h3><p>好，可以开始做实验了。<br> 首先，去打开<code>kernel/vm.c</code>。<br> 然后，实验代码就是这个：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void
 </span><span style=color:#f29718>vmprint_ori</span><span>(pagetable_t </span><span style=color:#ff8f40>pagetable</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>level</span><span>)
 </span><span>{
-</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>512</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>512</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
 </span><span>    pte_t pte </span><span style=color:#ed9366>=</span><span> pagetable[i]</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>if </span><span>(</span><span style=color:#ed9366>!</span><span>(pte </span><span style=color:#ed9366>&</span><span> PTE_V)) </span><span style=color:#fa6e32>continue</span><span style=color:#61676ccc>;
 </span><span>
@@ -184,7 +184,7 @@
 </span></code></pre><h3 id=quan-bu-shan-chu><a aria-label="Anchor link for: quan-bu-shan-chu" class=zola-anchor href=#quan-bu-shan-chu>全部删除！</a></h3><p>看到上面的<code>kvmfree</code>了对吧？这不是XV6自己的函数，是我们自己实现的函数，具体怎么实现就看这里：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void
 </span><span style=color:#f29718>kvmfree</span><span>(pagetable_t </span><span style=color:#ff8f40>kpagetable</span><span>)
 </span><span>{
-</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>512</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>512</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
 </span><span>    pte_t pte </span><span style=color:#ed9366>=</span><span> kpagetable[i]</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>if</span><span>(pte </span><span style=color:#ed9366>&</span><span> PTE_V) 
 </span><span>      kpagetable[i] </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
@@ -276,11 +276,11 @@
 </span><span>  </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span>mem</span><span style=color:#61676ccc>;
 </span><span>  uint64 a</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(newsz </span><span style=color:#ed9366><</span><span> oldsz)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(newsz </span><span style=color:#ed9366>&lt;</span><span> oldsz)
 </span><span>    </span><span style=color:#fa6e32>return</span><span> oldsz</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>  oldsz </span><span style=color:#ed9366>= </span><span style=color:#f29718>PGROUNDUP</span><span>(oldsz)</span><span style=color:#61676ccc>;
-</span><span>  </span><span style=color:#fa6e32>for</span><span>(a </span><span style=color:#ed9366>=</span><span> oldsz</span><span style=color:#61676ccc>;</span><span> a </span><span style=color:#ed9366><</span><span> newsz</span><span style=color:#61676ccc>;</span><span> a </span><span style=color:#ed9366>+=</span><span> PGSIZE){
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(a </span><span style=color:#ed9366>=</span><span> oldsz</span><span style=color:#61676ccc>;</span><span> a </span><span style=color:#ed9366>&lt;</span><span> newsz</span><span style=color:#61676ccc>;</span><span> a </span><span style=color:#ed9366>+=</span><span> PGSIZE){
 </span><span>    mem </span><span style=color:#ed9366>= </span><span style=color:#f29718>kalloc</span><span>()</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>if</span><span>(mem </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>){
 </span><span>      </span><span style=color:#fa6e32>goto</span><span> error</span><span style=color:#61676ccc>;
@@ -305,7 +305,7 @@
 </span><span>  </span><span style=color:#55b4d4;font-style:italic>uint</span><span> flags</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span>mem</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>  </span><span style=color:#fa6e32>for</span><span>(i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366><</span><span> sz</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>+=</span><span> PGSIZE){
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> sz</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>+=</span><span> PGSIZE){
 </span><span>    </span><span style=color:#fa6e32>if</span><span>((pte </span><span style=color:#ed9366>= </span><span style=color:#f29718>walk</span><span>(old</span><span style=color:#61676ccc>,</span><span> i</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
 </span><span>      </span><span style=color:#f29718>panic</span><span>(</span><span style=color:#86b300>"uvmcopy: pte should exist"</span><span>)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>if</span><span>((</span><span style=color:#ed9366>*</span><span>pte </span><span style=color:#ed9366>&</span><span> PTE_V) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
@@ -348,9 +348,9 @@
 </span><span style=color:#fa6e32>if</span><span>((sz </span><span style=color:#ed9366>= </span><span style=color:#f29718>uvmalloc</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> p</span><span style=color:#ed9366>-></span><span>kpagetable</span><span style=color:#61676ccc>,</span><span> sz</span><span style=color:#61676ccc>,</span><span> sz </span><span style=color:#ed9366>+</span><span> n)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
 </span><span>
 </span><span style=color:#abb0b6;font-style:italic>// fork
-</span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>uvmcopy</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> np</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> np</span><span style=color:#ed9366>-></span><span>kpagetable</span><span style=color:#61676ccc>,</span><span> p</span><span style=color:#ed9366>-></span><span>sz) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>uvmcopy</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> np</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> np</span><span style=color:#ed9366>-></span><span>kpagetable</span><span style=color:#61676ccc>,</span><span> p</span><span style=color:#ed9366>-></span><span>sz) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span></code></pre><p>下面这个比较重要，是要在我们缩小内存时同步：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#abb0b6;font-style:italic>//growproc
-</span><span style=color:#fa6e32>else if</span><span>(n </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>){
+</span><span style=color:#fa6e32>else if</span><span>(n </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>){
 </span><span>  </span><span style=color:#55b4d4;font-style:italic>uint</span><span> sz2 </span><span style=color:#ed9366>=</span><span> sz</span><span style=color:#61676ccc>;
 </span><span>  sz </span><span style=color:#ed9366>= </span><span style=color:#f29718>uvmdealloc</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> sz</span><span style=color:#61676ccc>,</span><span> sz </span><span style=color:#ed9366>+</span><span> n)</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#f29718>uvmdealloc_nofree</span><span>(p</span><span style=color:#ed9366>-></span><span>kpagetable</span><span style=color:#61676ccc>,</span><span> sz2</span><span style=color:#61676ccc>,</span><span> sz2 </span><span style=color:#ed9366>+</span><span> n)</span><span style=color:#61676ccc>;
@@ -372,13 +372,13 @@
 </span><span>  pa </span><span style=color:#ed9366>= </span><span style=color:#f29718>PTE2PA</span><span>(</span><span style=color:#ed9366>*</span><span>pte)</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>return</span><span> pa</span><span style=color:#61676ccc>;
 </span><span>}
-</span></code></pre><h3 id=shan-chu-bu-shan-chu><a aria-label="Anchor link for: shan-chu-bu-shan-chu" class=zola-anchor href=#shan-chu-bu-shan-chu>删除？不删除！</a></h3><p><code>uvmdealloc</code>也有一些问题，就是它默认会清理我们所指向的内存，但是内核页表当然不能这样做啦，不然一启动就直接把全局内核页表的扬了！o((>ω< ))o<br> 这个也超级简单的，把<code>1</code>变成<code>0</code>而已！<br> 在<code>kernel/vm.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>uint64
+</span></code></pre><h3 id=shan-chu-bu-shan-chu><a aria-label="Anchor link for: shan-chu-bu-shan-chu" class=zola-anchor href=#shan-chu-bu-shan-chu>删除？不删除！</a></h3><p><code>uvmdealloc</code>也有一些问题，就是它默认会清理我们所指向的内存，但是内核页表当然不能这样做啦，不然一启动就直接把全局内核页表的扬了！o((>ω&lt; ))o<br> 这个也超级简单的，把<code>1</code>变成<code>0</code>而已！<br> 在<code>kernel/vm.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>uint64
 </span><span style=color:#f29718>uvmdealloc_nofree</span><span>(pagetable_t </span><span style=color:#ff8f40>pagetable</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>oldsz</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>newsz</span><span>)
 </span><span>{
 </span><span>  </span><span style=color:#fa6e32>if</span><span>(newsz </span><span style=color:#ed9366>>=</span><span> oldsz)
 </span><span>    </span><span style=color:#fa6e32>return</span><span> oldsz</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>PGROUNDUP</span><span>(newsz) </span><span style=color:#ed9366>< </span><span style=color:#f29718>PGROUNDUP</span><span>(oldsz)){
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>PGROUNDUP</span><span>(newsz) </span><span style=color:#ed9366>&lt; </span><span style=color:#f29718>PGROUNDUP</span><span>(oldsz)){
 </span><span>    </span><span style=color:#fa6e32>int</span><span> npages </span><span style=color:#ed9366>= </span><span>(</span><span style=color:#f29718>PGROUNDUP</span><span>(oldsz) </span><span style=color:#ed9366>- </span><span style=color:#f29718>PGROUNDUP</span><span>(newsz)) </span><span style=color:#ed9366>/</span><span> PGSIZE</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#f29718>uvmunmap</span><span>(pagetable</span><span style=color:#61676ccc>, </span><span style=color:#f29718>PGROUNDUP</span><span>(newsz)</span><span style=color:#61676ccc>,</span><span> npages</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>  }
@@ -391,12 +391,12 @@
 </span><span>  </span><span style=color:#fa6e32>int</span><span> addr</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>int</span><span> n</span><span style=color:#61676ccc>;
 </span><span>
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>n) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>n) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>  addr </span><span style=color:#ed9366>= </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#ed9366>-></span><span>sz</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>PGROUNDUP</span><span>(addr</span><span style=color:#ed9366>+</span><span>n) </span><span style=color:#ed9366>>=</span><span> PLIC)
 </span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>growproc</span><span>(n) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>growproc</span><span>(n) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>return</span><span> addr</span><span style=color:#61676ccc>;
 </span><span>}

@@ -162,7 +162,6 @@ kfree(void *pa)
 - 哈希表数组长度可以选择质数或2的幂次方，以降低哈希冲突的可能性，或加速查找运算。
 - 不再使用bcache.head。
 > 你可能会好奇“那要怎么做LRU遍历呢？”，其实答案很简单，现在的是怎么样的？最后面的就是最少使用的？嗯...要这样说也没错啦，但是这样的话就会导致`brelse()`变得有些复杂呢。所以xv6给我想了一个更好的解决方法，使用ticks，就是看谁的ticks最小，那它就是最少用的，这样就能很好的避免复杂化`brelse()`了（虽然会导致`bget()`变得复杂就是了｡⁠:ﾟ⁠(⁠;⁠´⁠∩⁠\`;⁠)ﾟ⁠:⁠｡）
-- 可以使用全局锁`bcache.head`，但是仅限调试用，成品不能使用该全局锁。
 
 ## 解决方案
 ### 结构体修改
@@ -389,115 +388,9 @@ bget(uint dev, uint blockno)
 - `bcache.glb_lock[NBUC]`是一个**桶级全局锁**，它在`bget()`的大部分执行过程中被持有。它的主要作用类似我们之前的全局锁，但是之前的全局锁是真的全局，这个是桶级全局。
 - `bcache.buc_lock[NBUC]`是一个**哈希桶链表锁**，它的作用范围更小，在`glb_lock`保护的大临界区内，当需要对哈希桶内部的链表结构（如遍历、插入节点）进行操作时，就会使用`buc_lock`来保护链表，避免并发修改导致链表损坏。
 - 不过其实这两个锁本质都是一样的，你要直接把这两个锁交换来用都行，你不混着用就好了。
-- `b->lock`是每个缓存块各有的锁，为了保护其数据，`bget()`在返回缓存块前，会先给该缓存块获取锁。
+- `b->lock`是每个缓存块各有的锁，为了保护其数据，`bget()`在返回缓存块前，会先给该缓存块
 
-### brelse的简化
-我们先看看原本的brelese是干什么的：
-```C
-void
-brelse(struct buf *b)
-{
-  if(!holdingsleep(&b->lock))
-    panic("brelse");
-
-  releasesleep(&b->lock);
-
-  acquire(&bcache.lock);
-  b->refcnt--;
-  if (b->refcnt == 0) {
-    // no one is waiting for it.
-    b->next->prev = b->prev;
-    b->prev->next = b->next;
-    b->next = bcache.head.next;
-    b->prev = &bcache.head;
-    bcache.head.next->prev = b;
-    bcache.head.next = b;
-  }
-  
-  release(&bcache.lock);
-}
-```
-作用就是：
-1. 确认持有该块的睡眠锁：
-- 没有就panic
-- 持有就释放掉锁
-2. 获取全局锁
-3. 给引用次数-1
-4. 如果不再使用该块了：
-- 移动到块链表头部
-5. 不管有没有执行`4`，都会释放锁
-
-这个函数对我们来说已经没有用了，或者说它的逻辑错误，原因为以下几点：
-- 我们已经不使用`bcache.lock`作为全局锁了
-- 我们已经不使用`bcache.head`作为头节点了
-- 我们已经不使用单链表进行块管理了
-
-所以我们得稍微改改：
-```C
-void
-brelse(struct buf *b)
-{
-  if(!holdingsleep(&b->lock))
-    panic("brelse");
-
-  releasesleep(&b->lock);
-
-  int x = HASHI(b->blockno);
-  acquire(&bcache.buc_lock[x]);
-  b->refcnt--;
-  if (b->refcnt == 0)
-    b->ticks = ticks;
-  release(&bcache.buc_lock[x]);
-}
-```
-我们用了更简单的方法，就是改`ticks`而已，
-毕竟我们的LRU就是遍历找`ticks`而已嘛，
-`brelse()`的一部分可以说是为`bget()`的LRU算法服务的。
-
-### bpin/bunpin的调整
-这个就没什么简化了，只是调整而已，一样的，先上原本的：
-```C
-void
-bpin(struct buf *b) {
-  acquire(&bcache.lock);
-  b->refcnt++;
-  release(&bcache.lock);
-}
-
-void
-bunpin(struct buf *b) {
-  acquire(&bcache.lock);
-  b->refcnt--;
-  release(&bcache.lock);
-}
-```
-和刚刚的差不多，就只是因为`bcache.lock`现在不能用了而已，
-所以我们要改成`bcache.buc_lock[NBUC]`的版本呢。
-
-```C
-void
-bpin(struct buf *b) {
-  int x = HASHI(b->blockno);
-
-  acquire(&bcache.buc_lock[x]);
-  b->refcnt++;
-  release(&bcache.buc_lock[x]);
-}
-
-void
-bunpin(struct buf *b) {
-  int x = HASHI(b->blockno);
-
-  acquire(&bcache.buc_lock[x]);
-  b->refcnt--;
-  release(&bcache.buc_lock[x]);
-}
-```
-这个就不过多解释了，基本没什么理解难度。
-
-
-
-## 其他问题    
+其他问题：    
 Q：ticks会不会溢出，多久？    
 A：会，不过**有点**慢，大概要13年左右。   
 > 我稍微解释下，xv6的1ticks是0.1秒，也就是说，一秒有10ticks。所以要这样算：   
@@ -507,12 +400,7 @@ A：会，不过**有点**慢，大概要13年左右。
 > 4971d ÷ 356 ≈ 13y   
 要是从32位进化到64位，更不敢想了吧，天文数字了。    
 
-# 完结撒花 ψ(._. )>
-这个其实还挺有难度的，死锁之类的，还有一些并发问题，很难，不过也很好玩，因为并发并行这些东西是在很多领域的适用的。虽然我听说好像有很多高级语言都有自带多线程，甚至不需要程序员干预。但是，读者们会来学XV6，我想多多少少还是希望了解计算机的。
-
-总之，加油吧！屏幕前的所有读者！
-
 仓库链接：https://github.com/aethernet65535/DOCKER-XV6_2020/tree/lock
 
-最后编辑时间：2025/7/21
+最后编辑时间：2025/7/6
 

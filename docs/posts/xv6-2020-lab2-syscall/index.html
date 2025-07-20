@@ -54,11 +54,11 @@
 </span><span>  </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span>p </span><span style=color:#ed9366>= </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>  num </span><span style=color:#ed9366>=</span><span> p</span><span style=color:#ed9366>-></span><span>trapframe</span><span style=color:#ed9366>-></span><span>a7</span><span style=color:#61676ccc>;
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(num </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>&&</span><span> num </span><span style=color:#ed9366>< </span><span style=color:#f29718>NELEM</span><span>(syscalls) </span><span style=color:#ed9366>&&</span><span> syscalls[num]) {
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(num </span><span style=color:#ed9366>> </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>&&</span><span> num </span><span style=color:#ed9366>&lt; </span><span style=color:#f29718>NELEM</span><span>(syscalls) </span><span style=color:#ed9366>&&</span><span> syscalls[num]) {
 </span><span>    p</span><span style=color:#ed9366>-></span><span>trapframe</span><span style=color:#ed9366>-></span><span>a0 </span><span style=color:#ed9366>=</span><span> syscalls[num]()</span><span style=color:#61676ccc>;
 </span><span>    
 </span><span>    </span><span style=color:#abb0b6;font-style:italic>// 输出检测到的每次调用
-</span><span>    </span><span style=color:#fa6e32>if</span><span>(p</span><span style=color:#ed9366>-></span><span>mask </span><span style=color:#ed9366>& </span><span>(</span><span style=color:#ff8f40>1 </span><span style=color:#ed9366><<</span><span> num)) {
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(p</span><span style=color:#ed9366>-></span><span>mask </span><span style=color:#ed9366>& </span><span>(</span><span style=color:#ff8f40>1 </span><span style=color:#ed9366>&lt;&lt;</span><span> num)) {
 </span><span>      </span><span style=color:#f07171>printf</span><span>(</span><span style=color:#86b300>"</span><span style=color:#ff8f40>%d</span><span style=color:#86b300>: syscall </span><span style=color:#ff8f40>%s</span><span style=color:#86b300> -> </span><span style=color:#ff8f40>%d</span><span style=color:#4cbf99>\n</span><span style=color:#86b300>"</span><span style=color:#61676ccc>,</span><span> p</span><span style=color:#ed9366>-></span><span>pid</span><span style=color:#61676ccc>,</span><span> syscall_names[num]</span><span style=color:#61676ccc>,</span><span> p</span><span style=color:#ed9366>-></span><span>trapframe</span><span style=color:#ed9366>-></span><span>a0)</span><span style=color:#61676ccc>;
 </span><span>    }
 </span><span>  } </span><span style=color:#fa6e32>else </span><span>{ </span><span style=color:#abb0b6;font-style:italic>// 输入了错误的系统调用号
@@ -73,7 +73,7 @@
 </span><span>  </span><span style=color:#fa6e32>int</span><span> mask</span><span style=color:#61676ccc>;
 </span><span>  
 </span><span>  </span><span style=color:#abb0b6;font-style:italic>// 从用户那里获取系统调用号（int）
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>mask) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>mask) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>  </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span>p </span><span style=color:#ed9366>= </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#61676ccc>;
@@ -118,7 +118,7 @@
 </span><span>  uint64 count </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span>p</span><span style=color:#61676ccc>;
 </span><span>  
-</span><span>  </span><span style=color:#fa6e32>for</span><span>(p </span><span style=color:#ed9366>=</span><span> proc</span><span style=color:#61676ccc>;</span><span> p </span><span style=color:#ed9366>< &</span><span>proc[NPROC]</span><span style=color:#61676ccc>;</span><span> p</span><span style=color:#ed9366>++</span><span>){
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(p </span><span style=color:#ed9366>=</span><span> proc</span><span style=color:#61676ccc>;</span><span> p </span><span style=color:#ed9366>&lt; &</span><span>proc[NPROC]</span><span style=color:#61676ccc>;</span><span> p</span><span style=color:#ed9366>++</span><span>){
 </span><span>    </span><span style=color:#f29718>acquire</span><span>(</span><span style=color:#ed9366>&</span><span>p</span><span style=color:#ed9366>-></span><span>lock)</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>if</span><span>(p</span><span style=color:#ed9366>-></span><span>state </span><span style=color:#ed9366>!=</span><span> UNUSED){
 </span><span>      count</span><span style=color:#ed9366>++</span><span style=color:#61676ccc>;
@@ -131,7 +131,7 @@
 </span><span style=color:#f29718>sys_sysinfo</span><span>(</span><span style=color:#fa6e32>void</span><span>)
 </span><span>{
 </span><span>  uint64 param</span><span style=color:#61676ccc>;
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argaddr</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>param) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argaddr</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>param) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>  </span><span style=color:#fa6e32>struct</span><span> sysinfo info</span><span style=color:#61676ccc>;
@@ -139,7 +139,7 @@
 </span><span>  info</span><span style=color:#ed9366>.</span><span>nproc </span><span style=color:#ed9366>= </span><span style=color:#f29718>get_nproc</span><span>()</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>  </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span>p </span><span style=color:#ed9366>= </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#61676ccc>;
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>copyout</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> param</span><span style=color:#61676ccc>, </span><span>(</span><span style=color:#fa6e32>char</span><span style=color:#ed9366>*</span><span>)</span><span style=color:#ed9366>&</span><span>info</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof</span><span>(info)) </span><span style=color:#ed9366>< </span><span style=color:#ff8f40>0</span><span>)
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>copyout</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> param</span><span style=color:#61676ccc>, </span><span>(</span><span style=color:#fa6e32>char</span><span style=color:#ed9366>*</span><span>)</span><span style=color:#ed9366>&</span><span>info</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof</span><span>(info)) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
 </span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>
 </span><span>  </span><span style=color:#fa6e32>return </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
