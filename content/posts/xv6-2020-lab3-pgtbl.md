@@ -378,10 +378,12 @@ sfence_vma();
 // （继续）执行进程
 swtch(&c->context, &p->context);
 
-// 进程暂停/结束后
+// 进程暂停/结束后 （B点）
 
 // 切换到全局内核页表！
 kvminithart();
+
+// ...
 
 // 如果找不到进程跑的话，就先在全局页表观望观望
 if(found == 0) {
@@ -391,6 +393,12 @@ if(found == 0) {
   asm volatile("wfi");
 }
 ```
+
+#### swtch到底是干了什么？
+稍微说一下这里比较难理解的一个地方，就是`swtch()`。   
+`scheduler()`的`swtch()`先跳去执行那进程。    
+执行一段时间后，时间片到了，就会中断，调用`yield()`然后再调用`sched()`，
+`sched()`再次调用`swtch()`返回到B点！
 
 ## simplify copyin/copyinstr (hard)
 好，这里就能给整个LAB3弄出一个惊天大改了！因为我们要真的有一个厉害的内核页表副本了！

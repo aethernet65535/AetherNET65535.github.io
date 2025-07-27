@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "xv6-2020-lab9-fs.md",
+                "file": "xv6-2020-lab8-lock.md",
                 "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "xv6-2020-lab9-fs"
+              "title": "xv6-2020-lab8-lock"
             }
           }
         ]
@@ -155,7 +155,7 @@
   },
   "active": "421da8094da2c140",
   "lastOpenFiles": [
-    "xv6-2020-lab8-lock.md",
-    "xv6-2020-lab7-multithread.md"
+    "xv6-2020-lab7-multithread.md",
+    "xv6-2020-lab8-lock.md"
   ]
 }

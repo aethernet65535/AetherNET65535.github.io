@@ -41,17 +41,6 @@ comment = true
 
 ## 修改inode结构
 ```C
-struct dinode {
-  short type;           // File type
-  short major;          // Major device number (T_DEVICE only)
-  short minor;          // Minor device number (T_DEVICE only)
-  short nlink;          // Number of links to inode in file system
-  uint size;            // Size of file (bytes)
-  uint addrs[NDIRECT+2];   // Data block addresses
-};
-```
-
-```C
 ```
 
 最后编辑时间：2025/7/28

@@ -20,10 +20,109 @@
           </name>
         </author>
         
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/.stversions/xv6-2020-lab9-fs/"/>
+        <id>https://aethernet65535.github.io/posts/.stversions/xv6-2020-lab9-fs/</id>
+        
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/.stversions/xv6-2020-lab9-fs/">&lt;h1 id=&quot;qian-yan&quot;&gt;前言&lt;&#x2F;h1&gt;
+&lt;p&gt;这个lab能学到的东西还挺多的，算是一个很好的文件系统入门了。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;large-files-moderate&quot;&gt;large files (moderate)&lt;&#x2F;h1&gt;
+&lt;p&gt;第一个小作业是要给xv6现有的fs添加一个二级索引，我们先说说原本的是怎么样的吧。&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[0 - 11] 直接索引 | [12] 一级索引
+然后我们要改成这样：&lt;br &#x2F;&gt;
+[0 - 10] 直接索引 | [11] 一级索引 | [12] 二级索引&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;直接索引：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存储指向块的地址&lt;&#x2F;li&gt;
+&lt;li&gt;能直接找到数据，不需要在跳转&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;一级索引：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存储地址，指向一个「索引块」&lt;&#x2F;li&gt;
+&lt;li&gt;索引块里有256个数据块地址&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;二级索引：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存储地址，指向一个「集合块」&lt;&#x2F;li&gt;
+&lt;li&gt;集合块存储着256个「一级索引块」&lt;&#x2F;li&gt;
+&lt;li&gt;每个一级索引块能存储256个数据块地址&lt;&#x2F;li&gt;
+&lt;li&gt;所以一个二级索引最多能存储256×256个块，也就是65536个&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;差不多是这样：&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;一级索引 -&amp;gt; 256个块地址&lt;br &#x2F;&gt;
+二级索引 -&amp;gt; 256个一级索引地址 -&amp;gt; (256*256)个块地址&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;如果算总空间的话...一开始是256+12，也就是268×1024，274,432B、268kB，说实话好像有点小。&lt;br &#x2F;&gt;
+现在的话，是(11)+(256)+(256×256)，也就是65,804kB、64mB，那确实挺多的了。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;xiu-gai-inodejie-gou&quot;&gt;修改inode结构&lt;&#x2F;h2&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;最后编辑时间：2025&#x2F;7&#x2F;28&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>XV6-2020 LAB9-FILESYSTEM</title>
+        <published>2025-07-21T00:00:00+00:00</published>
+        <updated>2025-07-21T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
         <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/xv6-2020-lab9-fs/"/>
         <id>https://aethernet65535.github.io/posts/xv6-2020-lab9-fs/</id>
         
-        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab9-fs/">&lt;p&gt;最后编辑时间：2025&#x2F;7&#x2F;21&lt;&#x2F;p&gt;
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab9-fs/">&lt;h1 id=&quot;qian-yan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan&quot; aria-label=&quot;Anchor link for: qian-yan&quot;&gt;前言&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;这个lab能学到的东西还挺多的，算是一个很好的文件系统入门了。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;large-files-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#large-files-moderate&quot; aria-label=&quot;Anchor link for: large-files-moderate&quot;&gt;large files (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;第一个小作业是要给xv6现有的fs添加一个二级索引，我们先说说原本的是怎么样的吧。&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;[0 - 11] 直接索引 | [12] 一级索引
+然后我们要改成这样：&lt;br &#x2F;&gt;
+[0 - 10] 直接索引 | [11] 一级索引 | [12] 二级索引&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;直接索引：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存储指向块的地址&lt;&#x2F;li&gt;
+&lt;li&gt;能直接找到数据，不需要在跳转&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;一级索引：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存储地址，指向一个「索引块」&lt;&#x2F;li&gt;
+&lt;li&gt;索引块里有256个数据块地址&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;二级索引：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;存储地址，指向一个「集合块」&lt;&#x2F;li&gt;
+&lt;li&gt;集合块存储着256个「一级索引块」&lt;&#x2F;li&gt;
+&lt;li&gt;每个一级索引块能存储256个数据块地址&lt;&#x2F;li&gt;
+&lt;li&gt;所以一个二级索引最多能存储256×256个块，也就是65536个&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;差不多是这样：&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;一级索引 -&amp;gt; 256个块地址&lt;br &#x2F;&gt;
+二级索引 -&amp;gt; 256个一级索引地址 -&amp;gt; (256*256)个块地址&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;如果算总空间的话...一开始是256+12，也就是268×1024，274,432B、268kB，说实话好像有点小。&lt;br &#x2F;&gt;
+现在的话，是(11)+(256)+(256×256)，也就是65,804kB、64mB，那确实挺多的了。&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;xiu-gai-inodejie-gou&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-inodejie-gou&quot; aria-label=&quot;Anchor link for: xiu-gai-inodejie-gou&quot;&gt;修改inode结构&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;dinode &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;short&lt;&#x2F;span&gt;&lt;span&gt; type&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;           &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; File type
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;short&lt;&#x2F;span&gt;&lt;span&gt; major&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;          &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Major device number (T_DEVICE only)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;short&lt;&#x2F;span&gt;&lt;span&gt; minor&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;          &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Minor device number (T_DEVICE only)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;short&lt;&#x2F;span&gt;&lt;span&gt; nlink&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;          &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Number of links to inode in file system
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;uint&lt;&#x2F;span&gt;&lt;span&gt; size&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;            &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Size of file (bytes)
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;uint&lt;&#x2F;span&gt;&lt;span&gt; addrs[NDIRECT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span&gt;]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;   &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Data block addresses
+&lt;&#x2F;span&gt;&lt;span&gt;}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;最后编辑时间：2025&#x2F;7&#x2F;28&lt;&#x2F;p&gt;
 </content>
         
     </entry>
@@ -2542,10 +2641,12 @@ A：会，不过&lt;strong&gt;有点&lt;&#x2F;strong&gt;慢，大概要13年左�
 &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; （继续）执行进程
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;swtch&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;c&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;context&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt;p&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;context)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;
-&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 进程暂停&#x2F;结束后
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 进程暂停&#x2F;结束后 （B点）
 &lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 切换到全局内核页表！
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;kvminithart&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; ...
 &lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 如果找不到进程跑的话，就先在全局页表观望观望
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(found &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;) {
@@ -2555,6 +2656,11 @@ A：会，不过&lt;strong&gt;有点&lt;&#x2F;strong&gt;慢，大概要13年左�
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;asm volatile&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#86b300;&quot;&gt;&amp;quot;wfi&amp;quot;&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h4 id=&quot;swtchdao-di-shi-gan-liao-shen-me&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#swtchdao-di-shi-gan-liao-shen-me&quot; aria-label=&quot;Anchor link for: swtchdao-di-shi-gan-liao-shen-me&quot;&gt;swtch到底是干了什么？&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
+&lt;p&gt;稍微说一下这里比较难理解的一个地方，就是&lt;code&gt;swtch()&lt;&#x2F;code&gt;。&lt;br &#x2F;&gt;
+&lt;code&gt;scheduler()&lt;&#x2F;code&gt;的&lt;code&gt;swtch()&lt;&#x2F;code&gt;先跳去执行那进程。&lt;br &#x2F;&gt;
+执行一段时间后，时间片到了，就会中断，调用&lt;code&gt;yield()&lt;&#x2F;code&gt;然后再调用&lt;code&gt;sched()&lt;&#x2F;code&gt;，
+&lt;code&gt;sched()&lt;&#x2F;code&gt;再次调用&lt;code&gt;swtch()&lt;&#x2F;code&gt;返回到B点！&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;simplify-copyin-copyinstr-hard&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#simplify-copyin-copyinstr-hard&quot; aria-label=&quot;Anchor link for: simplify-copyin-copyinstr-hard&quot;&gt;simplify copyin&#x2F;copyinstr (hard)&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;好，这里就能给整个LAB3弄出一个惊天大改了！因为我们要真的有一个厉害的内核页表副本了！&lt;&#x2F;p&gt;
 &lt;blockquote&gt;
