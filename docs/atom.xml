@@ -120,12 +120,13 @@
 &lt;&#x2F;blockquote&gt;
 &lt;p&gt;如果算总空间的话...一开始是256+12，也就是268×1024，274,432B、&lt;strong&gt;268kB&lt;&#x2F;strong&gt;，说实话好像有点小。&lt;br &#x2F;&gt;
 现在的话，是(11)+(256)+(256×256)，也就是65,804kB、&lt;strong&gt;64mB&lt;&#x2F;strong&gt;，那确实挺多的了。&lt;&#x2F;p&gt;
+&lt;p&gt;声明：如果在其他地方看到了其他术语，那就默认博主（我）的是错的，因为这些术语我没怎么查过，临时自创的。&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;xiu-gai-inodejie-gou&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-inodejie-gou&quot; aria-label=&quot;Anchor link for: xiu-gai-inodejie-gou&quot;&gt;修改inode结构&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;根据xv6的提示，我们需要把&lt;code&gt;NDIRECT&lt;&#x2F;code&gt;改为&lt;strong&gt;11&lt;&#x2F;strong&gt;，因为之前的其中一个要用来放&lt;strong&gt;二级索引&lt;&#x2F;strong&gt;：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;NDIRECT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;11 &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 直接块
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;DINDIRECT &lt;&#x2F;span&gt;&lt;span&gt;(NDIRECT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 二级索引
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;NINDIRECT &lt;&#x2F;span&gt;&lt;span&gt;(BSIZE &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&#x2F; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;sizeof&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;uint&lt;&#x2F;span&gt;&lt;span&gt;)) &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 一级索引能存的地址量
-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;MAXFILE &lt;&#x2F;span&gt;&lt;span&gt;(NDIRECT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span&gt; NINDIRECT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span&gt;(NINDIRECT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt; NINDIRECT))
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;MAXFILE &lt;&#x2F;span&gt;&lt;span&gt;(NDIRECT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span&gt; NINDIRECT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+ &lt;&#x2F;span&gt;&lt;span&gt;(NINDIRECT &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt; NINDIRECT)) &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 一个进程最多能持有的文件缓存块数
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;然后&lt;code&gt;inode&lt;&#x2F;code&gt;结构体的&lt;code&gt;addrs&lt;&#x2F;code&gt;字段就要改为&lt;strong&gt;直接块（0-10）、一级索引（11）、二级索引（12）&lt;&#x2F;strong&gt;：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;dinode &lt;&#x2F;span&gt;&lt;span&gt;{
@@ -138,10 +139,10 @@
 &lt;&#x2F;span&gt;&lt;span&gt;}&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h2 id=&quot;xiu-gai-bmaphan-shu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-bmaphan-shu&quot; aria-label=&quot;Anchor link for: xiu-gai-bmaphan-shu&quot;&gt;修改bmap函数&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
-&lt;h3 id=&quot;xiu-gai-qian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-qian&quot; aria-label=&quot;Anchor link for: xiu-gai-qian&quot;&gt;修改前&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;这个函数的作用是：&lt;br &#x2F;&gt;
 返回：在实参inode结构体中，对应块号的地址&lt;br &#x2F;&gt;
 如果没有这个块号的地址，那就创建一个。&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;xiu-gai-qian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-qian&quot; aria-label=&quot;Anchor link for: xiu-gai-qian&quot;&gt;修改前&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
 &lt;p&gt;这个函数有点难，所以我们慢慢看。&lt;br &#x2F;&gt;
 首先，第一段：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 直接块处理方法
@@ -236,11 +237,108 @@
 &lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;log_write&lt;&#x2F;span&gt;&lt;span&gt;(bp2)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;  }
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;brelse&lt;&#x2F;span&gt;&lt;span&gt;(bp2)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
-&lt;&#x2F;span&gt;&lt;span&gt;  
+&lt;&#x2F;span&gt;&lt;span&gt;
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span&gt; addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;最后编辑时间：2025&#x2F;8&#x2F;1&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;xiu-gai-itrunchan-shu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-itrunchan-shu&quot; aria-label=&quot;Anchor link for: xiu-gai-itrunchan-shu&quot;&gt;修改itrunc函数&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个函数的作用是：&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;xiu-gai-qian-1&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-qian-1&quot; aria-label=&quot;Anchor link for: xiu-gai-qian-1&quot;&gt;修改前&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 直接块处理方法（遍历直接块）
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; NDIRECT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; i&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[i]){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bfree&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[i])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 如果存在映射，那就释放被映射的缓存块
+&lt;&#x2F;span&gt;&lt;span&gt;    ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[i] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;; &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 然后取消映射
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 一级索引块处理方法（也差不多是遍历）
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[NDIRECT]){ 
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 进入块，进入的是一级索引块
+&lt;&#x2F;span&gt;&lt;span&gt;  bp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bread&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[NDIRECT])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;uint&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)bp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 遍历一级索引快
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(j &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; j &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; NINDIRECT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; j&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(a[j]) &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 如果存在映射，就释放被映射的缓存块
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bfree&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; a[j])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;brelse&lt;&#x2F;span&gt;&lt;span&gt;(bp)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 释放一级索引块，并且取消映射
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bfree&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[NDIRECT])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[NDIRECT] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;xiu-gai-hou-1&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiu-gai-hou-1&quot; aria-label=&quot;Anchor link for: xiu-gai-hou-1&quot;&gt;修改后&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;和刚刚一样，照葫芦画瓢。&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 二级索引块处理方法
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[DINDIRECT]){
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 进入集合块
+&lt;&#x2F;span&gt;&lt;span&gt;  bp &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bread&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[DINDIRECT])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  a &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;uint&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)bp&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 遍历集合块
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(j &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; j &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; NINDIRECT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; j&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 如果存在一级索引块，进入该块
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(a[j]){
+&lt;&#x2F;span&gt;&lt;span&gt;      bp2 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bread&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; a[j])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      a2 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;uint&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;)bp2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;data&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 清理一级索引块内的地址，和
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;for&lt;&#x2F;span&gt;&lt;span&gt;(k &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; k &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt;&lt;&#x2F;span&gt;&lt;span&gt; NINDIRECT&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;&lt;&#x2F;span&gt;&lt;span&gt; k&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;++&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;        &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(a2[k])
+&lt;&#x2F;span&gt;&lt;span&gt;          &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bfree&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; a2[k])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      }
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;brelse&lt;&#x2F;span&gt;&lt;span&gt;(bp2)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 释放对应一级索引块
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bfree&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; a[j])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;brelse&lt;&#x2F;span&gt;&lt;span&gt;(bp)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 释放并取消映射二级索引块
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;bfree&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;dev&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[DINDIRECT])&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;addrs[DINDIRECT] &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;xiao-xiu-xiao-bu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiao-xiu-xiao-bu&quot; aria-label=&quot;Anchor link for: xiao-xiu-xiao-bu&quot;&gt;小修小补&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;p&gt;这个是我看whileskies大佬改的，不然的话我肯定不会改，压根不会想到这里，毕竟hints好像也没说呢。&lt;br &#x2F;&gt;
+这里要改不要改都行，不影响测试结果，当然改了更好，鲁棒性更高嘛。&lt;&#x2F;p&gt;
+&lt;p&gt;在&lt;code&gt;file.c&#x2F;filewrite()&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; write a few blocks at a time to avoid exceeding
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; the maximum log transaction size, including
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; i-node, indirect block, allocation blocks,
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; and 2 blocks of slop for non-aligned writes.
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; this really belongs lower down, since writei()
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; might be writing a device like the console.
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; max &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;((MAXOPBLOCKS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&#x2F; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt; BSIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;1-he-xin-gai-nian-jie-shi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#1-he-xin-gai-nian-jie-shi&quot; aria-label=&quot;Anchor link for: 1-he-xin-gai-nian-jie-shi&quot;&gt;1. 核心概念解释&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;MAXOPBLOCKS&lt;&#x2F;strong&gt; （10）&lt;br &#x2F;&gt;
+定义在&lt;code&gt;param.h&lt;&#x2F;code&gt;中，表示单个日志事务能容纳的最大块数&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;max计算式&lt;&#x2F;strong&gt;：&lt;br &#x2F;&gt;
+&lt;code&gt;((MAXOPBLOCKS-1-1-2)&#x2F;2)*BSIZE&lt;&#x2F;code&gt;&lt;br &#x2F;&gt;
+分解说明：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;第一个-1：为inode块预留&lt;&#x2F;li&gt;
+&lt;li&gt;第二个-1：为间接块预留&lt;&#x2F;li&gt;
+&lt;li&gt;-2：安全余量（对齐）&lt;&#x2F;li&gt;
+&lt;li&gt;&#x2F;2：保守估计系数 &#x2F;* 这个是博主乱猜的 *&#x2F;&lt;&#x2F;li&gt;
+&lt;li&gt;BSIZE(1024)：块大小&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;总而言之，&lt;code&gt;max&lt;&#x2F;code&gt;就是要避免日志溢出（单个事务太大超过日志区域）。&lt;&#x2F;p&gt;
+&lt;p&gt;我们得改成这样：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int&lt;&#x2F;span&gt;&lt;span&gt; max &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span&gt;((MAXOPBLOCKS&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&#x2F; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;2&lt;&#x2F;span&gt;&lt;span&gt;) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt; BSIZE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;就是2个间接块的意思。&lt;&#x2F;p&gt;
+&lt;p&gt;最后编辑时间：2025&#x2F;8&#x2F;4&lt;&#x2F;p&gt;
 </content>
         
     </entry>

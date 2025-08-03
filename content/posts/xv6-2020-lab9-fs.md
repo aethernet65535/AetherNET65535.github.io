@@ -37,7 +37,9 @@ comment = true
 > 二级索引 -> 256个一级索引地址 -> (256*256)个块地址        
 
 如果算总空间的话...一开始是256+12，也就是268×1024，274,432B、**268kB**，说实话好像有点小。    
-现在的话，是(11)+(256)+(256×256)，也就是65,804kB、**64mB**，那确实挺多的了。
+现在的话，是(11)+(256)+(256×256)，也就是65,804kB、**64mB**，那确实挺多的了。    
+
+声明：如果在其他地方看到了其他术语，那就默认博主（我）的是错的，因为这些术语我没怎么查过，临时自创的。   
 
 ## 修改inode结构
 根据xv6的提示，我们需要把`NDIRECT`改为**11**，因为之前的其中一个要用来放**二级索引**：
@@ -45,7 +47,7 @@ comment = true
 #define NDIRECT 11 // 直接块
 #define DINDIRECT (NDIRECT + 1) // 二级索引
 #define NINDIRECT (BSIZE / sizeof(uint)) // 一级索引能存的地址量
-#define MAXFILE (NDIRECT + NINDIRECT + (NINDIRECT * NINDIRECT))
+#define MAXFILE (NDIRECT + NINDIRECT + (NINDIRECT * NINDIRECT)) // 一个进程最多能持有的文件缓存块数
 ```
 
 然后`inode`结构体的`addrs`字段就要改为**直接块（0-10）、一级索引（11）、二级索引（12）**：
@@ -61,11 +63,11 @@ struct dinode {
 ```
 
 ## 修改bmap函数
-### 修改前
 这个函数的作用是：    
 返回：在实参inode结构体中，对应块号的地址   
 如果没有这个块号的地址，那就创建一个。
 
+### 修改前
 这个函数有点难，所以我们慢慢看。    
 首先，第一段：
 ```C
@@ -154,11 +156,114 @@ if(bn < NINDIRECT * NINDIRECT){ // 只要在65535范围内的就都是合法bn
     log_write(bp2);
   }
   brelse(bp2);
-  
+
   return addr;
 }
 ```
 
+## 修改itrunc函数
+这个函数的作用是：    
 
 
-最后编辑时间：2025/8/1
+### 修改前
+```C
+// 直接块处理方法（遍历直接块）
+for(i = 0; i < NDIRECT; i++){
+  if(ip->addrs[i]){
+    bfree(ip->dev, ip->addrs[i]); // 如果存在映射，那就释放被映射的缓存块
+    ip->addrs[i] = 0; // 然后取消映射
+  }
+}
+```
+
+```C
+// 一级索引块处理方法（也差不多是遍历）
+if(ip->addrs[NDIRECT]){ 
+
+  // 进入块，进入的是一级索引块
+  bp = bread(ip->dev, ip->addrs[NDIRECT]);
+  a = (uint*)bp->data;
+
+  // 遍历一级索引快
+  for(j = 0; j < NINDIRECT; j++){
+    if(a[j]) // 如果存在映射，就释放被映射的缓存块
+      bfree(ip->dev, a[j]);
+  }
+  brelse(bp);
+  // 释放一级索引块，并且取消映射
+  bfree(ip->dev, ip->addrs[NDIRECT]);
+  ip->addrs[NDIRECT] = 0;
+  }
+```
+
+### 修改后
+和刚刚一样，照葫芦画瓢。    
+```C
+// 二级索引块处理方法
+if(ip->addrs[DINDIRECT]){
+
+  // 进入集合块
+  bp = bread(ip->dev, ip->addrs[DINDIRECT]);
+  a = (uint*)bp->data;
+
+  // 遍历集合块
+  for(j = 0; j < NINDIRECT; j++){
+    // 如果存在一级索引块，进入该块
+    if(a[j]){
+      bp2 = bread(ip->dev, a[j]);
+      a2 = (uint*)bp2->data;
+
+      // 清理一级索引块内的地址，和
+      for(k = 0; k < NINDIRECT; k++){
+        if(a2[k])
+          bfree(ip->dev, a2[k]);
+      }
+      brelse(bp2);
+      // 释放对应一级索引块
+      bfree(ip->dev, a[j]);
+    }
+  }
+  brelse(bp);
+  // 释放并取消映射二级索引块
+  bfree(ip->dev, ip->addrs[DINDIRECT]);
+  ip->addrs[DINDIRECT] = 0;
+}
+```
+
+## 小修小补
+这个是我看whileskies大佬改的，不然的话我肯定不会改，压根不会想到这里，毕竟hints好像也没说呢。    
+这里要改不要改都行，不影响测试结果，当然改了更好，鲁棒性更高嘛。    
+
+在`file.c/filewrite()`
+```C
+// write a few blocks at a time to avoid exceeding
+// the maximum log transaction size, including
+// i-node, indirect block, allocation blocks,
+// and 2 blocks of slop for non-aligned writes.
+// this really belongs lower down, since writei()
+// might be writing a device like the console.
+int max = ((MAXOPBLOCKS-1-1-2) / 2) * BSIZE;
+```
+### 1. 核心概念解释
+- **MAXOPBLOCKS** （10）    
+  定义在`param.h`中，表示单个日志事务能容纳的最大块数  
+
+- **max计算式**：  
+  `((MAXOPBLOCKS-1-1-2)/2)*BSIZE`  
+  分解说明：
+  - 第一个-1：为inode块预留
+  - 第二个-1：为间接块预留
+  - -2：安全余量（对齐）
+  - /2：保守估计系数 /* 这个是博主乱猜的 */
+  - BSIZE(1024)：块大小
+
+总而言之，`max`就是要避免日志溢出（单个事务太大超过日志区域）。   
+
+我们得改成这样：    
+```C
+int max = ((MAXOPBLOCKS-1-2-2) / 2) * BSIZE;
+```
+就是2个间接块的意思。   
+
+
+最后编辑时间：2025/8/4
