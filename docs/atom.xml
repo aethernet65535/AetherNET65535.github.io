@@ -339,8 +339,7 @@
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;就是2个间接块的意思。&lt;&#x2F;p&gt;
 &lt;h1 id=&quot;symbolic-links-moderate&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#symbolic-links-moderate&quot; aria-label=&quot;Anchor link for: symbolic-links-moderate&quot;&gt;symbolic links (moderate)&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
-&lt;p&gt;这个小作业要做的是符号链接&#x2F;软链接，类似于Windows上的“快捷方式”。&lt;br &#x2F;&gt;
-我们暂称为shortcut吧；当我们打开shortcut文件时，那么他应该去寻找我们之前给它指定的实际文件路径，并且打开该文件。&lt;&#x2F;p&gt;
+&lt;p&gt;这个小作业要做的是符号链接&#x2F;软链接，类似于Windows上的“快捷方式”。&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;ji-chu-gai-nian-ying-lian-jie-yu-ruan-lian-jie-de-qu-bie&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#ji-chu-gai-nian-ying-lian-jie-yu-ruan-lian-jie-de-qu-bie&quot; aria-label=&quot;Anchor link for: ji-chu-gai-nian-ying-lian-jie-yu-ruan-lian-jie-de-qu-bie&quot;&gt;基础概念：&lt;strong&gt;硬链接与软链接的区别&lt;&#x2F;strong&gt;&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;区别&lt;&#x2F;th&gt;&lt;th&gt;硬链接&lt;&#x2F;th&gt;&lt;th&gt;软链接&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
 &lt;tr&gt;&lt;td&gt;文件标志&lt;&#x2F;td&gt;&lt;td&gt;普通文件&lt;&#x2F;td&gt;&lt;td&gt;T_SYMLINK&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
@@ -349,8 +348,8 @@
 &lt;tr&gt;&lt;td&gt;目标文件被删除&lt;&#x2F;td&gt;&lt;td&gt;&lt;strong&gt;可&lt;&#x2F;strong&gt;正常访问&lt;&#x2F;td&gt;&lt;td&gt;&lt;strong&gt;不可&lt;&#x2F;strong&gt;正常访问&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
 &lt;tr&gt;&lt;td&gt;跨设备&lt;&#x2F;td&gt;&lt;td&gt;&lt;strong&gt;不可&lt;&#x2F;strong&gt;跨设备&lt;&#x2F;td&gt;&lt;td&gt;&lt;strong&gt;可&lt;&#x2F;strong&gt;跨设备&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
 &lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
-&lt;p&gt;我们暂称软链接文件为“SC”。&lt;br &#x2F;&gt;
-当我们创建SC时，它会被打上&lt;strong&gt;T_SYMLINK&lt;&#x2F;strong&gt;的标签，其他普通文件会被打上&lt;strong&gt;T_FILE&lt;&#x2F;strong&gt;的标签。&lt;br &#x2F;&gt;
+&lt;p&gt;我们暂称软链接文件为“SF”。&lt;br &#x2F;&gt;
+当我们创建SF时，它会被打上&lt;strong&gt;T_SYMLINK&lt;&#x2F;strong&gt;的标签，其他普通文件会被打上&lt;strong&gt;T_FILE&lt;&#x2F;strong&gt;的标签。&lt;br &#x2F;&gt;
 然后创建后，我们想要打开该文件；系统就会发现它是&lt;strong&gt;T_SYMLINK&lt;&#x2F;strong&gt;标签的文件，并去读取该文件的&lt;code&gt;data&lt;&#x2F;code&gt;字段，&lt;code&gt;data&lt;&#x2F;code&gt;的内容为目标文件的路径，系统会解析该路径，并打开目标文件。&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;shi-xian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#shi-xian&quot; aria-label=&quot;Anchor link for: shi-xian&quot;&gt;实现&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;h3 id=&quot;xi-tong-diao-yong&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xi-tong-diao-yong&quot; aria-label=&quot;Anchor link for: xi-tong-diao-yong&quot;&gt;系统调用&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
@@ -367,9 +366,9 @@
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;T_SYMLINK &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;4   &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; Symbolic link
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;然后有时候我们可能希望直接对这个软链接文件进行操作，比如以下这种场景：&lt;br &#x2F;&gt;
-我们现在要打开SC，但是系统不知道我们其实只想看这个SC内存的是什么路径，所以它就直接打开了该文件，这不是用户预期行为。&lt;br &#x2F;&gt;
+我们现在要打开SF，但是系统不知道我们其实只想看这个SF内所存储的是什么路径，所以它就直接打开了该文件，这不是用户预期行为。&lt;br &#x2F;&gt;
 新的文件操作标志做的就是：&lt;br &#x2F;&gt;
-不解析SC的路径，直接对SC进行操作。&lt;br &#x2F;&gt;
+不解析SF的路径，直接对SF进行操作。&lt;br &#x2F;&gt;
 &lt;code&gt;kernel&#x2F;stat.h&lt;&#x2F;code&gt;：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;O_RDONLY      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x000
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;O_WRONLY      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x001
@@ -377,6 +376,51 @@
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;O_CREATE      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x200
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;O_TRUNC       &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x400
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;O_NOFOLLOW    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x800 
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;chuang-jian-ruan-lian-jie-wen-jian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#chuang-jian-ruan-lian-jie-wen-jian&quot; aria-label=&quot;Anchor link for: chuang-jian-ruan-lian-jie-wen-jian&quot;&gt;创建软链接文件&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;&lt;code&gt;kernel&#x2F;sysfile.c&lt;&#x2F;code&gt;：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;uint64
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_symlink&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char&lt;&#x2F;span&gt;&lt;span&gt; target[MAXPATH]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; linkpath[MAXPATH]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;uint&lt;&#x2F;span&gt;&lt;span&gt; len&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; inode &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;op&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;argstr&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; target&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; MAXPATH) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;|| &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;argstr&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; linkpath&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; MAXPATH) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;lt; &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 获取目标文件的INODE
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;begin_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((op &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;namei&lt;&#x2F;span&gt;&lt;span&gt;(target)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;ilock&lt;&#x2F;span&gt;&lt;span&gt;(op)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(op&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;type &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;==&lt;&#x2F;span&gt;&lt;span&gt; T_DIR){
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;iunlockput&lt;&#x2F;span&gt;&lt;span&gt;(op)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;iunlockput&lt;&#x2F;span&gt;&lt;span&gt;(op)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 创建软链接文件，并打上软链接对应的标签
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;create&lt;&#x2F;span&gt;&lt;span&gt;(linkpath&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; T_SYMLINK&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 对软链接文件的DATA写入路径
+&lt;&#x2F;span&gt;&lt;span&gt;  len &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f07171;&quot;&gt;strlen&lt;&#x2F;span&gt;&lt;span&gt;(target)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;writei&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;(uint64)target&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; len) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!=&lt;&#x2F;span&gt;&lt;span&gt; len){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;iunlockput&lt;&#x2F;span&gt;&lt;span&gt;(ip)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;iupdate&lt;&#x2F;span&gt;&lt;span&gt;(ip)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;iunlockput&lt;&#x2F;span&gt;&lt;span&gt;(ip)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;p&gt;最后编辑时间：2025&#x2F;8&#x2F;4&lt;&#x2F;p&gt;
 </content>

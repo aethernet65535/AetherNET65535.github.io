@@ -266,8 +266,7 @@ int max = ((MAXOPBLOCKS-1-2-2) / 2) * BSIZE;
 就是2个间接块的意思。   
 
 # symbolic links (moderate)     
-这个小作业要做的是符号链接/软链接，类似于Windows上的“快捷方式”。   
-我们暂称为shortcut吧；当我们打开shortcut文件时，那么他应该去寻找我们之前给它指定的实际文件路径，并且打开该文件。    
+这个小作业要做的是符号链接/软链接，类似于Windows上的“快捷方式”。     
 
 ## 基础概念：**硬链接与软链接的区别**    
 
@@ -279,8 +278,8 @@ int max = ((MAXOPBLOCKS-1-2-2) / 2) * BSIZE;
 | 目标文件被删除 | **可**正常访问   | **不可**正常访问 |
 | 跨设备         | **不可**跨设备   | **可**跨设备     |    
     
-我们暂称软链接文件为“SC”。   
-当我们创建SC时，它会被打上**T_SYMLINK**的标签，其他普通文件会被打上**T_FILE**的标签。   
+我们暂称软链接文件为“SF”。   
+当我们创建SF时，它会被打上**T_SYMLINK**的标签，其他普通文件会被打上**T_FILE**的标签。   
 然后创建后，我们想要打开该文件；系统就会发现它是**T_SYMLINK**标签的文件，并去读取该文件的`data`字段，`data`的内容为目标文件的路径，系统会解析该路径，并打开目标文件。   
 
 ## 实现
@@ -303,9 +302,9 @@ symlink(char *目标文件, char *新文件路径) // 不过别真用中文写�
 ```
 
 然后有时候我们可能希望直接对这个软链接文件进行操作，比如以下这种场景：   
-我们现在要打开SC，但是系统不知道我们其实只想看这个SC内存的是什么路径，所以它就直接打开了该文件，这不是用户预期行为。    
+我们现在要打开SF，但是系统不知道我们其实只想看这个SF内所存储的是什么路径，所以它就直接打开了该文件，这不是用户预期行为。    
 新的文件操作标志做的就是：   
-不解析SC的路径，直接对SC进行操作。   
+不解析SF的路径，直接对SF进行操作。   
 `kernel/stat.h`：    
 ```C
 #define O_RDONLY      0x000
@@ -314,6 +313,54 @@ symlink(char *目标文件, char *新文件路径) // 不过别真用中文写�
 #define O_CREATE      0x200
 #define O_TRUNC       0x400
 #define O_NOFOLLOW    0x800 
+```
+
+### 创建软链接文件
+
+`kernel/sysfile.c`：    
+```C
+uint64
+sys_symlink(void)
+{
+  char target[MAXPATH], linkpath[MAXPATH];
+  uint len;
+  struct inode *op, *ip;
+
+  if(argstr(0, target, MAXPATH) < 0 || argstr(1, linkpath, MAXPATH) < 0)
+    return -1;
+
+  // 获取目标文件的INODE
+  begin_op();
+  if((op = namei(target)) != 0){
+    ilock(op);
+    if(op->type == T_DIR){
+      iunlockput(op);
+      end_op();
+      return -1;
+    }
+    iunlockput(op);
+  }
+
+  // 创建软链接文件，并打上软链接对应的标签
+  if((ip = create(linkpath, T_SYMLINK, 0, 0)) == 0){
+    end_op();
+    return -1;
+  }
+
+  // 对软链接文件的DATA写入路径
+  len = strlen(target)+1;
+  if(writei(ip, 0, (uint64)target, 0, len) != len){
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+  iupdate(ip);
+  iunlockput(ip);
+  end_op();
+
+  return 0;
+}
 ```
 
 最后编辑时间：2025/8/4
