@@ -378,6 +378,8 @@
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;#define &lt;&#x2F;span&gt;&lt;span style=&quot;color:#399ee6;&quot;&gt;O_NOFOLLOW    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0x800 
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
 &lt;h3 id=&quot;chuang-jian-ruan-lian-jie-wen-jian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#chuang-jian-ruan-lian-jie-wen-jian&quot; aria-label=&quot;Anchor link for: chuang-jian-ruan-lian-jie-wen-jian&quot;&gt;创建软链接文件&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;我们先来做最重要的函数，就是&lt;code&gt;symlink(target, linkpath)&lt;&#x2F;code&gt;。&lt;br &#x2F;&gt;
+这个函数要做的事情只有把路径放进新文件里，就这么简单，你甚至不用检查这个路径是否存在文件。&lt;&#x2F;p&gt;
 &lt;p&gt;&lt;code&gt;kernel&#x2F;sysfile.c&lt;&#x2F;code&gt;：&lt;&#x2F;p&gt;
 &lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span&gt;uint64
 &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;sys_symlink&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void&lt;&#x2F;span&gt;&lt;span&gt;)
@@ -422,7 +424,89 @@
 &lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
 &lt;&#x2F;span&gt;&lt;span&gt;}
 &lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
-&lt;p&gt;最后编辑时间：2025&#x2F;8&#x2F;4&lt;&#x2F;p&gt;
+&lt;h4 id=&quot;di-gui-da-kai&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#di-gui-da-kai&quot; aria-label=&quot;Anchor link for: di-gui-da-kai&quot;&gt;递归打开&lt;&#x2F;a&gt;&lt;&#x2F;h4&gt;
+&lt;p&gt;我们的软链接文件可能会指向另一个软链接文件，一直指向指向。&lt;br &#x2F;&gt;
+所以我们要做一个递归，让系统能够找到目标文件。&lt;br &#x2F;&gt;
+但是呢，也不能一直递归，因为用户可能会做65535个，那样的话系统不炸了吗，CPU一直在处理这个东西，太浪费性能了！&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; inode&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*
+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;find_symlink&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;path&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;rpath&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;depth&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(depth &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;10&lt;&#x2F;span&gt;&lt;span&gt;)
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;struct&lt;&#x2F;span&gt;&lt;span&gt; inode &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span&gt;ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;namei&lt;&#x2F;span&gt;&lt;span&gt;(path)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;ilock&lt;&#x2F;span&gt;&lt;span&gt;(ip)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;type &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;!=&lt;&#x2F;span&gt;&lt;span&gt; T_SYMLINK){
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;iunlock&lt;&#x2F;span&gt;&lt;span&gt;(ip)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return&lt;&#x2F;span&gt;&lt;span&gt; ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;readi&lt;&#x2F;span&gt;&lt;span&gt;(ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span&gt;(uint64)rpath&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; ip&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&amp;gt;&lt;&#x2F;span&gt;&lt;span&gt;size) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;iunlockput&lt;&#x2F;span&gt;&lt;span&gt;(ip)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;iunlockput&lt;&#x2F;span&gt;&lt;span&gt;(ip)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;find_symlink&lt;&#x2F;span&gt;&lt;span&gt;(rpath&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; rpath&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; depth&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;+&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;da-kai-wen-jian&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#da-kai-wen-jian&quot; aria-label=&quot;Anchor link for: da-kai-wen-jian&quot;&gt;打开文件&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;我们需要让&lt;code&gt;open()&lt;&#x2F;code&gt;可以处理&lt;code&gt;O_NOFOLLOW&lt;&#x2F;code&gt;的情况，所以就需要改一下。&lt;br &#x2F;&gt;
+这里我们要清楚，我们的测试中，&lt;code&gt;O_NOFOLLOW&lt;&#x2F;code&gt;和&lt;code&gt;O_CREATE&lt;&#x2F;code&gt;几乎是不可能出现的，又或者说&lt;code&gt;O_CREATE&lt;&#x2F;code&gt;的优先级比&lt;code&gt;O_NOFOLLOW&lt;&#x2F;code&gt;更大。&lt;br &#x2F;&gt;
+一样的，先看原版&lt;br &#x2F;&gt;
+&lt;code&gt;sysfile.c&#x2F;sys_open()&lt;&#x2F;code&gt;：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(omode &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt; O_CREATE){ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 创建文件分支
+&lt;&#x2F;span&gt;&lt;span&gt;  ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;create&lt;&#x2F;span&gt;&lt;span&gt;(path&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; T_FILE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 不是要创建那就只有可能是打开了，OPEN函数嘛
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;namei&lt;&#x2F;span&gt;&lt;span&gt;(path)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){ 
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* OTHERS CODE *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;改成这样：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(omode &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt; O_CREATE){
+&lt;&#x2F;span&gt;&lt;span&gt;  ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;create&lt;&#x2F;span&gt;&lt;span&gt;(path&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; T_FILE&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span&gt;} &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 打开文件分支
+&lt;&#x2F;span&gt;&lt;span&gt;  &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;(omode &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;&amp;amp;&lt;&#x2F;span&gt;&lt;span&gt; O_NOFOLLOW){ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; O_NOFOLLOW不可能和O_CREATE同时出现，或者说XV6不处理这样的要求
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;namei&lt;&#x2F;span&gt;&lt;span&gt;(path)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 不递归，直接开
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;  } &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;else &lt;&#x2F;span&gt;&lt;span&gt;{
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;char&lt;&#x2F;span&gt;&lt;span&gt; rpath[MAXPATH]&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;if&lt;&#x2F;span&gt;&lt;span&gt;((ip &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;= &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;find_symlink&lt;&#x2F;span&gt;&lt;span&gt;(path&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span&gt; rpath&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;)) &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;== &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;0&lt;&#x2F;span&gt;&lt;span&gt;){ &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;&#x2F; 递归了再开，如果不是软链接文件的话，直接返回INODE
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;end_op&lt;&#x2F;span&gt;&lt;span&gt;()&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;      &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;return &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;-&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;1&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;span&gt;    }
+&lt;&#x2F;span&gt;&lt;span&gt;  }
+&lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#abb0b6;&quot;&gt;&#x2F;* OTHERS CODE *&#x2F;
+&lt;&#x2F;span&gt;&lt;span&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;xiao-zhi-shi&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#xiao-zhi-shi&quot; aria-label=&quot;Anchor link for: xiao-zhi-shi&quot;&gt;小知识&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;posixbiao-zhun-de-o-nofollow&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#posixbiao-zhun-de-o-nofollow&quot; aria-label=&quot;Anchor link for: posixbiao-zhun-de-o-nofollow&quot;&gt;POSIX标准的&lt;code&gt;O_NOFOLLOW&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;&lt;&#x2F;h3&gt;
+&lt;p&gt;POSIX的和XV6的有一些不同。&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;XV6：不要跟随，直接打开软链接文件&lt;&#x2F;li&gt;
+&lt;li&gt;POSIX：如果路径为软连接文件，直接返回错误&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;h1 id=&quot;wan-jie-sa-hua-o-e-o&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wan-jie-sa-hua-o-e-o&quot; aria-label=&quot;Anchor link for: wan-jie-sa-hua-o-e-o&quot;&gt;完结撒花 (　o=^•ェ•)o　┏━┓&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;相信做完这个LAB后，读者们对文件系统多少有点了解了，N级索引、软链接之类的。&lt;br &#x2F;&gt;
+不过如果真想了解文件系统的话，还是得精度XV6的其他源码，只是做这个LAB是肯定不够的。&lt;&#x2F;p&gt;
+&lt;p&gt;那就祝读者们好运啦，拜拜！o(〃＾▽＾〃)o&lt;&#x2F;p&gt;
+&lt;p&gt;最后编辑时间：2025&#x2F;8&#x2F;10&lt;&#x2F;p&gt;
 </content>
         
     </entry>

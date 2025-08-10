@@ -316,6 +316,8 @@ symlink(char *目标文件, char *新文件路径) // 不过别真用中文写�
 ```
 
 ### 创建软链接文件
+我们先来做最重要的函数，就是`symlink(target, linkpath)`。   
+这个函数要做的事情只有把路径放进新文件里，就这么简单，你甚至不用检查这个路径是否存在文件。    
 
 `kernel/sysfile.c`：    
 ```C
@@ -363,4 +365,93 @@ sys_symlink(void)
 }
 ```
 
-最后编辑时间：2025/8/4
+#### 递归打开
+我们的软链接文件可能会指向另一个软链接文件，一直指向指向。    
+所以我们要做一个递归，让系统能够找到目标文件。    
+但是呢，也不能一直递归，因为用户可能会做65535个，那样的话系统不炸了吗，CPU一直在处理这个东西，太浪费性能了！    
+```C
+struct inode*
+find_symlink(char *path, char *rpath, int depth)
+{
+  if(depth >= 10)
+    return 0;
+
+  struct inode *ip;
+  if((ip = namei(path)) != 0){
+    ilock(ip);
+
+    if(ip->type != T_SYMLINK){
+      iunlock(ip);
+      return ip;
+    }
+    if(readi(ip, 0, (uint64)rpath, 0, ip->size) == 0){
+      iunlockput(ip);
+      return 0;
+    }
+    iunlockput(ip);
+
+    return find_symlink(rpath, rpath, depth+1);
+  }
+  return 0;
+}
+```
+
+### 打开文件
+我们需要让`open()`可以处理`O_NOFOLLOW`的情况，所以就需要改一下。    
+这里我们要清楚，我们的测试中，`O_NOFOLLOW`和`O_CREATE`几乎是不可能出现的，又或者说`O_CREATE`的优先级比`O_NOFOLLOW`更大。    
+一样的，先看原版    
+`sysfile.c/sys_open()`：    
+```C
+if(omode & O_CREATE){ // 创建文件分支
+  ip = create(path, T_FILE, 0, 0);
+  if(ip == 0){
+    end_op();
+    return -1;
+  }
+} else { // 不是要创建那就只有可能是打开了，OPEN函数嘛
+  if((ip = namei(path)) == 0){ 
+    end_op();
+    return -1;
+  }
+/* OTHERS CODE */
+}
+```
+
+改成这样：    
+```C
+if(omode & O_CREATE){
+  ip = create(path, T_FILE, 0, 0);
+  if(ip == 0){
+    end_op();
+    return -1;
+  }
+} else { // 打开文件分支
+  if(omode & O_NOFOLLOW){ // O_NOFOLLOW不可能和O_CREATE同时出现，或者说XV6不处理这样的要求
+    if((ip = namei(path)) == 0){ // 不递归，直接开
+      end_op();
+      return -1;
+    }
+  } else {
+    char rpath[MAXPATH];
+    if((ip = find_symlink(path, rpath, 0)) == 0){ // 递归了再开，如果不是软链接文件的话，直接返回INODE
+      end_op();
+      return -1;
+    }
+  }
+/* OTHERS CODE */
+}
+```
+
+## 小知识
+### POSIX标准的`O_NOFOLLOW`
+POSIX的和XV6的有一些不同。
+- XV6：不要跟随，直接打开软链接文件   
+- POSIX：如果路径为软连接文件，直接返回错误
+
+# 完结撒花 (　o=^•ェ•)o　┏━┓
+相信做完这个LAB后，读者们对文件系统多少有点了解了，N级索引、软链接之类的。    
+不过如果真想了解文件系统的话，还是得精度XV6的其他源码，只是做这个LAB是肯定不够的。
+
+那就祝读者们好运啦，拜拜！o(〃＾▽＾〃)o   
+
+最后编辑时间：2025/8/10
