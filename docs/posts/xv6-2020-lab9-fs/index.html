@@ -230,25 +230,40 @@
 </span><span>  }
 </span><span style=color:#abb0b6;font-style:italic>/* OTHERS CODE */
 </span><span>}
-</span></code></pre><p>改成这样：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>if</span><span>(omode </span><span style=color:#ed9366>&</span><span> O_CREATE){
+</span></code></pre><p>改成这样：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>if</span><span>(omode </span><span style=color:#ed9366>&</span><span> O_CREATE){ 
 </span><span>  ip </span><span style=color:#ed9366>= </span><span style=color:#f29718>create</span><span>(path</span><span style=color:#61676ccc>,</span><span> T_FILE</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
 </span><span>  </span><span style=color:#fa6e32>if</span><span>(ip </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>){
 </span><span>    </span><span style=color:#f29718>end_op</span><span>()</span><span style=color:#61676ccc>;
 </span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>  }
-</span><span>} </span><span style=color:#fa6e32>else </span><span>{ </span><span style=color:#abb0b6;font-style:italic>// 打开文件分支
-</span><span>  </span><span style=color:#fa6e32>if</span><span>(omode </span><span style=color:#ed9366>&</span><span> O_NOFOLLOW){ </span><span style=color:#abb0b6;font-style:italic>// O_NOFOLLOW不可能和O_CREATE同时出现，或者说XV6不处理这样的要求
-</span><span>    </span><span style=color:#fa6e32>if</span><span>((ip </span><span style=color:#ed9366>= </span><span style=color:#f29718>namei</span><span>(path)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>){ </span><span style=color:#abb0b6;font-style:italic>// 不递归，直接开
-</span><span>      </span><span style=color:#f29718>end_op</span><span>()</span><span style=color:#61676ccc>;
-</span><span>      </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
-</span><span>    }
-</span><span>  } </span><span style=color:#fa6e32>else </span><span>{
-</span><span>    </span><span style=color:#fa6e32>char</span><span> rpath[MAXPATH]</span><span style=color:#61676ccc>;
-</span><span>    </span><span style=color:#fa6e32>if</span><span>((ip </span><span style=color:#ed9366>= </span><span style=color:#f29718>find_symlink</span><span>(path</span><span style=color:#61676ccc>,</span><span> rpath</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>){ </span><span style=color:#abb0b6;font-style:italic>// 递归了再开，如果不是软链接文件的话，直接返回INODE
-</span><span>      </span><span style=color:#f29718>end_op</span><span>()</span><span style=color:#61676ccc>;
-</span><span>      </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
-</span><span>    }
+</span><span>  </span><span style=color:#fa6e32>goto</span><span> general</span><span style=color:#61676ccc>;
+</span><span>} </span><span style=color:#fa6e32>else if</span><span>(omode </span><span style=color:#ed9366>&</span><span> O_NOFOLLOW) {
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((ip </span><span style=color:#ed9366>= </span><span style=color:#f29718>namei</span><span>(path)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>){ </span><span style=color:#abb0b6;font-style:italic>// 直接返回INODE
+</span><span>    </span><span style=color:#f29718>end_op</span><span>()</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>  }
-</span><span style=color:#abb0b6;font-style:italic>/* OTHERS CODE */
+</span><span>} </span><span style=color:#fa6e32>else </span><span>{
+</span><span>  </span><span style=color:#fa6e32>char</span><span> rpath[MAXPATH]</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((ip </span><span style=color:#ed9366>= </span><span style=color:#f29718>find_symlink</span><span>(path</span><span style=color:#61676ccc>,</span><span> rpath</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span>)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>){ </span><span style=color:#abb0b6;font-style:italic>// 如果找到非软链接文件就会返回INODE
+</span><span>    </span><span style=color:#f29718>end_op</span><span>()</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>} 
+</span><span>
+</span><span style=color:#abb0b6;font-style:italic>/* 这里开始就不必在意了，重点是上面而已 */
+</span><span style=color:#f29718>ilock</span><span>(ip)</span><span style=color:#61676ccc>;  
+</span><span style=color:#fa6e32>if</span><span>(ip</span><span style=color:#ed9366>-></span><span>type </span><span style=color:#ed9366>==</span><span> T_DIR </span><span style=color:#ed9366>&&</span><span> omode </span><span style=color:#ed9366>!=</span><span> O_RDONLY){
+</span><span>  </span><span style=color:#f29718>iunlockput</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f29718>end_op</span><span>()</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
 </span><span>}
+</span><span>
+</span><span>general</span><span style=color:#ed9366>:
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(ip</span><span style=color:#ed9366>-></span><span>type </span><span style=color:#ed9366>==</span><span> T_DEVICE </span><span style=color:#ed9366>&& </span><span>(ip</span><span style=color:#ed9366>-></span><span>major </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>||</span><span> ip</span><span style=color:#ed9366>-></span><span>major </span><span style=color:#ed9366>>=</span><span> NDEV)){
+</span><span>    </span><span style=color:#f29718>iunlockput</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f29718>end_op</span><span>()</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>
+</span><span style=color:#abb0b6;font-style:italic>/* OTHERS CODE */
 </span></code></pre><h2 id=xiao-zhi-shi><a aria-label="Anchor link for: xiao-zhi-shi" class=zola-anchor href=#xiao-zhi-shi>小知识</a></h2><h3 id=posixbiao-zhun-de-o-nofollow><a aria-label="Anchor link for: posixbiao-zhun-de-o-nofollow" class=zola-anchor href=#posixbiao-zhun-de-o-nofollow>POSIX标准的<code>O_NOFOLLOW</code></a></h3><p>POSIX的和XV6的有一些不同。<ul><li>XV6：不要跟随，直接打开软链接文件<li>POSIX：如果路径为软连接文件，直接返回错误</ul><h1 id=wan-jie-sa-hua-o-e-o><a aria-label="Anchor link for: wan-jie-sa-hua-o-e-o" class=zola-anchor href=#wan-jie-sa-hua-o-e-o>完结撒花 (　o=^•ェ•)o　┏━┓</a></h1><p>相信做完这个LAB后，读者们对文件系统多少有点了解了，N级索引、软链接之类的。<br> 不过如果真想了解文件系统的话，还是得精度XV6的其他源码，只是做这个LAB是肯定不够的。<p>那就祝读者们好运啦，拜拜！o(〃＾▽＾〃)o<p>最后编辑时间：2025/8/10</section></article></main><div class=giscus></div><script async crossorigin issue-term=pathname repo=YOUR_NAME/YOUR_REPO src=https://utteranc.es/client.js theme=github-light></script></div>

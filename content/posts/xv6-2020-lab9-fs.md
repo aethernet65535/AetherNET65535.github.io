@@ -419,27 +419,42 @@ if(omode & O_CREATE){ // 创建文件分支
 
 改成这样：    
 ```C
-if(omode & O_CREATE){
+if(omode & O_CREATE){ 
   ip = create(path, T_FILE, 0, 0);
   if(ip == 0){
     end_op();
     return -1;
   }
-} else { // 打开文件分支
-  if(omode & O_NOFOLLOW){ // O_NOFOLLOW不可能和O_CREATE同时出现，或者说XV6不处理这样的要求
-    if((ip = namei(path)) == 0){ // 不递归，直接开
-      end_op();
-      return -1;
-    }
-  } else {
-    char rpath[MAXPATH];
-    if((ip = find_symlink(path, rpath, 0)) == 0){ // 递归了再开，如果不是软链接文件的话，直接返回INODE
-      end_op();
-      return -1;
-    }
+  goto general;
+} else if(omode & O_NOFOLLOW) {
+  if((ip = namei(path)) == 0){ // 直接返回INODE
+    end_op();
+    return -1;
   }
-/* OTHERS CODE */
+} else {
+  char rpath[MAXPATH];
+  if((ip = find_symlink(path, rpath, 0)) == 0){ // 如果找到非软链接文件就会返回INODE
+    end_op();
+    return -1;
+  }
+} 
+
+/* 这里开始就不必在意了，重点是上面而已 */
+ilock(ip);  
+if(ip->type == T_DIR && omode != O_RDONLY){
+  iunlockput(ip);
+  end_op();
+  return -1;
 }
+
+general:
+  if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+/* OTHERS CODE */
 ```
 
 ## 小知识
