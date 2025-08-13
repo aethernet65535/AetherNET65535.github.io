@@ -22,6 +22,10 @@
         <lastmod>2024-07-09</lastmod>
     </url>
     <url>
+        <loc>https://aethernet65535.github.io/posts/linux-design-cfs-translation-llm/</loc>
+        <lastmod>2025-08-13</lastmod>
+    </url>
+    <url>
         <loc>https://aethernet65535.github.io/posts/markdown/</loc>
         <lastmod>2022-05-01</lastmod>
     </url>
@@ -38,6 +42,9 @@
     </url>
     <url>
         <loc>https://aethernet65535.github.io/posts/page/2/</loc>
+    </url>
+    <url>
+        <loc>https://aethernet65535.github.io/posts/page/3/</loc>
     </url>
     <url>
         <loc>https://aethernet65535.github.io/posts/shortcode/</loc>
@@ -105,6 +112,9 @@
     </url>
     <url>
         <loc>https://aethernet65535.github.io/tags/example/</loc>
+    </url>
+    <url>
+        <loc>https://aethernet65535.github.io/tags/linux/</loc>
     </url>
     <url>
         <loc>https://aethernet65535.github.io/tags/xv6/</loc>
