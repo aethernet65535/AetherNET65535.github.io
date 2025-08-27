@@ -5,8 +5,59 @@
     <link rel="self" type="application/atom+xml" href="https://aethernet65535.github.io/atom.xml"/>
     <link rel="alternate" type="text/html" href="https://aethernet65535.github.io"/>
     <generator uri="https://www.getzola.org/">Zola</generator>
-    <updated>2025-08-13T00:00:00+00:00</updated>
+    <updated>2025-08-26T00:00:00+00:00</updated>
     <id>https://aethernet65535.github.io/atom.xml</id>
+    <entry xml:lang="en">
+        <title>XV6-2020 LAB10-MMAP</title>
+        <published>2025-08-26T00:00:00+00:00</published>
+        <updated>2025-08-26T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/"/>
+        <id>https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/</id>
+        
+        <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/">&lt;h1 id=&quot;qian-yan&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan&quot; aria-label=&quot;Anchor link for: qian-yan&quot;&gt;前言&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;什么是&lt;code&gt;mmap()&lt;&#x2F;code&gt;呢？它为什么比传统的 read()&#x2F;write() 更方便呢？&lt;&#x2F;p&gt;
+&lt;p&gt;好，现在用户要打开一个PDF文件，用户想要读书了，但是书差不多有2000页，他不想在今天读完。&lt;br &#x2F;&gt;
+如果是&lt;code&gt;read()&lt;&#x2F;code&gt;&#x2F;&lt;code&gt;write()&lt;&#x2F;code&gt;，虽然可以通过分段读取避免内存浪费，但需要程序员手动维护文件偏移量和缓冲区，实现起来比较繁琐。&lt;&#x2F;p&gt;
+&lt;p&gt;而&lt;code&gt;mmap()&lt;&#x2F;code&gt;提供了更优雅的解决方案，它通过内存映射的方式，将文件内容直接映射到进程的虚拟地址空间（VMA分区）。&lt;br &#x2F;&gt;
+当用户昨天读到第255页，今天重新打开时，
+系统通过按需加载机制，
+只会将实际访问的第255页附近的数据加载到物理内存中，而不是整个文件。&lt;&#x2F;p&gt;
+&lt;p&gt;这种机制特别适合随机访问的场景。&lt;br &#x2F;&gt;
+用户可能跳跃式地阅读不同章节，mmap()的缺页中断机制会自动处理数据的加载和缓存，无需人工干预。&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;zuo-ye-yao-qiu&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#zuo-ye-yao-qiu&quot; aria-label=&quot;Anchor link for: zuo-ye-yao-qiu&quot;&gt;作业要求&lt;&#x2F;a&gt;&lt;&#x2F;h1&gt;
+&lt;p&gt;我们要实现的&lt;code&gt;mmap()&lt;&#x2F;code&gt;接口如下：&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;C&quot; style=&quot;background-color:#fafafa;color:#61676c;&quot; class=&quot;language-C &quot;&gt;&lt;code class=&quot;language-C&quot; data-lang=&quot;C&quot;&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#f29718;&quot;&gt;mmap&lt;&#x2F;span&gt;&lt;span&gt;(&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;void &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ed9366;&quot;&gt;*&lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;addr&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;size_t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;length&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;prot&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;flags&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;,&lt;&#x2F;span&gt;&lt;span style=&quot;color:#fa6e32;&quot;&gt;int &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;fd&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;, &lt;&#x2F;span&gt;&lt;span style=&quot;font-style:italic;color:#55b4d4;&quot;&gt;off_t &lt;&#x2F;span&gt;&lt;span style=&quot;color:#ff8f40;&quot;&gt;offset&lt;&#x2F;span&gt;&lt;span&gt;)&lt;&#x2F;span&gt;&lt;span style=&quot;color:#61676ccc;&quot;&gt;;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;我来说说一下这些参数：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;addr&lt;&#x2F;code&gt;：就是用户希望自己的文件被映射到什么位置（地址），测试文件只会使用0，读者们可以只处理0的情况，也就是自动分配地址。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我的方案比较不一样，是这样的：&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;0：自动分配&lt;&#x2F;li&gt;
+&lt;li&gt;!0且合法：尝试映射指定地址&lt;&#x2F;li&gt;
+&lt;li&gt;!0但已占用：自动分配&lt;&#x2F;li&gt;
+&lt;li&gt;非法：返回错误&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;这里对非法的定义是，不在VMA范围内的，或是没对齐。&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;length&lt;&#x2F;code&gt;：用户希望自己的结束地址是&lt;code&gt;addr&lt;&#x2F;code&gt;加上多少，可以大于真实的文件的长度。&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;最后编辑时间：2025&#x2F;8&#x2F;26&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
     <entry xml:lang="en">
         <title>DESIGN OF CFS - DEEPSEEK TRANSLATION</title>
         <published>2025-08-13T00:00:00+00:00</published>
@@ -2096,10 +2147,9 @@ A：会，不过&lt;strong&gt;有点&lt;&#x2F;strong&gt;慢，大概要13年左�
         <content type="html" xml:base="https://aethernet65535.github.io/posts/xv6-2020-lab6-cow/">&lt;h2 id=&quot;qian-yan-fei-hua&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#qian-yan-fei-hua&quot; aria-label=&quot;Anchor link for: qian-yan-fei-hua&quot;&gt;前言（废话）&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;这个不算太容易，有个地方困扰了我很久，不过我目前还是没发现为什么就是了，之后可能会去仔细研究（调试？）。&lt;br &#x2F;&gt;
 不过现在的话，我就先整理一些资料给读者们和未来的自己而已。&lt;br &#x2F;&gt;
-我想更多的是整理给未来的自己，毕竟我这垃圾笔记有谁会看呢hhh。&lt;br &#x2F;&gt;
+我想更多的是整理给未来的自己，就是当作一个学习笔记！&lt;br &#x2F;&gt;
 不过整理给自己也很好就是了，如果屏幕前的读者觉得自己学了但是不理解的话，可以试试写笔记写博客之类的，你要写出你理解的东西，不理解的现在就去学。&lt;br &#x2F;&gt;
 这样的话有助于更好的理解你所学到的，即使之后忘了也没关系，再回来看，努力记住！&lt;&#x2F;p&gt;
-&lt;p&gt;读者们都要加油哦，成为厉害的大人！(๑•̀ㅂ•́)و✧&lt;&#x2F;p&gt;
 &lt;h2 id=&quot;wen-ti&quot;&gt;&lt;a class=&quot;zola-anchor&quot; href=&quot;#wen-ti&quot; aria-label=&quot;Anchor link for: wen-ti&quot;&gt;问题&lt;&#x2F;a&gt;&lt;&#x2F;h2&gt;
 &lt;p&gt;&lt;strong&gt;XV6&lt;&#x2F;strong&gt;现在的&lt;code&gt;fork()&lt;&#x2F;code&gt;有什么问题呢？&lt;br &#x2F;&gt;
 现在是这样的，当调用&lt;code&gt;fork()&lt;&#x2F;code&gt;时，系统就会复制父进程，然后创建同样多的物理页，全复制给子进程。&lt;br &#x2F;&gt;
