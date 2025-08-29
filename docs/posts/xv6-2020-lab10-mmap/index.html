@@ -6,5 +6,458 @@
               tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']]
               }
-            };</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><link href=https://aethernet65535.github.io/atom.xml rel=alternate title=aethernet-blog type=application/atom+xml><link href=https://aethernet65535.github.io/theme/light.css rel=stylesheet><link href=https://aethernet65535.github.io/theme/dark.css id=darkModeStyle rel=stylesheet><script src=https://aethernet65535.github.io/js/themetoggle.js></script><script>setTheme(getSavedTheme());</script><link href=https://aethernet65535.github.io/main.css media=screen rel=stylesheet><script src="https://aethernet65535.github.io/js/searchElasticlunr.min.js?h=3626c0ef99daa745b31e" defer></script><body><div class=content><header><div class=main><a href=https://aethernet65535.github.io>aethernet-blog</a><div class=socials><a class=social href=https://twitter.com/not_matthias rel=me> <img alt=twitter src=https://aethernet65535.github.io/icons/social/twitter.svg> </a><a class=social href=https://github.com/not-matthias/ rel=me> <img alt=github src=https://aethernet65535.github.io/icons/social/github.svg> </a></div></div><nav><a href=https://aethernet65535.github.io/posts style=margin-left:.25em>/posts</a><a href=https://aethernet65535.github.io/projects style=margin-left:.25em>/projects</a><a href=https://aethernet65535.github.io/about style=margin-left:.25em>/about</a><a href=https://aethernet65535.github.io/tags style=margin-left:.25em>/tags</a><button title="$SHORTCUT to open search" class=search-button id=search-button><img alt=Search class=search-icon src=https://aethernet65535.github.io/icons/search.svg></button><div class="search-modal js" aria-labelledby=modalTitle id=searchModal role=dialog><div id=modal-content><h1 class=page-header id=modalTitle>Search</h1><div id=searchBar><input aria-controls=results-container aria-expanded=false autocomplete=off id=searchInput placeholder=Search... role=combobox spellcheck=false><button title="Clear search" class=clear-button id=clear-search><svg viewbox="0 -960 960 960" xmlns=http://www.w3.org/2000/svg><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button></div><div id=results-container><div id=results-info><span id=zero_results style=display:none>No results</span><span id=one_result style=display:none>1 result</span><span id=many_results style=display:none>$NUMBER results</span></div><div id=results role=listbox></div></div></div></div><a onclick="toggleTheme(); event.preventDefault();" href=# id=dark-mode-toggle> <img alt=Light id=sun-icon src=https://aethernet65535.github.io/icons/sun.svg style=filter:invert()> <img alt=Dark id=moon-icon src=https://aethernet65535.github.io/icons/moon.svg> </a><script>updateItemToggleTheme()</script></nav></header><main><article><div class=title><div class=page-header>XV6-2020 LAB10-MMAP<span class=primary-color style=font-size:1.6em>.</span></div><div class=meta>Posted on <time>2025-08-26</time> :: 447 Words <span class=tags-label>:: Tags:</span><span class=tags> <a class=post-tag href=https://aethernet65535.github.io/tags/xv6/>xv6</a> </span></div></div><div class=toc-container><h1 class=toc-title>Table of Contents</h1><ul class=toc-list><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#qian-yan>前言</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#zuo-ye-yao-qiu>作业要求</a></ul></div><section class=body><h1 id=qian-yan><a aria-label="Anchor link for: qian-yan" class=zola-anchor href=#qian-yan>前言</a></h1><p>什么是<code>mmap()</code>呢？它为什么比传统的 read()/write() 更方便呢？<p>好，现在用户要打开一个PDF文件，用户想要读书了，但是书差不多有2000页，他不想在今天读完。<br> 如果是<code>read()</code>/<code>write()</code>，虽然可以通过分段读取避免内存浪费，但需要程序员手动维护文件偏移量和缓冲区，实现起来比较繁琐。<p>而<code>mmap()</code>提供了更优雅的解决方案，它通过内存映射的方式，将文件内容直接映射到进程的虚拟地址空间（VMA分区）。<br> 当用户昨天读到第255页，今天重新打开时， 系统通过按需加载机制， 只会将实际访问的第255页附近的数据加载到物理内存中，而不是整个文件。<p>这种机制特别适合随机访问的场景。<br> 用户可能跳跃式地阅读不同章节，mmap()的缺页中断机制会自动处理数据的加载和缓存，无需人工干预。<h1 id=zuo-ye-yao-qiu><a aria-label="Anchor link for: zuo-ye-yao-qiu" class=zola-anchor href=#zuo-ye-yao-qiu>作业要求</a></h1><p>我们要实现的<code>mmap()</code>接口如下：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void </span><span style=color:#ed9366>*</span><span style=color:#f29718>mmap</span><span>(</span><span style=color:#fa6e32>void </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>, </span><span style=color:#55b4d4;font-style:italic>size_t </span><span style=color:#ff8f40>length</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>prot</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>flags</span><span style=color:#61676ccc>,</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>fd</span><span style=color:#61676ccc>, </span><span style=color:#55b4d4;font-style:italic>off_t </span><span style=color:#ff8f40>offset</span><span>)</span><span style=color:#61676ccc>;
-</span></code></pre><p>我来说说一下这些参数：<ul><li><code>addr</code>：就是用户希望自己的文件被映射到什么位置（地址），测试文件只会使用0，读者们可以只处理0的情况，也就是自动分配地址。</ul><blockquote><p>我的方案比较不一样，是这样的：<ul><li>0：自动分配<li>!0且合法：尝试映射指定地址<li>!0但已占用：自动分配<li>非法：返回错误</ul><p>这里对非法的定义是，不在VMA范围内的，或是没对齐。</blockquote><ul><li><code>length</code>：用户希望自己的结束地址是<code>addr</code>加上多少，可以大于真实的文件的长度。</ul><p>最后编辑时间：2025/8/26</section></article></main><div class=giscus></div><script async crossorigin issue-term=pathname repo=YOUR_NAME/YOUR_REPO src=https://utteranc.es/client.js theme=github-light></script></div>
+            };</script><script async id=MathJax-script src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script><link href=https://aethernet65535.github.io/atom.xml rel=alternate title=aethernet-blog type=application/atom+xml><link href=https://aethernet65535.github.io/theme/light.css rel=stylesheet><link href=https://aethernet65535.github.io/theme/dark.css id=darkModeStyle rel=stylesheet><script src=https://aethernet65535.github.io/js/themetoggle.js></script><script>setTheme(getSavedTheme());</script><link href=https://aethernet65535.github.io/main.css media=screen rel=stylesheet><script src="https://aethernet65535.github.io/js/searchElasticlunr.min.js?h=3626c0ef99daa745b31e" defer></script><body><div class=content><header><div class=main><a href=https://aethernet65535.github.io>aethernet-blog</a><div class=socials><a class=social href=https://twitter.com/not_matthias rel=me> <img alt=twitter src=https://aethernet65535.github.io/icons/social/twitter.svg> </a><a class=social href=https://github.com/not-matthias/ rel=me> <img alt=github src=https://aethernet65535.github.io/icons/social/github.svg> </a></div></div><nav><a href=https://aethernet65535.github.io/posts style=margin-left:.25em>/posts</a><a href=https://aethernet65535.github.io/projects style=margin-left:.25em>/projects</a><a href=https://aethernet65535.github.io/about style=margin-left:.25em>/about</a><a href=https://aethernet65535.github.io/tags style=margin-left:.25em>/tags</a><button title="$SHORTCUT to open search" class=search-button id=search-button><img alt=Search class=search-icon src=https://aethernet65535.github.io/icons/search.svg></button><div class="search-modal js" aria-labelledby=modalTitle id=searchModal role=dialog><div id=modal-content><h1 class=page-header id=modalTitle>Search</h1><div id=searchBar><input aria-controls=results-container aria-expanded=false autocomplete=off id=searchInput placeholder=Search... role=combobox spellcheck=false><button title="Clear search" class=clear-button id=clear-search><svg viewbox="0 -960 960 960" xmlns=http://www.w3.org/2000/svg><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button></div><div id=results-container><div id=results-info><span id=zero_results style=display:none>No results</span><span id=one_result style=display:none>1 result</span><span id=many_results style=display:none>$NUMBER results</span></div><div id=results role=listbox></div></div></div></div><a onclick="toggleTheme(); event.preventDefault();" href=# id=dark-mode-toggle> <img alt=Light id=sun-icon src=https://aethernet65535.github.io/icons/sun.svg style=filter:invert()> <img alt=Dark id=moon-icon src=https://aethernet65535.github.io/icons/moon.svg> </a><script>updateItemToggleTheme()</script></nav></header><main><article><div class=title><div class=page-header>XV6-2020 LAB10-MMAP<span class=primary-color style=font-size:1.6em>.</span></div><div class=meta>Posted on <time>2025-08-26</time> :: 1614 Words <span class=tags-label>:: Tags:</span><span class=tags> <a class=post-tag href=https://aethernet65535.github.io/tags/xv6/>xv6</a> </span></div></div><div class=toc-container><h1 class=toc-title>Table of Contents</h1><ul class=toc-list><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#qian-yan>前言</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#zuo-ye-yao-qiu>作业要求</a> <ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#shi-xian>实现</a></li><ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#ding-yi-vmaxiang-guan-zi-duan>定义VMA相关字段</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#mmap-shen-qing>mmap()申请</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#que-ye-zhong-duan>缺页中断</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#qu-xiao-ying-she>取消映射</a><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#xiao-xiu-xiao-bu>小修小补</a></ul></ul><li><a href=https://aethernet65535.github.io/posts/xv6-2020-lab10-mmap/#wan-jie-sa-hua-3>完结撒花（〃｀ 3′〃）</a></ul></div><section class=body><h1 id=qian-yan><a aria-label="Anchor link for: qian-yan" class=zola-anchor href=#qian-yan>前言</a></h1><p>什么是<code>mmap()</code>呢？它为什么比传统的 read()/write() 更方便呢？<p>好，现在用户要打开一个PDF文件，用户想要读书了，但是书差不多有2000页，他不想在今天读完。<br> 如果是<code>read()</code>/<code>write()</code>，虽然可以通过分段读取避免内存浪费，但需要程序员手动维护文件偏移量和缓冲区，实现起来比较繁琐。<p>而<code>mmap()</code>提供了更优雅的解决方案，它通过内存映射的方式，将文件内容直接映射到进程的虚拟地址空间（VMA分区）。<br> 当用户昨天读到第255页，今天重新打开时， 系统通过按需加载机制， 只会将实际访问的第255页附近的数据加载到物理内存中，而不是整个文件。<p>这种机制特别适合随机访问的场景。<br> 用户可能跳跃式地阅读不同章节，mmap()的缺页中断机制会自动处理数据的加载和缓存，无需人工干预。<h1 id=zuo-ye-yao-qiu><a aria-label="Anchor link for: zuo-ye-yao-qiu" class=zola-anchor href=#zuo-ye-yao-qiu>作业要求</a></h1><p>我们要实现的<code>mmap()</code>接口如下：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void </span><span style=color:#ed9366>*</span><span style=color:#f29718>mmap</span><span>(</span><span style=color:#fa6e32>void </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>, </span><span style=color:#55b4d4;font-style:italic>size_t </span><span style=color:#ff8f40>length</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>prot</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>flags</span><span style=color:#61676ccc>,</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>fd</span><span style=color:#61676ccc>, </span><span style=color:#55b4d4;font-style:italic>off_t </span><span style=color:#ff8f40>offset</span><span>)</span><span style=color:#61676ccc>;
+</span></code></pre><p>我来说说一下这些参数：<ul><li><code>addr</code>：就是用户希望自己的文件被映射到什么位置（地址），测试文件只会使用0，读者们可以只处理0的情况，也就是自动分配地址</ul><blockquote><p>我的方案比较不一样，是这样的：<ul><li>0：自动分配<li>!0且合法：尝试映射指定地址<li>!0但已占用：返回错误<li>非法：返回错误</ul><p>这里对非法的定义是，不在VMA范围内的，或是没对齐。</blockquote><ul><li><p><code>length</code>：用户希望能访问多少字节数，可以与真实文件大小不一致，但是系统会自动向上对齐</p><li><p><code>prot</code>：就是对文件的权限，有四种：</p></ul><blockquote><ul><li>PROT_NONE：什么权限都没有，不知道干什么的，可能是占位用<li>PROT_READ：对文件可读，不过前提是文件本身就可读<li>PROT_WRITE：对文件可写，如果是SHARED，那么就根据文件自身权限判断，PRIVATE则无视<li>PROT_EXEC：可执行，不过xv6的testfile并没有这种东西，所以无视就行了</ul></blockquote><ul><li><code>flags</code>：就是控制会不会影响源文件，有两种参数：</ul><blockquote><ul><li>MAP_SHARED：对文件的修改会写回文件<li>MAP_PRIVATE：对文件的所有修改都不会写回文件</ul></blockquote><ul><li><p><code>fd</code>：就是文件描述符，这个不细说了，我记得LAB-1就有教这个概念了</p><li><p><code>offset</code>：文件偏移量，就是说在你写入<code>addr[x]</code>时，<code>x</code>真正要写的地址得偏移多少字节数。 觉得难理解的话，就默认为0就行了，xv6的testfile也确实是这样用的</p></ul><p>还有另一个，叫<code>munmap()</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>int </span><span style=color:#f29718>munmap</span><span>(uint64 </span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>length</span><span>)
+</span></code></pre><ul><li><code>addr</code>：地址必须对齐，可以填写中间地址，只要在对应VMA范围内即可<li><code>length</code>：多大都行，系统会处理，如果传入不对齐的，会自动向上对齐</ul><h2 id=shi-xian><a aria-label="Anchor link for: shi-xian" class=zola-anchor href=#shi-xian>实现</a></h2><h3 id=ding-yi-vmaxiang-guan-zi-duan><a aria-label="Anchor link for: ding-yi-vmaxiang-guan-zi-duan" class=zola-anchor href=#ding-yi-vmaxiang-guan-zi-duan>定义VMA相关字段</a></h3><p><code>kernel/param.h</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#abb0b6;font-style:italic>/* ... */
+</span><span style=color:#fa6e32>#define </span><span style=color:#399ee6>NVMA </span><span style=color:#ff8f40>16 </span><span style=color:#abb0b6;font-style:italic>// maximum number of vma
+</span></code></pre><p>第一个是每个进程最多能持有多少个VMA，说实话我没仔细算过会不会爆，不过相信MIT就行了，16页能有多大（虽然大概率会更大）。<p><code>kernel/memlayout.h</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>#define </span><span style=color:#399ee6>VMA_BASE </span><span style=color:#ff8f40>0x100000000
+</span></code></pre><p>就是基地址，没算过，不过推测是大于堆，小于TRAPFRAME。<p><code>kernel/proc.h</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>struct </span><span style=color:#399ee6>vma</span><span>{
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 标志
+</span><span>  </span><span style=color:#fa6e32>int</span><span> used</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> permission</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> flags</span><span style=color:#61676ccc>;
+</span><span>  
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 地址
+</span><span>  uint64 start</span><span style=color:#61676ccc>;
+</span><span>  uint64 end</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> offset</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 文件
+</span><span>  </span><span style=color:#fa6e32>struct </span><span style=color:#399ee6>file</span><span> *file</span><span style=color:#61676ccc>;
+</span><span>}</span><span style=color:#61676ccc>;
+</span></code></pre><p>之后就是设置一些字段，这些都是必要的，所以都得设置。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>struct </span><span style=color:#399ee6>proc</span><span>{
+</span><span style=color:#abb0b6;font-style:italic>/* ... */
+</span><span style=color:#fa6e32>struct</span><span> vma vma[NVMA]</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// Virtual memory area
+</span><span>}
+</span></code></pre><p>最后就是给每个进程都加一个VMA了，这样才能用。<h3 id=mmap-shen-qing><a aria-label="Anchor link for: mmap-shen-qing" class=zola-anchor href=#mmap-shen-qing><code>mmap()</code>申请</a></h3><p><code>kernel/sysfile.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>uint64
+</span><span style=color:#f29718>sys_mmap</span><span>(</span><span style=color:#fa6e32>void</span><span>)
+</span><span>{
+</span><span>  uint64 addr</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> prot</span><span style=color:#61676ccc>,</span><span> flags</span><span style=color:#61676ccc>,</span><span> length</span><span style=color:#61676ccc>,</span><span> offset</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> file </span><span style=color:#ed9366>*</span><span>file</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span>p </span><span style=color:#ed9366>= </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span>a </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 参数获取
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argaddr</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>addr) </span><span style=color:#ed9366>||
+</span><span>     </span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>length) </span><span style=color:#ed9366>||
+</span><span>     </span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>2</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>prot) </span><span style=color:#ed9366>||
+</span><span>     </span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>3</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>flags) </span><span style=color:#ed9366>||
+</span><span>     </span><span style=color:#f29718>argfd</span><span>(</span><span style=color:#ff8f40>4</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>file) </span><span style=color:#ed9366>||
+</span><span>     </span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>5</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>offset) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 错误检查
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(addr </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>&&</span><span> addr </span><span style=color:#ed9366>&lt;</span><span> VMA_BASE)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(addr </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>&&</span><span> addr </span><span style=color:#ed9366>></span><span> TRAPFRAME)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(addr </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>&&</span><span> addr </span><span style=color:#ed9366>%</span><span> PGSIZE </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((flags </span><span style=color:#ed9366>&</span><span> MAP_SHARED) </span><span style=color:#ed9366>&& !</span><span>file</span><span style=color:#ed9366>-></span><span>writable </span><span style=color:#ed9366>&& </span><span>(prot </span><span style=color:#ed9366>&</span><span> PROT_WRITE))
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#ed9366>!</span><span>file</span><span style=color:#ed9366>-></span><span>readable </span><span style=color:#ed9366>&& </span><span>(prot </span><span style=color:#ed9366>&</span><span> PROT_READ))
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 找到能用的VMA
+</span><span>  </span><span style=color:#fa6e32>int</span><span> i</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> NVMA</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#ed9366>!</span><span>p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>used){
+</span><span>      a </span><span style=color:#ed9366>= &</span><span>p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#61676ccc>;
+</span><span>      </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>    }
+</span><span>  }
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(a </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>) </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 看看用户是自定义了地址还是想要自动分配（0）
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// testfile全是0
+</span><span>  uint64 next_start </span><span style=color:#ed9366>=</span><span> addr </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0 </span><span style=color:#ed9366>?</span><span> VMA_BASE </span><span style=color:#ed9366>:</span><span> addr</span><span style=color:#61676ccc>;
+</span><span>  uint64 next_end </span><span style=color:#ed9366>= </span><span style=color:#f29718>PGROUNDUP</span><span>(next_start </span><span style=color:#ed9366>+</span><span> length)</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> autoaddr </span><span style=color:#ed9366>= </span><span>(addr </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)</span><span style=color:#61676ccc>;
+</span><span> 
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 循环找空闲地址
+</span><span>  </span><span style=color:#fa6e32>while</span><span>(next_end </span><span style=color:#ed9366>&lt;</span><span> TRAPFRAME){
+</span><span>    </span><span style=color:#fa6e32>int</span><span> overlap </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>for</span><span>(i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> NVMA</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>      </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#ed9366>!</span><span>(p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>used))
+</span><span>        </span><span style=color:#fa6e32>continue</span><span style=color:#61676ccc>;
+</span><span>      </span><span style=color:#fa6e32>while</span><span>(</span><span style=color:#ff8f40>1</span><span>){
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 通过直接跑
+</span><span>        </span><span style=color:#fa6e32>if</span><span>(next_start </span><span style=color:#ed9366>&lt;</span><span> p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>start </span><span style=color:#ed9366>&&</span><span> next_end </span><span style=color:#ed9366>&lt;</span><span> p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>start)
+</span><span>          </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#fa6e32>if</span><span>(p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>end </span><span style=color:#ed9366>&lt;</span><span> next_start </span><span style=color:#ed9366>&&</span><span> p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>end </span><span style=color:#ed9366>&lt;</span><span> next_end)
+</span><span>          </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 自定义的没通过就不帮了
+</span><span>        </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#ed9366>!</span><span>autoaddr)
+</span><span>          </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>        </span><span style=color:#abb0b6;font-style:italic>// 没通过就慢慢来
+</span><span>        overlap </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>        next_start </span><span style=color:#ed9366>+=</span><span> PGSIZE</span><span style=color:#61676ccc>;
+</span><span>        next_end </span><span style=color:#ed9366>= </span><span style=color:#f29718>PGROUNDUP</span><span>(next_start </span><span style=color:#ed9366>+</span><span> length)</span><span style=color:#61676ccc>;
+</span><span>      }
+</span><span>    }
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 整个循环都没有以此冲突才算是完全通过（起飞）
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#ed9366>!</span><span>overlap)
+</span><span>      </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 防止覆盖TRAPFRAME
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(next_end </span><span style=color:#ed9366>>=</span><span> TRAPFRAME)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 初始化申请
+</span><span>  a</span><span style=color:#ed9366>-></span><span>used </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  a</span><span style=color:#ed9366>-></span><span>start </span><span style=color:#ed9366>=</span><span> next_start</span><span style=color:#61676ccc>;
+</span><span>  a</span><span style=color:#ed9366>-></span><span>end </span><span style=color:#ed9366>= </span><span style=color:#f29718>PGROUNDUP</span><span>(a</span><span style=color:#ed9366>-></span><span>start </span><span style=color:#ed9366>+</span><span> length)</span><span style=color:#61676ccc>;
+</span><span>  a</span><span style=color:#ed9366>-></span><span>file </span><span style=color:#ed9366>=</span><span> file</span><span style=color:#61676ccc>;
+</span><span>  a</span><span style=color:#ed9366>-></span><span>offset </span><span style=color:#ed9366>=</span><span> offset</span><span style=color:#61676ccc>;
+</span><span>  a</span><span style=color:#ed9366>-></span><span>permission </span><span style=color:#ed9366>=</span><span> prot</span><span style=color:#61676ccc>;
+</span><span>  a</span><span style=color:#ed9366>-></span><span>flags </span><span style=color:#ed9366>=</span><span> flags</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 引用次数 + 1
+</span><span>  </span><span style=color:#f29718>filedup</span><span>(file)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>return</span><span> a</span><span style=color:#ed9366>-></span><span>start</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>对，就是申请而已，只是预定了这个位置，还不会给你分配内存，和之前COW有点像。<h3 id=que-ye-zhong-duan><a aria-label="Anchor link for: que-ye-zhong-duan" class=zola-anchor href=#que-ye-zhong-duan>缺页中断</a></h3><p><code>kernel/vm.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#abb0b6;font-style:italic>// 辅助函数
+</span><span style=color:#abb0b6;font-style:italic>// 因为通用所以就写了
+</span><span style=color:#fa6e32>struct</span><span> vma</span><span style=color:#ed9366>*
+</span><span style=color:#f29718>find_vma</span><span>(uint64 </span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>p</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>int</span><span> i</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span>v </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 遍历进程VMA表然后返回对应的
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> NVMA</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>used </span><span style=color:#ed9366>&&</span><span> addr </span><span style=color:#ed9366>>=</span><span> p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>start </span><span style=color:#ed9366>&&</span><span> addr </span><span style=color:#ed9366>&lt;</span><span> p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>end){
+</span><span>      </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>&</span><span>p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#61676ccc>;
+</span><span>    }
+</span><span>  }
+</span><span>  </span><span style=color:#fa6e32>return</span><span> v</span><span style=color:#61676ccc>;
+</span><span>}
+</span><span>
+</span><span style=color:#abb0b6;font-style:italic>// 缺页中断处理
+</span><span style=color:#fa6e32>int
+</span><span style=color:#f29718>mmap_pgfault</span><span>(uint64 </span><span style=color:#ff8f40>stval</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>p</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span>a </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>char </span><span style=color:#ed9366>*</span><span>pa</span><span style=color:#61676ccc>;
+</span><span>  uint64 off</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> inode </span><span style=color:#ed9366>*</span><span>ip</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  stval </span><span style=color:#ed9366>= </span><span style=color:#f29718>PGROUNDDOWN</span><span>(stval)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 找到该地址属于哪个VMA
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((a </span><span style=color:#ed9366>= </span><span style=color:#f29718>find_vma</span><span>(stval</span><span style=color:#61676ccc>,</span><span> p)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 分配内存
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((pa </span><span style=color:#ed9366>= </span><span style=color:#f29718>kalloc</span><span>()) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f07171>memset</span><span>(pa</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>,</span><span> PGSIZE)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 写入用户设定的权限
+</span><span>  </span><span style=color:#fa6e32>int</span><span> perm </span><span style=color:#ed9366>=</span><span> PTE_U</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(a</span><span style=color:#ed9366>-></span><span>permission </span><span style=color:#ed9366>&</span><span> PROT_READ)
+</span><span>    perm </span><span style=color:#ed9366>|=</span><span> PTE_R</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(a</span><span style=color:#ed9366>-></span><span>permission </span><span style=color:#ed9366>&</span><span> PROT_WRITE)
+</span><span>    perm  </span><span style=color:#ed9366>|=</span><span> PTE_W</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 生成该页，让用户可访问
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>mappages</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> stval</span><span style=color:#61676ccc>,</span><span> PGSIZE</span><span style=color:#61676ccc>, </span><span>(uint64)pa</span><span style=color:#61676ccc>,</span><span> perm) </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  off </span><span style=color:#ed9366>=</span><span> stval </span><span style=color:#ed9366>-</span><span> a</span><span style=color:#ed9366>-></span><span>start </span><span style=color:#ed9366>+</span><span> a</span><span style=color:#ed9366>-></span><span>offset</span><span style=color:#61676ccc>;
+</span><span>  ip </span><span style=color:#ed9366>=</span><span> a</span><span style=color:#ed9366>-></span><span>file</span><span style=color:#ed9366>-></span><span>ip</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 读取文件，然后把数据发给新页
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 你可能会好奇，如果数据小于PGSIZE会发生什么
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 答案是，它不会填满新页
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 你可以试试去读读readi()的实现
+</span><span>  </span><span style=color:#f29718>ilock</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>readi</span><span>(ip</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span>(uint64)pa</span><span style=color:#61676ccc>,</span><span> off</span><span style=color:#61676ccc>,</span><span> PGSIZE) </span><span style=color:#ed9366>&lt;= </span><span style=color:#ff8f40>0</span><span>){
+</span><span>    </span><span style=color:#f29718>iunlock</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>  </span><span style=color:#f29718>iunlock</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>return </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这个函数不会多难，就是生成页->修改权限->填入数据而已， 个别函数不理解的话看看实现基本就能理解了。<p>不过读取并填入数据时，要先修改offset，也就是文件内部的偏移量。<br> 因为缺页地址可能是某个中间地址，所以我们就要offset也跑到中间，以此保证数据正确。<h3 id=qu-xiao-ying-she><a aria-label="Anchor link for: qu-xiao-ying-she" class=zola-anchor href=#qu-xiao-ying-she>取消映射</a></h3><p><code>kernel/sysfile.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>uint64
+</span><span style=color:#f29718>sys_munmap</span><span>(</span><span style=color:#fa6e32>void</span><span>)
+</span><span>{
+</span><span>  uint64 addr</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> length</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argaddr</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>addr) </span><span style=color:#ed9366>|| </span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>length))
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>return </span><span style=color:#f29718>__munmap</span><span>(addr</span><span style=color:#61676ccc>,</span><span> length)</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>基本就是个转接站而已，做的也就是收收参数。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void
+</span><span style=color:#f29718>free_vma</span><span>(</span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>v</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(v</span><span style=color:#ed9366>-></span><span>file) 
+</span><span>    </span><span style=color:#f29718>fileclose</span><span>(v</span><span style=color:#ed9366>-></span><span>file)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  v</span><span style=color:#ed9366>-></span><span>start </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  v</span><span style=color:#ed9366>-></span><span>end </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  v</span><span style=color:#ed9366>-></span><span>file </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  v</span><span style=color:#ed9366>-></span><span>flags </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  v</span><span style=color:#ed9366>-></span><span>offset </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  v</span><span style=color:#ed9366>-></span><span>permission </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  v</span><span style=color:#ed9366>-></span><span>used </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>写个小函数练练手。<p><code>kernel/vm.c</code><pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>int
+</span><span style=color:#f29718>__munmap</span><span>(uint64 </span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>length</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span>p </span><span style=color:#ed9366>= </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span>v </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  uint64 unlen</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 不允许没有对齐的地址
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(addr </span><span style=color:#ed9366>%</span><span> PGSIZE </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 自动向上对齐
+</span><span>  length </span><span style=color:#ed9366>= </span><span style=color:#f29718>PGROUNDUP</span><span>(length)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(addr </span><span style=color:#ed9366>+</span><span> length </span><span style=color:#ed9366>&lt;</span><span> addr)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((v </span><span style=color:#ed9366>= </span><span style=color:#f29718>find_vma</span><span>(addr</span><span style=color:#61676ccc>,</span><span> p)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  uint64 orilen </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>end </span><span style=color:#ed9366>-</span><span> v</span><span style=color:#ed9366>-></span><span>start</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(addr </span><span style=color:#ed9366>==</span><span> v</span><span style=color:#ed9366>-></span><span>start){                                 </span><span style=color:#abb0b6;font-style:italic>// 从开头到中间/结尾（难度：1颗星）
+</span><span>    </span><span style=color:#fa6e32>if</span><span>((unlen </span><span style=color:#ed9366>= </span><span style=color:#f29718>munmap_start</span><span>(p</span><span style=color:#61676ccc>,</span><span> v</span><span style=color:#61676ccc>,</span><span> addr</span><span style=color:#61676ccc>,</span><span> length)) </span><span style=color:#ed9366>== -</span><span style=color:#ff8f40>1</span><span>)
+</span><span>      </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>  </span><span style=color:#fa6e32>else if</span><span>(addr </span><span style=color:#ed9366>+</span><span> length </span><span style=color:#ed9366>==</span><span> v</span><span style=color:#ed9366>-></span><span>end){                     </span><span style=color:#abb0b6;font-style:italic>// 从中间到结尾（难度：1颗星）
+</span><span>    </span><span style=color:#fa6e32>if</span><span>((unlen </span><span style=color:#ed9366>= </span><span style=color:#f29718>munmap_end</span><span>(p</span><span style=color:#61676ccc>,</span><span> v</span><span style=color:#61676ccc>,</span><span> addr</span><span style=color:#61676ccc>,</span><span> length)) </span><span style=color:#ed9366>== -</span><span style=color:#ff8f40>1</span><span>)
+</span><span>      </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>  </span><span style=color:#fa6e32>else if</span><span>(addr </span><span style=color:#ed9366>></span><span> v</span><span style=color:#ed9366>-></span><span>start </span><span style=color:#ed9366>&&</span><span> addr </span><span style=color:#ed9366>+</span><span> length </span><span style=color:#ed9366>&lt;</span><span> v</span><span style=color:#ed9366>-></span><span>end){   </span><span style=color:#abb0b6;font-style:italic>// 从中间到中间（难度：6颗星）
+</span><span>    </span><span style=color:#fa6e32>if</span><span>((unlen </span><span style=color:#ed9366>= </span><span style=color:#f29718>munmap_split</span><span>(p</span><span style=color:#61676ccc>,</span><span> v</span><span style=color:#61676ccc>,</span><span> addr</span><span style=color:#61676ccc>,</span><span> length)) </span><span style=color:#ed9366>== -</span><span style=color:#ff8f40>1</span><span>)
+</span><span>      </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>  </span><span style=color:#fa6e32>else
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(orilen </span><span style=color:#ed9366>==</span><span> unlen)
+</span><span>    </span><span style=color:#f29718>free_vma</span><span>(v)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>return </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这是博主重构后的，一开始比较乱，不适合扩展， 不过其实只保留<code>munmap_start()</code>也能过测试，读者如果烂的话， 只做<code>munmap_start()</code>的实现也可以。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>int
+</span><span style=color:#f29718>munmap_start</span><span>(</span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>p</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>v</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>length</span><span>)
+</span><span>{
+</span><span>  uint64 orilen </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>end </span><span style=color:#ed9366>-</span><span> v</span><span style=color:#ed9366>-></span><span>start</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  uint64 unstart </span><span style=color:#ed9366>=</span><span> addr</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 防止length过大而发生意外
+</span><span>  uint64 unlen </span><span style=color:#ed9366>= </span><span style=color:#f29718>PGROUNDUP</span><span>(length) </span><span style=color:#ed9366>&lt;</span><span> orilen </span><span style=color:#ed9366>? </span><span style=color:#f29718>PGROUNDUP</span><span>(length) </span><span style=color:#ed9366>:</span><span> orilen</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 重新设置字段
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 以免发生预期之外的行为
+</span><span>  v</span><span style=color:#ed9366>-></span><span>start </span><span style=color:#ed9366>=</span><span> unstart </span><span style=color:#ed9366>+</span><span> unlen</span><span style=color:#61676ccc>;
+</span><span>  v</span><span style=color:#ed9366>-></span><span>offset </span><span style=color:#ed9366>+=</span><span> unlen</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 取消映射
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>munmap</span><span>(p</span><span style=color:#61676ccc>,</span><span> v</span><span style=color:#61676ccc>,</span><span> unstart</span><span style=color:#61676ccc>,</span><span> unlen) </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>return</span><span> unlen</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>对比其他的，这个简直太简单了。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>int
+</span><span style=color:#f29718>munmap</span><span>(</span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>p</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>v</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>unstart</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>unlen</span><span>)
+</span><span>{
+</span><span>  uint64 va</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 修改字段以确保文件正确写回
+</span><span>  uint64 start </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>start</span><span style=color:#61676ccc>;
+</span><span>  uint64 offset </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>offset</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> unlen </span><span style=color:#ed9366>/</span><span> PGSIZE</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>    va </span><span style=color:#ed9366>=</span><span> unstart </span><span style=color:#ed9366>+ </span><span>(i</span><span style=color:#ed9366>*</span><span>PGSIZE)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>pte_valid</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> va)){
+</span><span>      </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>pte_dirty</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> va) </span><span style=color:#ed9366>&&</span><span> v</span><span style=color:#ed9366>-></span><span>flags </span><span style=color:#ed9366>&</span><span> MAP_SHARED)
+</span><span>        </span><span style=color:#f29718>munmap_writeback</span><span>(va</span><span style=color:#61676ccc>,</span><span> PGSIZE</span><span style=color:#61676ccc>,</span><span> start</span><span style=color:#61676ccc>,</span><span> offset</span><span style=color:#61676ccc>,</span><span> v)</span><span style=color:#61676ccc>;
+</span><span>      </span><span style=color:#f29718>uvmunmap</span><span>(p</span><span style=color:#ed9366>-></span><span>pagetable</span><span style=color:#61676ccc>,</span><span> va</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span>)</span><span style=color:#61676ccc>;
+</span><span>    }
+</span><span>  }
+</span><span>  </span><span style=color:#fa6e32>return </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这个就是循环释放页，如果是SHARED且肮脏（数据已更新）的话，那就写回。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>int
+</span><span style=color:#f29718>munmap_writeback</span><span>(uint64 </span><span style=color:#ff8f40>unstart</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>unlen</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>start</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>offset</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>a</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> file </span><span style=color:#ed9366>*</span><span>file </span><span style=color:#ed9366>=</span><span> a</span><span style=color:#ed9366>-></span><span>file</span><span style=color:#61676ccc>;
+</span><span>  uint64 off </span><span style=color:#ed9366>=</span><span> unstart </span><span style=color:#ed9366>-</span><span> start </span><span style=color:#ed9366>+</span><span> offset</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> inode </span><span style=color:#ed9366>*</span><span>ip </span><span style=color:#ed9366>=</span><span> file</span><span style=color:#ed9366>-></span><span>ip</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#f29718>ilock</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#55b4d4;font-style:italic>uint</span><span> size </span><span style=color:#ed9366>=</span><span> ip</span><span style=color:#ed9366>-></span><span>size</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#f29718>iunlock</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(off </span><span style=color:#ed9366>>=</span><span> size) </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 和刚刚的length差不多，为了防止过大
+</span><span>  uint64 n </span><span style=color:#ed9366>=</span><span> unlen </span><span style=color:#ed9366>&lt;</span><span> size </span><span style=color:#ed9366>-</span><span> off </span><span style=color:#ed9366>?</span><span> unlen </span><span style=color:#ed9366>:</span><span> size </span><span style=color:#ed9366>-</span><span> off</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>int</span><span> r</span><span style=color:#61676ccc>,</span><span> ret </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 为了防止事务日志过大
+</span><span>  </span><span style=color:#fa6e32>int</span><span> max </span><span style=color:#ed9366>= </span><span>((MAXOPBLOCKS</span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#ed9366>-</span><span style=color:#ff8f40>2</span><span>) </span><span style=color:#ed9366>/ </span><span style=color:#ff8f40>2</span><span>) </span><span style=color:#ed9366>*</span><span> BSIZE</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>while</span><span>(i </span><span style=color:#ed9366>&lt;</span><span> n){
+</span><span>    </span><span style=color:#fa6e32>int</span><span> n1 </span><span style=color:#ed9366>=</span><span> n </span><span style=color:#ed9366>-</span><span> i</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(n1 </span><span style=color:#ed9366>></span><span> max)
+</span><span>      n1 </span><span style=color:#ed9366>=</span><span> max</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>    </span><span style=color:#f29718>begin_op</span><span>()</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f29718>ilock</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 写回原文件
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>//（inode, 
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// source(1-user, !1-kernel), 
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// source_addr, 
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// offset, 
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// n(write how much)) 
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// 返回 = 成功写入的字节数
+</span><span>    r </span><span style=color:#ed9366>= </span><span style=color:#f29718>writei</span><span>(ip</span><span style=color:#61676ccc>, </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>,</span><span> unstart</span><span style=color:#61676ccc>,</span><span> off </span><span style=color:#ed9366>+</span><span> i</span><span style=color:#61676ccc>,</span><span> n1)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f29718>iunlock</span><span>(ip)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#f29718>end_op</span><span>()</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>    </span><span style=color:#abb0b6;font-style:italic>// writei()出错了
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(r </span><span style=color:#ed9366>!=</span><span> n1)
+</span><span>      </span><span style=color:#fa6e32>break</span><span style=color:#61676ccc>;
+</span><span>    i </span><span style=color:#ed9366>+=</span><span> r</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>  ret </span><span style=color:#ed9366>=</span><span> i </span><span style=color:#ed9366>==</span><span> n </span><span style=color:#ed9366>?</span><span> n </span><span style=color:#ed9366>: -</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>; </span><span style=color:#abb0b6;font-style:italic>// 出错了就返回错误
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>return</span><span> ret</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这个可能会有点那，不过其实就是循环然后把数据写回原文件而已， 而且每次都是PGSIZE，基本没有太大然后出错的可能性。<h4 id=fan-wai><a aria-label="Anchor link for: fan-wai" class=zola-anchor href=#fan-wai>番外</a></h4><p>这几个有其中不少都用了博主挺多时间的，主要用在DEBUG。<p><code>kernel/vm.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>int
+</span><span style=color:#f29718>munmap_end</span><span>(</span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>p</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>v</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>length</span><span>)
+</span><span>{
+</span><span>  uint64 unstart </span><span style=color:#ed9366>=</span><span> addr</span><span style=color:#61676ccc>;
+</span><span>  uint64 unlen </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>end </span><span style=color:#ed9366>-</span><span> unstart</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  v</span><span style=color:#ed9366>-></span><span>end </span><span style=color:#ed9366>=</span><span> unstart</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>munmap</span><span>(p</span><span style=color:#61676ccc>,</span><span> v</span><span style=color:#61676ccc>,</span><span> unstart</span><span style=color:#61676ccc>,</span><span> unlen) </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>return</span><span> unlen</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这个不难，就是改一下起始地址而已，甚至offset都不用改。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>struct</span><span> vma</span><span style=color:#ed9366>*
+</span><span style=color:#f29718>unused_vma</span><span>(uint64 </span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>p</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span>v </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> NVMA</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>used </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
+</span><span>      </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>&</span><span>p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>  </span><span style=color:#fa6e32>return</span><span> v</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>找到对应进程的空闲VMA，挺有用的小函数。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>int
+</span><span style=color:#f29718>munmap_split</span><span>(</span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>p</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>v</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>addr</span><span style=color:#61676ccc>,</span><span> uint64 </span><span style=color:#ff8f40>length</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>struct</span><span> vma </span><span style=color:#ed9366>*</span><span>nv </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 找到当前进程的空闲VMA
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 因为要分裂了
+</span><span>  </span><span style=color:#fa6e32>if</span><span>((nv </span><span style=color:#ed9366>= </span><span style=color:#f29718>unused_vma</span><span>(addr</span><span style=color:#61676ccc>,</span><span> p)) </span><span style=color:#ed9366>== </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  uint64 unstart </span><span style=color:#ed9366>=</span><span> addr</span><span style=color:#61676ccc>;
+</span><span>  uint64 unlen </span><span style=color:#ed9366>=</span><span> length</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  uint64 new_start </span><span style=color:#ed9366>= </span><span style=color:#f29718>PGROUNDUP</span><span>(unstart </span><span style=color:#ed9366>+</span><span> unlen)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 初始化申请新VMA
+</span><span>  nv</span><span style=color:#ed9366>-></span><span>start </span><span style=color:#ed9366>=</span><span> new_start</span><span style=color:#61676ccc>;
+</span><span>  nv</span><span style=color:#ed9366>-></span><span>end </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>end</span><span style=color:#61676ccc>;
+</span><span>  nv</span><span style=color:#ed9366>-></span><span>file </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>file</span><span style=color:#61676ccc>;
+</span><span>  nv</span><span style=color:#ed9366>-></span><span>flags </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>flags</span><span style=color:#61676ccc>;
+</span><span>  nv</span><span style=color:#ed9366>-></span><span>offset </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>offset </span><span style=color:#ed9366>+ </span><span>(nv</span><span style=color:#ed9366>-></span><span>start </span><span style=color:#ed9366>-</span><span> v</span><span style=color:#ed9366>-></span><span>start)</span><span style=color:#61676ccc>;
+</span><span>  nv</span><span style=color:#ed9366>-></span><span>permission </span><span style=color:#ed9366>=</span><span> v</span><span style=color:#ed9366>-></span><span>permission</span><span style=color:#61676ccc>;
+</span><span>  nv</span><span style=color:#ed9366>-></span><span>used </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 用旧VMA来解除映射，简单些
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>munmap</span><span>(p</span><span style=color:#61676ccc>,</span><span> v</span><span style=color:#61676ccc>,</span><span> unstart</span><span style=color:#61676ccc>,</span><span> unlen) </span><span style=color:#ed9366>!= </span><span style=color:#ff8f40>0</span><span>){
+</span><span>    </span><span style=color:#f29718>free_vma</span><span>(nv)</span><span style=color:#61676ccc>;
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  }
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 别忘了旧的也得改
+</span><span>  v</span><span style=color:#ed9366>-></span><span>end </span><span style=color:#ed9366>=</span><span> unstart</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 因为加了块新的VMA，所以得加一下文件引用次数
+</span><span>  </span><span style=color:#f29718>filedup</span><span>(v</span><span style=color:#ed9366>-></span><span>file)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>return</span><span> unlen</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>这个是博主费时间最多的函数了，主要有两个原因：<ul><li>数学不行，不会算offset<li>debug经验不够</ul><p>博主稍微说说这个新的unmap方式是怎么样的。<br> 用户传的是中间地址，而且加上length后依旧够不到结束地址。<br> 在这种情况下，就需要在单VMA内部产生空洞，不过这样也会使VMA分裂。<br> 所以我们就需要做三件事情：<ul><li>解除映射<li>申请新VMA<li>重新设置旧VMA的结束地址</ul><h3 id=xiao-xiu-xiao-bu><a aria-label="Anchor link for: xiao-xiu-xiao-bu" class=zola-anchor href=#xiao-xiu-xiao-bu>小修小补</a></h3><p><code>kernel/proc.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void
+</span><span style=color:#f29718>exit</span><span>(</span><span style=color:#fa6e32>int </span><span style=color:#ff8f40>status</span><span>)
+</span><span>{
+</span><span style=color:#abb0b6;font-style:italic>/* ... */
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 写入所有共享脏页
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 关闭所有VMA
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> NVMA</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>used){
+</span><span>      </span><span style=color:#fa6e32>int</span><span> length </span><span style=color:#ed9366>=</span><span> p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>end </span><span style=color:#ed9366>-</span><span> p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>start</span><span style=color:#61676ccc>;
+</span><span>      </span><span style=color:#f29718>__munmap</span><span>(p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>start</span><span style=color:#61676ccc>,</span><span> length)</span><span style=color:#61676ccc>;
+</span><span>      p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>used </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;
+</span><span>    }
+</span><span>  }
+</span><span>
+</span><span style=color:#abb0b6;font-style:italic>/* ... */
+</span><span>}
+</span></code></pre><p>在退出进程时，把做过的修改都写回去。<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span style=color:#fa6e32>void
+</span><span style=color:#f29718>fork_mmap</span><span>(</span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>np</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>struct</span><span> proc </span><span style=color:#ed9366>*</span><span style=color:#ff8f40>p</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>for</span><span>(</span><span style=color:#fa6e32>int</span><span> i </span><span style=color:#ed9366>= </span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>;</span><span> i </span><span style=color:#ed9366>&lt;</span><span> NVMA</span><span style=color:#61676ccc>;</span><span> i</span><span style=color:#ed9366>++</span><span>){
+</span><span>    </span><span style=color:#fa6e32>if</span><span>(p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>used){
+</span><span>      np</span><span style=color:#ed9366>-></span><span>vma[i] </span><span style=color:#ed9366>=</span><span> p</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#61676ccc>;
+</span><span>      </span><span style=color:#f29718>filedup</span><span>(np</span><span style=color:#ed9366>-></span><span>vma[i]</span><span style=color:#ed9366>.</span><span>file)</span><span style=color:#61676ccc>;
+</span><span>    }
+</span><span>  }
+</span><span>}
+</span><span>
+</span><span style=color:#fa6e32>int
+</span><span style=color:#f29718>fork</span><span>(</span><span style=color:#fa6e32>void</span><span>)
+</span><span>{
+</span><span style=color:#abb0b6;font-style:italic>/* ... */
+</span><span>
+</span><span>  </span><span style=color:#f29718>safestrcpy</span><span>(np</span><span style=color:#ed9366>-></span><span>name</span><span style=color:#61676ccc>,</span><span> p</span><span style=color:#ed9366>-></span><span>name</span><span style=color:#61676ccc>, </span><span style=color:#fa6e32>sizeof</span><span>(p</span><span style=color:#ed9366>-></span><span>name))</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#f29718>fork_mmap</span><span>(np</span><span style=color:#61676ccc>,</span><span> p)</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  pid </span><span style=color:#ed9366>=</span><span> np</span><span style=color:#ed9366>-></span><span>pid</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  np</span><span style=color:#ed9366>-></span><span>state </span><span style=color:#ed9366>=</span><span> RUNNABLE</span><span style=color:#61676ccc>;
+</span><span>
+</span><span style=color:#abb0b6;font-style:italic>/* ... */
+</span><span>}
+</span></code></pre><p>测试中其中一个就是<code>fork()</code>相关的，所以这个是绝对有必要的。<br> 这个也不难，就是把已申请的全都复制到子进程。<br> 还有读者别忘了增加文件引用次数。<p><code>kernel/sysproc.c</code>：<pre class=language-C data-lang=C style=color:#61676c;background-color:#fafafa><code class=language-C data-lang=C><span>uint64
+</span><span style=color:#f29718>sys_sbrk</span><span>(</span><span style=color:#fa6e32>void</span><span>)
+</span><span>{
+</span><span>  </span><span style=color:#fa6e32>int</span><span> addr</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>int</span><span> n</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>argint</span><span>(</span><span style=color:#ff8f40>0</span><span style=color:#61676ccc>, </span><span style=color:#ed9366>&</span><span>n) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  addr </span><span style=color:#ed9366>= </span><span style=color:#f29718>myproc</span><span>()</span><span style=color:#ed9366>-></span><span>sz</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#abb0b6;font-style:italic>// 防止堆空间覆盖VMA分区
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(addr </span><span style=color:#ed9366>+</span><span> n </span><span style=color:#ed9366>>=</span><span> VMA_BASE)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>
+</span><span>  </span><span style=color:#fa6e32>if</span><span>(</span><span style=color:#f29718>growproc</span><span>(n) </span><span style=color:#ed9366>&lt; </span><span style=color:#ff8f40>0</span><span>)
+</span><span>    </span><span style=color:#fa6e32>return </span><span style=color:#ed9366>-</span><span style=color:#ff8f40>1</span><span style=color:#61676ccc>;
+</span><span>  </span><span style=color:#fa6e32>return</span><span> addr</span><span style=color:#61676ccc>;
+</span><span>}
+</span></code></pre><p>可以说几乎没用，纯纯是楼主闲的蛋疼加的，读者们不加也可以。<h1 id=wan-jie-sa-hua-3><a aria-label="Anchor link for: wan-jie-sa-hua-3" class=zola-anchor href=#wan-jie-sa-hua-3>完结撒花（〃｀ 3′〃）</a></h1><p>这个花了博主不少时间，不过收获也真不少，博主现在觉得自己牛逼上天了。<br> 博主在做这个小作业时，还自己写了TESTFILE。<br> 只不过原本的TESTFILE存在一些问题，博主没发现。<br> DEBUG了至少3小时才意识到不是自己实现的问题。<p>希望读者们的收获可以比博主还多更多更多，拜拜！q(≧▽≦q)<p>最后编辑时间：2025/8/30</section></article></main><div class=giscus></div><script async crossorigin issue-term=pathname repo=YOUR_NAME/YOUR_REPO src=https://utteranc.es/client.js theme=github-light></script></div>
